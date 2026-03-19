@@ -138,10 +138,10 @@ export default function ProjectForm() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Klant</Label>
-              <Select value={form.client_id} onValueChange={v => set('client_id', v)}>
+              <Select value={form.client_id || "none"} onValueChange={v => set('client_id', v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecteer klant..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
+                  <SelectItem value="none">Geen</SelectItem>
                   {activeClients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
                 </SelectContent>
               </Select>
