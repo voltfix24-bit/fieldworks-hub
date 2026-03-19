@@ -47,7 +47,7 @@ export function ReadinessStep({ items }: ReadinessStepProps) {
               ) : item.optional ? (
                 <Circle className="h-[18px] w-[18px] text-muted-foreground/20 shrink-0" />
               ) : (
-                <AlertCircle className="h-[18px] w-[18px] text-orange-500 shrink-0" />
+                <AlertCircle className="h-[18px] w-[18px] text-destructive shrink-0" />
               )}
               <span className={cn(
                 'text-[13px]',
