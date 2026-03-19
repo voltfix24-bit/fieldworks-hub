@@ -14,6 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
+      clients: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          company_name: string
+          contact_name: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          phone: string | null
+          postal_code: string | null
+          tenant_id: string
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          company_name: string
+          contact_name?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          tenant_id: string
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          company_name?: string
+          contact_name?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment: {
+        Row: {
+          brand: string | null
+          calibration_date: string | null
+          created_at: string
+          device_name: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          model: string | null
+          next_calibration_date: string | null
+          notes: string | null
+          serial_number: string | null
+          tenant_id: string
+        }
+        Insert: {
+          brand?: string | null
+          calibration_date?: string | null
+          created_at?: string
+          device_name: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          model?: string | null
+          next_calibration_date?: string | null
+          notes?: string | null
+          serial_number?: string | null
+          tenant_id: string
+        }
+        Update: {
+          brand?: string | null
+          calibration_date?: string | null
+          created_at?: string
+          device_name?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          model?: string | null
+          next_calibration_date?: string | null
+          notes?: string | null
+          serial_number?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -45,6 +157,145 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          client_id: string | null
+          completed_date: string | null
+          country: string | null
+          created_at: string
+          equipment_id: string | null
+          id: string
+          notes: string | null
+          planned_date: string | null
+          postal_code: string | null
+          project_name: string
+          project_number: string
+          site_name: string | null
+          status: Database["public"]["Enums"]["project_status"]
+          technician_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          client_id?: string | null
+          completed_date?: string | null
+          country?: string | null
+          created_at?: string
+          equipment_id?: string | null
+          id?: string
+          notes?: string | null
+          planned_date?: string | null
+          postal_code?: string | null
+          project_name: string
+          project_number: string
+          site_name?: string | null
+          status?: Database["public"]["Enums"]["project_status"]
+          technician_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          client_id?: string | null
+          completed_date?: string | null
+          country?: string | null
+          created_at?: string
+          equipment_id?: string | null
+          id?: string
+          notes?: string | null
+          planned_date?: string | null
+          postal_code?: string | null
+          project_name?: string
+          project_number?: string
+          site_name?: string | null
+          status?: Database["public"]["Enums"]["project_status"]
+          technician_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians: {
+        Row: {
+          created_at: string
+          email: string | null
+          employee_code: string | null
+          full_name: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          phone: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          employee_code?: string | null
+          full_name: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          phone?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          employee_code?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          phone?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technicians_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -184,6 +435,7 @@ export type Database = {
     }
     Enums: {
       app_role: "tenant_admin" | "office_user" | "technician"
+      project_status: "planned" | "completed"
       tenant_status: "active" | "inactive" | "suspended"
       user_status: "active" | "inactive" | "invited"
     }
@@ -314,6 +566,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["tenant_admin", "office_user", "technician"],
+      project_status: ["planned", "completed"],
       tenant_status: ["active", "inactive", "suspended"],
       user_status: ["active", "inactive", "invited"],
     },
