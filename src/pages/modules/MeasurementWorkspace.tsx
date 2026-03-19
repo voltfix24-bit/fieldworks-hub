@@ -148,7 +148,7 @@ export default function MeasurementWorkspace() {
       const newElectrode = await createElectrode.mutateAsync({
         tenant_id: tenantId, project_id: id,
         measurement_session_id: sessionData.id,
-        electrode_code: 'E1', sort_order: 0,
+        electrode_code: 'Elektrode 1', sort_order: 0,
       });
       setActiveElectrodeId(newElectrode.id);
 
@@ -156,7 +156,7 @@ export default function MeasurementWorkspace() {
         tenant_id: tenantId, project_id: id!,
         measurement_session_id: sessionData.id,
         electrode_id: newElectrode.id,
-        pen_code: 'P1', sort_order: 0,
+        pen_code: 'Pen 1', sort_order: 0,
       });
       setActivePenId(newPen.id);
       initializeDepthRows(newPen.id, newPen);
