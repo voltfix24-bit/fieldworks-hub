@@ -11,10 +11,32 @@ import { Building2, ArrowLeft } from 'lucide-react';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Account created', description: 'You can now sign in.' });
+      setIsSignUp(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,11 +80,13 @@ export default function Login() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">
-              {showForgot ? 'Reset Password' : 'Sign In'}
+              {showForgot ? 'Reset Password' : isSignUp ? 'Create Account' : 'Sign In'}
             </CardTitle>
             <CardDescription>
               {showForgot
                 ? 'Enter your email to receive a reset link'
+                : isSignUp
+                ? 'Create an account to get started'
                 : 'Enter your credentials to access your account'}
             </CardDescription>
           </CardHeader>
@@ -91,6 +115,51 @@ export default function Login() {
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back to login
                 </Button>
+              </form>
+            ) : isSignUp ? (
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Input
+                    id="signup-name"
+                    placeholder="Your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="Min. 6 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Creating account...' : 'Create Account'}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Already have an account?{' '}
+                  <button type="button" className="text-primary hover:underline" onClick={() => setIsSignUp(false)}>
+                    Sign in
+                  </button>
+                </p>
               </form>
             ) : (
               <form onSubmit={handleLogin} className="space-y-4">
@@ -128,6 +197,12 @@ export default function Login() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Don't have an account?{' '}
+                  <button type="button" className="text-primary hover:underline" onClick={() => setIsSignUp(true)}>
+                    Create one
+                  </button>
+                </p>
               </form>
             )}
           </CardContent>
