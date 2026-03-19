@@ -32,7 +32,7 @@ export function ReadinessStep({ items }: ReadinessStepProps) {
             'text-[11px] px-2.5 py-1 rounded-full font-semibold',
             allMet
               ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
-              : 'bg-orange-100 text-orange-700'
+              : 'bg-destructive/10 text-destructive'
           )}>
             {allMet ? 'Gereed' : `${metCount}/${requiredItems.length}`}
           </span>
