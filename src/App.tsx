@@ -5,9 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
-import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import ProjectsPage from "@/pages/modules/ProjectsPage";
@@ -40,14 +38,10 @@ const App = () => (
         <AuthProvider>
           <TenantProvider>
             <Routes>
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Navigate to="/dashboard" replace />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route
-                element={
-                  <AppLayout />
-                }
-              >
+              <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
 
                 <Route path="/projects" element={<ProjectsPage />} />
