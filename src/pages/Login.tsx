@@ -80,12 +80,15 @@ export default function Login() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">
-              {showForgot ? 'Reset Password' : 'Sign In'}
+              {showForgot ? 'Reset Password' : isSignUp ? 'Create Account' : 'Sign In'}
             </CardTitle>
             <CardDescription>
               {showForgot
                 ? 'Enter your email to receive a reset link'
+                : isSignUp
+                ? 'Create an account to get started'
                 : 'Enter your credentials to access your account'}
+            </CardDescription>
             </CardDescription>
           </CardHeader>
           <CardContent>
