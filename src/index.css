@@ -123,4 +123,78 @@
     background-color: hsl(var(--status-archived) / 0.1);
     color: hsl(var(--status-archived));
   }
+  .page-break-inside-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+/* Print stylesheet for reports */
+@media print {
+  /* Hide app shell */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide sidebar, header, nav */
+  [data-sidebar],
+  header,
+  nav,
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Remove app layout padding */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Report page styling */
+  .report-page {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 15mm 20mm !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* Page margins */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  /* Avoid breaks in key sections */
+  .report-electrode,
+  .report-info-section,
+  .report-summary {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep tables together */
+  table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Images */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Footer on each page */
+  .report-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4mm 20mm;
+  }
 }

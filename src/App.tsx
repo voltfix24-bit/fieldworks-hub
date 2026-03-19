@@ -12,6 +12,7 @@ import ProjectsPage from "@/pages/modules/ProjectsPage";
 import ProjectForm from "@/pages/modules/ProjectForm";
 import ProjectDetail from "@/pages/modules/ProjectDetail";
 import MeasurementWorkspace from "@/pages/modules/MeasurementWorkspace";
+import ProjectReport from "@/pages/modules/ProjectReport";
 import ClientsPage from "@/pages/modules/ClientsPage";
 import ClientForm from "@/pages/modules/ClientForm";
 import ClientDetail from "@/pages/modules/ClientDetail";
@@ -50,6 +51,7 @@ const App = () => (
                 <Route path="/projects/:id" element={<ProjectDetail />} />
                 <Route path="/projects/:id/edit" element={<ProjectForm />} />
                 <Route path="/projects/:id/measurements" element={<MeasurementWorkspace />} />
+                <Route path="/projects/:id/report" element={<ProjectReport />} />
 
                 <Route path="/clients" element={<ClientsPage />} />
                 <Route path="/clients/new" element={<ClientForm />} />
