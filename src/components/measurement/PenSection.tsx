@@ -111,7 +111,6 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
         onAdd={handleAddMeasurement}
         onUpdate={handleUpdateMeasurement}
         onDelete={handleDeleteMeasurement}
-        onInitPredefined={handleInitPredefined}
       />
 
       {/* Photos */}
