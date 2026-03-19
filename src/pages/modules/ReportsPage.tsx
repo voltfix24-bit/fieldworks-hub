@@ -7,15 +7,15 @@ export default function ReportsPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="Reports"
-        description="View and generate branded measurement reports"
-        action={<Button><Plus className="mr-2 h-4 w-4" /> Generate Report</Button>}
+        title="Rapporten"
+        description="Bekijk en genereer meetrapporten met uw bedrijfshuisstijl"
+        action={<Button><Plus className="mr-2 h-4 w-4" /> Rapport Genereren</Button>}
       />
       <EmptyState
         icon={FileText}
-        title="No reports yet"
-        description="Reports will be generated from completed project measurements with your company branding."
-        action={<Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Generate Report</Button>}
+        title="Nog geen rapporten"
+        description="Rapporten worden gegenereerd op basis van afgeronde projectmetingen met uw bedrijfshuisstijl."
+        action={<Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Rapport Genereren</Button>}
       />
     </div>
   );

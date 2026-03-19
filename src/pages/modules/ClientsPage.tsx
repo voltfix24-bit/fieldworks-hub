@@ -23,9 +23,9 @@ export default function ClientsPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="Clients"
-        description="Manage your client organizations and contacts"
-        action={<Button onClick={() => navigate('/clients/new')}><Plus className="mr-2 h-4 w-4" /> Add Client</Button>}
+        title="Klanten"
+        description="Beheer uw klantorganisaties en contactpersonen"
+        action={<Button onClick={() => navigate('/clients/new')}><Plus className="mr-2 h-4 w-4" /> Klant Toevoegen</Button>}
       />
 
       {isLoading ? (
@@ -35,40 +35,35 @@ export default function ClientsPage() {
       ) : clients?.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No clients yet"
-          description="Add your first client to start associating projects with organizations."
-          action={<Button variant="outline" onClick={() => navigate('/clients/new')}><Plus className="mr-2 h-4 w-4" /> Add Client</Button>}
+          title="Nog geen klanten"
+          description="Voeg uw eerste klant toe om projecten aan organisaties te koppelen."
+          action={<Button variant="outline" onClick={() => navigate('/clients/new')}><Plus className="mr-2 h-4 w-4" /> Klant Toevoegen</Button>}
         />
       ) : (
         <>
           <ListToolbar
             searchValue={search}
             onSearchChange={setSearch}
-            searchPlaceholder="Search clients..."
+            searchPlaceholder="Klanten zoeken..."
           />
 
-          {/* Desktop table */}
           <div className="hidden md:block">
             <Card>
               <CardContent className="p-0">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Company</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Bedrijf</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Contact</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">City</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Email</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Phone</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Plaats</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">E-mail</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Telefoon</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map(client => (
-                      <tr
-                        key={client.id}
-                        className="border-b border-border last:border-0 hover:bg-muted/50 cursor-pointer transition-colors"
-                        onClick={() => navigate(`/clients/${client.id}`)}
-                      >
+                      <tr key={client.id} className="border-b border-border last:border-0 hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => navigate(`/clients/${client.id}`)}>
                         <td className="px-4 py-3 text-sm font-medium text-foreground">{client.company_name}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{client.contact_name || '—'}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{client.city || '—'}</td>
@@ -83,21 +78,14 @@ export default function ClientsPage() {
             </Card>
           </div>
 
-          {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {filtered.map(client => (
-              <Card
-                key={client.id}
-                className="cursor-pointer hover:border-primary/30 transition-colors"
-                onClick={() => navigate(`/clients/${client.id}`)}
-              >
+              <Card key={client.id} className="cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate(`/clients/${client.id}`)}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="text-sm font-medium text-foreground">{client.company_name}</p>
-                      {client.contact_name && (
-                        <p className="text-xs text-muted-foreground">{client.contact_name}</p>
-                      )}
+                      {client.contact_name && <p className="text-xs text-muted-foreground">{client.contact_name}</p>}
                     </div>
                     <StatusBadge status={client.is_active ? 'active' : 'inactive'} />
                   </div>
@@ -112,7 +100,7 @@ export default function ClientsPage() {
           </div>
 
           {filtered.length === 0 && search && (
-            <p className="text-sm text-muted-foreground text-center py-8">No clients match "{search}"</p>
+            <p className="text-sm text-muted-foreground text-center py-8">Geen klanten gevonden voor "{search}"</p>
           )}
         </>
       )}

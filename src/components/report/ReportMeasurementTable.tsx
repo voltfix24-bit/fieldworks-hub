@@ -11,8 +11,8 @@ export function ReportMeasurementTable({ measurements, lowestResistance }: Repor
       <thead>
         <tr className="border-b border-border">
           <th className="text-left py-1.5 px-2 font-semibold text-muted-foreground">#</th>
-          <th className="text-left py-1.5 px-2 font-semibold text-muted-foreground">Depth (m)</th>
-          <th className="text-left py-1.5 px-2 font-semibold text-muted-foreground">Resistance (Ω)</th>
+          <th className="text-left py-1.5 px-2 font-semibold text-muted-foreground">Diepte (m)</th>
+          <th className="text-left py-1.5 px-2 font-semibold text-muted-foreground">Weerstand (Ω)</th>
         </tr>
       </thead>
       <tbody>

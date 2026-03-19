@@ -17,9 +17,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && hash.includes('type=recovery')) {
-      setReady(true);
-    }
+    if (hash && hash.includes('type=recovery')) setReady(true);
   }, []);
 
   const handleReset = async (e: React.FormEvent) => {
@@ -27,50 +25,29 @@ export default function ResetPassword() {
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Password updated', description: 'You can now sign in with your new password.' });
-      navigate('/login');
-    }
+    if (error) { toast({ title: 'Fout', description: error.message, variant: 'destructive' }); }
+    else { toast({ title: 'Wachtwoord bijgewerkt', description: 'U kunt nu inloggen met uw nieuwe wachtwoord.' }); navigate('/login'); }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
-          <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center"><Building2 className="h-6 w-6 text-primary-foreground" /></div>
         </div>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Set New Password</CardTitle>
-            <CardDescription>Enter your new password below</CardDescription>
+            <CardTitle className="text-xl">Nieuw Wachtwoord Instellen</CardTitle>
+            <CardDescription>Voer hieronder uw nieuwe wachtwoord in</CardDescription>
           </CardHeader>
           <CardContent>
             {ready ? (
               <form onSubmit={handleReset} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Updating...' : 'Update Password'}
-                </Button>
+                <div className="space-y-2"><Label htmlFor="new-password">Nieuw Wachtwoord</Label><Input id="new-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
+                <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Bijwerken...' : 'Wachtwoord Bijwerken'}</Button>
               </form>
             ) : (
-              <p className="text-sm text-muted-foreground text-center">
-                Invalid or expired reset link. Please request a new one.
-              </p>
+              <p className="text-sm text-muted-foreground text-center">Ongeldige of verlopen resetlink. Vraag een nieuwe aan.</p>
             )}
           </CardContent>
         </Card>

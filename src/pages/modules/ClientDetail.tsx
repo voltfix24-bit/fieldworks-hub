@@ -4,22 +4,36 @@ import { DetailCard } from '@/components/ui/detail-card';
 import { InfoRow } from '@/components/ui/info-row';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
-import { useClient } from '@/hooks/use-clients';
-import { ArrowLeft, Pencil, Building2, MapPin, User, FileText } from 'lucide-react';
+import { useClient, useDeleteClient } from '@/hooks/use-clients';
+import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Pencil, Trash2, Building2, MapPin, User, FileText } from 'lucide-react';
 
 export default function ClientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: client, isLoading } = useClient(id);
+  const deleteMut = useDeleteClient();
+  const { toast } = useToast();
 
   if (isLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-  if (!client) return <p className="text-muted-foreground text-center py-12">Client not found</p>;
+  if (!client) return <p className="text-muted-foreground text-center py-12">Klant niet gevonden</p>;
+
+  const handleDelete = async () => {
+    if (!confirm('Weet u zeker dat u deze klant wilt verwijderen?')) return;
+    try {
+      await deleteMut.mutateAsync(client.id);
+      toast({ title: 'Klant verwijderd' });
+      navigate('/clients');
+    } catch (err: any) {
+      toast({ title: 'Fout', description: err.message, variant: 'destructive' });
+    }
+  };
 
   return (
     <div className="animate-fade-in max-w-3xl">
       <div className="mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/clients')}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Clients
+          <ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Klanten
         </Button>
       </div>
       <PageHeader
@@ -28,7 +42,10 @@ export default function ClientDetail() {
           <div className="flex gap-2">
             <StatusBadge status={client.is_active ? 'active' : 'inactive'} />
             <Button variant="outline" size="sm" onClick={() => navigate(`/clients/${id}/edit`)}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
+              <Pencil className="mr-2 h-4 w-4" /> Bewerken
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleteMut.isPending}>
+              <Trash2 className="mr-2 h-4 w-4" /> Verwijderen
             </Button>
           </div>
         }
@@ -36,20 +53,20 @@ export default function ClientDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DetailCard title="Contact" icon={<User className="h-4 w-4 text-muted-foreground" />}>
-          <InfoRow label="Contact Name" value={client.contact_name} />
-          <InfoRow label="Email" value={client.email} />
-          <InfoRow label="Phone" value={client.phone} />
+          <InfoRow label="Contactpersoon" value={client.contact_name} />
+          <InfoRow label="E-mail" value={client.email} />
+          <InfoRow label="Telefoon" value={client.phone} />
         </DetailCard>
 
-        <DetailCard title="Address" icon={<MapPin className="h-4 w-4 text-muted-foreground" />}>
-          <InfoRow label="Address" value={client.address_line_1} />
+        <DetailCard title="Adres" icon={<MapPin className="h-4 w-4 text-muted-foreground" />}>
+          <InfoRow label="Adres" value={client.address_line_1} />
           {client.address_line_2 && <InfoRow label="" value={client.address_line_2} />}
-          <InfoRow label="City" value={[client.postal_code, client.city].filter(Boolean).join(' ') || null} />
-          <InfoRow label="Country" value={client.country} />
+          <InfoRow label="Plaats" value={[client.postal_code, client.city].filter(Boolean).join(' ') || null} />
+          <InfoRow label="Land" value={client.country} />
         </DetailCard>
 
         {client.notes && (
-          <DetailCard title="Notes" icon={<FileText className="h-4 w-4 text-muted-foreground" />}>
+          <DetailCard title="Notities" icon={<FileText className="h-4 w-4 text-muted-foreground" />}>
             <p className="text-sm text-foreground whitespace-pre-wrap">{client.notes}</p>
           </DetailCard>
         )}

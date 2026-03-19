@@ -41,10 +41,10 @@ export function AppHeader() {
             </Avatar>
             <div className="hidden sm:block text-left">
               <p className="text-sm font-medium text-foreground leading-tight">
-                {profile?.full_name || 'User'}
+                {profile?.full_name || 'Gebruiker'}
               </p>
               <p className="text-xs text-muted-foreground leading-tight capitalize">
-                {profile?.role?.replace('_', ' ') || 'User'}
+                {profile?.role?.replace('_', ' ') || 'Gebruiker'}
               </p>
             </div>
           </button>
@@ -56,14 +56,14 @@ export function AppHeader() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate('/settings/profile')}>
-            <User className="mr-2 h-4 w-4" /> Profile
+            <User className="mr-2 h-4 w-4" /> Profiel
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/settings')}>
-            <Settings className="mr-2 h-4 w-4" /> Settings
+            <Settings className="mr-2 h-4 w-4" /> Instellingen
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={signOut}>
-            <LogOut className="mr-2 h-4 w-4" /> Sign Out
+            <LogOut className="mr-2 h-4 w-4" /> Uitloggen
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

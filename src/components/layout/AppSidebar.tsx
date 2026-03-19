@@ -29,15 +29,15 @@ import { Separator } from '@/components/ui/separator';
 
 const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Projects', url: '/projects', icon: FolderKanban },
-  { title: 'Clients', url: '/clients', icon: Users },
-  { title: 'Technicians', url: '/technicians', icon: HardHat },
-  { title: 'Equipment', url: '/equipment', icon: Wrench },
-  { title: 'Reports', url: '/reports', icon: FileText },
+  { title: 'Projecten', url: '/projects', icon: FolderKanban },
+  { title: 'Klanten', url: '/clients', icon: Users },
+  { title: 'Monteurs', url: '/technicians', icon: HardHat },
+  { title: 'Apparatuur', url: '/equipment', icon: Wrench },
+  { title: 'Rapporten', url: '/reports', icon: FileText },
 ];
 
 const settingsNav = [
-  { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'Instellingen', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -68,7 +68,7 @@ export function AppSidebar() {
           )}
           {!collapsed && (
             <span className="text-sm font-semibold text-sidebar-foreground truncate">
-              {tenant?.company_name || 'Your Company'}
+              {tenant?.company_name || 'Uw Bedrijf'}
             </span>
           )}
         </div>
@@ -77,7 +77,7 @@ export function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider">
-            Main
+            Hoofdmenu
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -102,7 +102,7 @@ export function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider">
-            Admin
+            Beheer
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -133,7 +133,7 @@ export function AppSidebar() {
               className="hover:bg-sidebar-accent cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Sign Out</span>}
+              {!collapsed && <span>Uitloggen</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

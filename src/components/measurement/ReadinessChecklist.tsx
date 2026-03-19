@@ -20,9 +20,9 @@ export function ReadinessChecklist({ items }: ReadinessChecklistProps) {
     <Card>
       <CardHeader className="py-3 px-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold">Report Readiness</CardTitle>
+          <CardTitle className="text-sm font-semibold">Rapportgereedheid</CardTitle>
           <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${allMet ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-            {allMet ? 'Ready' : `${metCount}/${requiredItems.length}`}
+            {allMet ? 'Gereed' : `${metCount}/${requiredItems.length}`}
           </span>
         </div>
       </CardHeader>
@@ -39,7 +39,7 @@ export function ReadinessChecklist({ items }: ReadinessChecklistProps) {
               )}
               <span className={`text-xs ${item.met ? 'text-foreground' : item.optional ? 'text-muted-foreground' : 'text-foreground'}`}>
                 {item.label}
-                {item.optional && <span className="text-muted-foreground ml-1">(optional)</span>}
+                {item.optional && <span className="text-muted-foreground ml-1">(optioneel)</span>}
               </span>
             </div>
           ))}
