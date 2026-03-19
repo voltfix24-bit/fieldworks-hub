@@ -11,9 +11,17 @@ import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import ProjectsPage from "@/pages/modules/ProjectsPage";
+import ProjectForm from "@/pages/modules/ProjectForm";
+import ProjectDetail from "@/pages/modules/ProjectDetail";
 import ClientsPage from "@/pages/modules/ClientsPage";
+import ClientForm from "@/pages/modules/ClientForm";
+import ClientDetail from "@/pages/modules/ClientDetail";
 import TechniciansPage from "@/pages/modules/TechniciansPage";
+import TechnicianForm from "@/pages/modules/TechnicianForm";
+import TechnicianDetail from "@/pages/modules/TechnicianDetail";
 import EquipmentPage from "@/pages/modules/EquipmentPage";
+import EquipmentForm from "@/pages/modules/EquipmentForm";
+import EquipmentDetail from "@/pages/modules/EquipmentDetail";
 import ReportsPage from "@/pages/modules/ReportsPage";
 import SettingsIndex from "@/pages/settings/SettingsIndex";
 import BrandingSettings from "@/pages/settings/BrandingSettings";
@@ -43,11 +51,29 @@ const App = () => (
                 }
               >
                 <Route path="/dashboard" element={<Dashboard />} />
+
                 <Route path="/projects" element={<ProjectsPage />} />
+                <Route path="/projects/new" element={<ProjectForm />} />
+                <Route path="/projects/:id" element={<ProjectDetail />} />
+                <Route path="/projects/:id/edit" element={<ProjectForm />} />
+
                 <Route path="/clients" element={<ClientsPage />} />
+                <Route path="/clients/new" element={<ClientForm />} />
+                <Route path="/clients/:id" element={<ClientDetail />} />
+                <Route path="/clients/:id/edit" element={<ClientForm />} />
+
                 <Route path="/technicians" element={<TechniciansPage />} />
+                <Route path="/technicians/new" element={<TechnicianForm />} />
+                <Route path="/technicians/:id" element={<TechnicianDetail />} />
+                <Route path="/technicians/:id/edit" element={<TechnicianForm />} />
+
                 <Route path="/equipment" element={<EquipmentPage />} />
+                <Route path="/equipment/new" element={<EquipmentForm />} />
+                <Route path="/equipment/:id" element={<EquipmentDetail />} />
+                <Route path="/equipment/:id/edit" element={<EquipmentForm />} />
+
                 <Route path="/reports" element={<ReportsPage />} />
+
                 <Route path="/settings" element={<SettingsIndex />} />
                 <Route path="/settings/branding" element={<BrandingSettings />} />
                 <Route path="/settings/profile" element={<UserProfile />} />
