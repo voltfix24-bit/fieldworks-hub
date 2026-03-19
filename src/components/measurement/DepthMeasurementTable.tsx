@@ -11,37 +11,20 @@ interface DepthRow {
   sort_order: number;
 }
 
-const PREDEFINED_DEPTHS = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
-
 interface DepthMeasurementTableProps {
   measurements: DepthRow[];
   onAdd: (depth: number, resistance: number) => void;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
   disabled?: boolean;
-  /** Called to initialize predefined rows when pen has no measurements */
-  onInitPredefined?: (depths: number[]) => void;
 }
 
-export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete, disabled, onInitPredefined }: DepthMeasurementTableProps) {
-  const [initialized, setInitialized] = useState(false);
-
-  // Auto-initialize predefined depth rows for new pens
-  useEffect(() => {
-    if (!initialized && measurements.length === 0 && onInitPredefined) {
-      onInitPredefined(PREDEFINED_DEPTHS);
-      setInitialized(true);
-    } else if (measurements.length > 0) {
-      setInitialized(true);
-    }
-  }, [measurements.length, initialized, onInitPredefined]);
-
+export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete, disabled }: DepthMeasurementTableProps) {
   const lowestResistance = measurements.length > 0
     ? Math.min(...measurements.filter(m => m.resistance_value > 0).map(m => m.resistance_value))
     : null;
   const lowestIsValid = lowestResistance !== null && lowestResistance !== Infinity;
 
-  // Calculate next deeper depth
   const maxDepth = measurements.length > 0
     ? Math.max(...measurements.map(m => m.depth_meters))
     : 27;
@@ -79,12 +62,13 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
         onClick={handleAddDeeper}
         disabled={disabled}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-3 mt-2',
+          'w-full flex items-center justify-center gap-2 py-3.5 mt-2',
           'rounded-lg border border-dashed border-border',
           'text-xs font-medium text-muted-foreground',
           'hover:border-accent/40 hover:text-accent hover:bg-accent/5',
           'transition-all active:scale-[0.99]',
-          'disabled:opacity-40 disabled:cursor-not-allowed'
+          'disabled:opacity-40 disabled:cursor-not-allowed',
+          'min-h-[44px]'
         )}
       >
         <ArrowDown className="h-3.5 w-3.5" />
@@ -124,7 +108,6 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
 }) {
   const [depth, setDepth] = useState(String(row.depth_meters));
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value) : '');
-  const resistanceRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDepth(String(row.depth_meters));
@@ -137,7 +120,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
     if (!isNaN(d) && row.id && (d !== row.depth_meters || r !== row.resistance_value)) {
       onUpdate(row.id, d, r);
     }
-  }, [depth, resistance, row, onUpdate]);
+  }, [depth, resistance, row.id, row.depth_meters, row.resistance_value, onUpdate]);
 
   const hasValue = resistance !== '' && parseFloat(resistance) > 0;
 
@@ -154,16 +137,12 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
           value={depth}
           onChange={e => setDepth(e.target.value)}
           onBlur={handleBlur}
-          className={cn(
-            'h-10 sm:h-9 text-sm pr-6',
-            isLowest && 'font-semibold text-accent'
-          )}
+          className={cn('h-11 sm:h-9 text-sm pr-6', isLowest && 'font-semibold text-accent')}
           disabled={disabled}
         />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">m</span>
       </div>
       <Input
-        ref={resistanceRef}
         type="number"
         inputMode="decimal"
         step="0.01"
@@ -172,7 +151,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
         onBlur={handleBlur}
         placeholder="—"
         className={cn(
-          'h-10 sm:h-9 text-sm',
+          'h-11 sm:h-9 text-sm',
           isLowest && 'font-semibold text-accent border-accent/30',
           hasValue ? '' : 'text-muted-foreground'
         )}
@@ -183,7 +162,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
         variant="ghost"
         onClick={() => row.id && onDelete(row.id)}
         disabled={disabled}
-        className="h-10 sm:h-9 w-10 sm:w-9 p-0 text-muted-foreground/40 hover:text-destructive"
+        className="h-11 sm:h-9 w-11 sm:w-9 p-0 text-muted-foreground/40 hover:text-destructive"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
