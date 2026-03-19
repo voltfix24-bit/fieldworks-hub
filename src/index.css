@@ -129,6 +129,25 @@
   }
 }
 
+/* Grounding icon pulse animation */
+@keyframes grounding-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.grounding-pulse {
+  animation: grounding-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Print stylesheet for reports */
 @media print {
   /* Hide app shell */
