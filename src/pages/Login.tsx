@@ -89,7 +89,6 @@ export default function Login() {
                 ? 'Create an account to get started'
                 : 'Enter your credentials to access your account'}
             </CardDescription>
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {showForgot ? (
