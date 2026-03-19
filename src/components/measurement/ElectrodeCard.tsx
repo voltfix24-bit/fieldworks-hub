@@ -1,13 +1,7 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Switch } from '@/components/ui/switch';
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { usePens, useCreatePen, useUpdatePen, useDeletePen } from '@/hooks/use-pens';
+import { ElectrodeSummaryPanel } from './ElectrodeSummaryPanel';
+import { PenTabSwitcher } from './PenTabSwitcher';
 import { PenSection } from './PenSection';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -19,111 +13,72 @@ interface ElectrodeCardProps {
 
 export function ElectrodeCard({ electrode, onUpdate, onDelete }: ElectrodeCardProps) {
   const { profile } = useAuth();
-  const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editCode, setEditCode] = useState(electrode.electrode_code);
-  const [editLabel, setEditLabel] = useState(electrode.label || '');
-  const [editCoupled, setEditCoupled] = useState(electrode.is_coupled);
-  const [editTarget, setEditTarget] = useState(String(electrode.target_value || ''));
-  const [editRv, setEditRv] = useState(String(electrode.rv_value || ''));
-  const [editNotes, setEditNotes] = useState(electrode.notes || '');
-
   const { data: pens = [] } = usePens(electrode.id);
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
   const deletePen = useDeletePen();
 
-  const handleSaveEdit = () => {
-    onUpdate({
-      electrode_code: editCode, label: editLabel || null, is_coupled: editCoupled,
-      target_value: editTarget ? parseFloat(editTarget) : null,
-      rv_value: editRv ? parseFloat(editRv) : null, notes: editNotes || null,
-    });
-    setIsEditing(false);
-  };
+  const [activePenId, setActivePenId] = useState<string | null>(null);
+
+  // Auto-select first pen
+  useEffect(() => {
+    if (pens.length > 0 && (!activePenId || !pens.find((p: any) => p.id === activePenId))) {
+      setActivePenId(pens[0].id);
+    }
+  }, [pens, activePenId]);
+
+  const activePen = pens.find((p: any) => p.id === activePenId);
 
   const handleAddPen = () => {
     createPen.mutate({
       tenant_id: profile?.tenant_id, project_id: electrode.project_id,
       measurement_session_id: electrode.measurement_session_id, electrode_id: electrode.id,
       pen_code: `P${pens.length + 1}`, sort_order: pens.length,
+    }, {
+      onSuccess: (data) => setActivePenId(data.id),
     });
   };
 
-  const showRvField = electrode.is_coupled && pens.length > 1;
-
   return (
-    <Card className="border-l-4 border-l-primary/30">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-3 px-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-                <Zap className="h-4 w-4 text-primary" />
-                <div>
-                  <CardTitle className="text-sm font-semibold">
-                    {electrode.electrode_code}{electrode.label ? ` — ${electrode.label}` : ''}
-                  </CardTitle>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-xs text-muted-foreground">{pens.length} pen{pens.length !== 1 ? 's' : ''}</span>
-                    {electrode.ra_value != null && <span className="text-xs font-medium text-accent">RA: {Number(electrode.ra_value).toFixed(2)} Ω</span>}
-                    {electrode.rv_value != null && <span className="text-xs font-medium text-secondary">RV: {Number(electrode.rv_value).toFixed(2)} Ω</span>}
-                    {electrode.is_coupled && <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Gekoppeld</span>}
-                    {electrode.target_met === true && <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Doel behaald</span>}
-                    {electrode.target_met === false && electrode.target_value != null && <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-medium">Onder doel</span>}
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                <Button size="sm" variant="ghost" onClick={() => setIsEditing(!isEditing)} className="h-7 w-7 p-0"><Pencil className="h-3.5 w-3.5" /></Button>
-                <Button size="sm" variant="ghost" onClick={onDelete} className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
-              </div>
-            </div>
-          </CardHeader>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent className="px-4 pb-4 pt-0 space-y-4">
-            {isEditing && (
-              <div className="p-3 bg-muted/30 rounded-lg space-y-3 border border-border">
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label className="text-xs">Code</Label><Input value={editCode} onChange={e => setEditCode(e.target.value)} className="h-8 text-sm" /></div>
-                  <div><Label className="text-xs">Label</Label><Input value={editLabel} onChange={e => setEditLabel(e.target.value)} className="h-8 text-sm" placeholder="Optioneel" /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label className="text-xs">Doelwaarde (Ω)</Label><Input type="number" inputMode="decimal" value={editTarget} onChange={e => setEditTarget(e.target.value)} className="h-8 text-sm" placeholder="Optioneel" /></div>
-                  <div className="flex items-center gap-2 pt-5"><Switch checked={editCoupled} onCheckedChange={setEditCoupled} /><Label className="text-xs">Gekoppeld</Label></div>
-                </div>
-                {editCoupled && (
-                  <div><Label className="text-xs">RV waarde (Ω)</Label><Input type="number" inputMode="decimal" value={editRv} onChange={e => setEditRv(e.target.value)} className="h-8 text-sm" placeholder="Invullen bij gekoppelde pennen" /></div>
-                )}
-                <div><Label className="text-xs">Notities</Label><Textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} className="text-sm min-h-[60px]" /></div>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSaveEdit}>Opslaan</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>Annuleren</Button>
-                </div>
-              </div>
-            )}
+    <div className="space-y-4">
+      {/* Electrode summary */}
+      <ElectrodeSummaryPanel
+        electrode={electrode}
+        penCount={pens.length}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+      />
 
-            {showRvField && !isEditing && (
-              <div className="flex items-center gap-3 p-2 bg-secondary/5 rounded-md border border-secondary/20">
-                <span className="text-xs text-secondary font-medium">RV (gekoppelde pennen):</span>
-                <Input type="number" inputMode="decimal" value={electrode.rv_value || ''} onChange={e => onUpdate({ rv_value: e.target.value ? parseFloat(e.target.value) : null })} className="h-7 w-28 text-sm" placeholder="Ω" />
-              </div>
-            )}
+      {/* Pen tabs */}
+      <PenTabSwitcher
+        pens={pens}
+        activeId={activePenId}
+        onSelect={setActivePenId}
+        onAdd={handleAddPen}
+        addDisabled={createPen.isPending}
+      />
 
-            {pens.map((pen: any) => (
-              <PenSection key={pen.id} pen={pen} electrode={electrode}
-                onUpdate={(updates) => updatePen.mutate({ id: pen.id, ...updates })}
-                onDelete={() => deletePen.mutate({ id: pen.id, electrodeId: electrode.id })} />
-            ))}
-
-            <Button variant="outline" size="sm" onClick={handleAddPen} disabled={createPen.isPending} className="w-full border-dashed">
-              <Plus className="mr-2 h-3.5 w-3.5" /> Pen Toevoegen
-            </Button>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
+      {/* Active pen content */}
+      {activePen ? (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <PenSection
+            key={activePen.id}
+            pen={activePen}
+            electrode={electrode}
+            onUpdate={(updates) => updatePen.mutate({ id: activePen.id, ...updates })}
+            onDelete={() => {
+              deletePen.mutate({ id: activePen.id, electrodeId: electrode.id });
+              const remaining = pens.filter((p: any) => p.id !== activePen.id);
+              setActivePenId(remaining.length > 0 ? remaining[0].id : null);
+            }}
+          />
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-border p-8 text-center">
+          <p className="text-sm text-muted-foreground">Nog geen pennen</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Voeg een pen toe om metingen te starten</p>
+        </div>
+      )}
+    </div>
   );
 }
