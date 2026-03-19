@@ -148,7 +148,7 @@ export default function MeasurementWorkspace() {
       const newElectrode = await createElectrode.mutateAsync({
         tenant_id: tenantId, project_id: id,
         measurement_session_id: sessionData.id,
-        electrode_code: 'E1', sort_order: 0,
+        electrode_code: 'Elektrode 1', sort_order: 0,
       });
       setActiveElectrodeId(newElectrode.id);
 
@@ -156,7 +156,7 @@ export default function MeasurementWorkspace() {
         tenant_id: tenantId, project_id: id!,
         measurement_session_id: sessionData.id,
         electrode_id: newElectrode.id,
-        pen_code: 'P1', sort_order: 0,
+        pen_code: 'Pen 1', sort_order: 0,
       });
       setActivePenId(newPen.id);
       initializeDepthRows(newPen.id, newPen);
@@ -171,7 +171,7 @@ export default function MeasurementWorkspace() {
       tenant_id: tenantId, project_id: activeElectrode.project_id,
       measurement_session_id: activeElectrode.measurement_session_id,
       electrode_id: activeElectrode.id,
-      pen_code: `P${pens.length + 1}`, sort_order: pens.length,
+      pen_code: `Pen ${pens.length + 1}`, sort_order: pens.length,
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
@@ -188,7 +188,7 @@ export default function MeasurementWorkspace() {
     const newElectrode = await createElectrode.mutateAsync({
       tenant_id: tenantId, project_id: id,
       measurement_session_id: session.id,
-      electrode_code: `E${electrodes.length + 1}`, sort_order: electrodes.length,
+      electrode_code: `Elektrode ${electrodes.length + 1}`, sort_order: electrodes.length,
     });
     setActiveElectrodeId(newElectrode.id);
 
@@ -196,7 +196,7 @@ export default function MeasurementWorkspace() {
       tenant_id: tenantId, project_id: id!,
       measurement_session_id: session.id,
       electrode_id: newElectrode.id,
-      pen_code: 'P1', sort_order: 0,
+      pen_code: 'Pen 1', sort_order: 0,
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
@@ -269,7 +269,7 @@ export default function MeasurementWorkspace() {
 
       {/* ─── Step indicator ─── */}
       <div className="mb-5 -mx-1 sm:mx-0">
-        <WizardStepIndicator steps={WIZARD_STEPS} currentStep={displayStep} />
+        <WizardStepIndicator steps={WIZARD_STEPS} currentStep={displayStep} onStepClick={(i) => { setShowSketch(false); setStep(i); }} />
       </div>
 
       {/* ─── Step content ─── */}

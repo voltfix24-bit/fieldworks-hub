@@ -22,6 +22,7 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
         <ActionCard
           icon={<GroundingIcon size={18} />}
           label={`Elektrode ${nextElectrodeNumber} starten`}
+
           description="Start een nieuwe elektrode met nieuwe pennen"
           onClick={onAddElectrode}
         />
