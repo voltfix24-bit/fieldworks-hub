@@ -158,10 +158,10 @@ export default function ProjectForm() {
             </div>
             <div className="space-y-2">
               <Label>Apparatuur</Label>
-              <Select value={form.equipment_id} onValueChange={v => set('equipment_id', v)}>
+              <Select value={form.equipment_id || "none"} onValueChange={v => set('equipment_id', v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecteer apparatuur..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
+                  <SelectItem value="none">Geen</SelectItem>
                   {activeEquip.map(e => <SelectItem key={e.id} value={e.id}>{e.device_name} {e.is_default ? '⭐' : ''} — {e.brand} {e.model}</SelectItem>)}
                 </SelectContent>
               </Select>
