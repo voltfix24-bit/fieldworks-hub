@@ -10,7 +10,6 @@ import { PhotoUploader } from './PhotoUploader';
 import { uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateElectrode } from '@/hooks/use-electrodes';
-import { usePens } from '@/hooks/use-pens';
 
 interface PenSectionProps {
   pen: any;
@@ -65,16 +64,6 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
     });
   };
 
-  const handleInitPredefined = useCallback((depths: number[]) => {
-    depths.forEach((d, i) => {
-      createMeasurement.mutate({
-        tenant_id: profile?.tenant_id, project_id: pen.project_id,
-        measurement_session_id: pen.measurement_session_id, electrode_id: pen.electrode_id,
-        pen_id: pen.id, depth_meters: d, resistance_value: 0, sort_order: i,
-      });
-    });
-  }, [profile?.tenant_id, pen, createMeasurement]);
-
   const handlePhotoUpload = async (type: 'display_photo_url' | 'overview_photo_url', file: File) => {
     setUploading(true);
     try {
@@ -122,7 +111,6 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
         onAdd={handleAddMeasurement}
         onUpdate={handleUpdateMeasurement}
         onDelete={handleDeleteMeasurement}
-        onInitPredefined={handleInitPredefined}
       />
 
       {/* Photos */}
