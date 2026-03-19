@@ -48,7 +48,7 @@ export function MeasurementStep({
         </div>
         <div className="min-w-0">
           <h2 className="text-[16px] font-bold text-foreground tracking-tight leading-tight">
-            {electrode.electrode_code} / {expandedPenId ? pens.find((p: any) => p.id === expandedPenId)?.pen_code || 'P1' : 'P1'}
+            {electrode.electrode_code} / {expandedPenId ? pens.find((p: any) => p.id === expandedPenId)?.pen_code || 'Pen 1' : 'Pen 1'}
           </h2>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             {pens.length} {pens.length === 1 ? 'pen' : 'pennen'} · Voer weerstandswaarden in per diepte

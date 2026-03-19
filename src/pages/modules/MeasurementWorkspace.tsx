@@ -269,7 +269,7 @@ export default function MeasurementWorkspace() {
 
       {/* ─── Step indicator ─── */}
       <div className="mb-5 -mx-1 sm:mx-0">
-        <WizardStepIndicator steps={WIZARD_STEPS} currentStep={displayStep} />
+        <WizardStepIndicator steps={WIZARD_STEPS} currentStep={displayStep} onStepClick={(i) => { setShowSketch(false); setStep(i); }} />
       </div>
 
       {/* ─── Step content ─── */}
