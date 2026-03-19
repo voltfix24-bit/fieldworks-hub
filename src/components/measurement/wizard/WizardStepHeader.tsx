@@ -7,13 +7,13 @@ interface WizardStepHeaderProps {
 
 export function WizardStepHeader({ title, subtitle }: WizardStepHeaderProps) {
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-        <GroundingIcon size={20} className="text-primary" />
+    <div className="flex items-start gap-3 mb-5">
+      <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center shrink-0 mt-0.5">
+        <GroundingIcon size={18} className="text-primary" />
       </div>
       <div>
-        <h2 className="text-base font-semibold text-foreground leading-tight">{title}</h2>
-        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+        <h2 className="text-[15px] font-semibold text-foreground leading-snug tracking-tight">{title}</h2>
+        {subtitle && <p className="text-[13px] text-muted-foreground mt-0.5 leading-relaxed">{subtitle}</p>}
       </div>
     </div>
   );

@@ -56,6 +56,13 @@
     --status-completed: 142 71% 45%;
     --status-archived: 215 14% 34%;
 
+    /* Measurement-specific tokens */
+    --measure-surface: 210 18% 96%;
+    --measure-row-hover: 210 16% 94%;
+    --measure-highlight: 199 89% 48%;
+    --measure-lowest: 160 84% 39%;
+    --measure-depth-bg: 210 14% 93%;
+
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
@@ -79,6 +86,12 @@
     --border: 220 16% 18%;
     --input: 220 16% 18%;
     --ring: 220 70% 55%;
+
+    --measure-surface: 220 18% 13%;
+    --measure-row-hover: 220 16% 16%;
+    --measure-highlight: 199 89% 48%;
+    --measure-lowest: 160 84% 39%;
+    --measure-depth-bg: 220 16% 18%;
   }
 }
 
@@ -131,12 +144,42 @@
 
 /* Grounding icon pulse animation */
 @keyframes grounding-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.7; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .grounding-pulse {
-  animation: grounding-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: grounding-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Grounding ripple for loader */
+@keyframes grounding-ripple {
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.25); }
+  100% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0); }
+}
+
+.grounding-ripple {
+  animation: grounding-ripple 1.8s ease-out infinite;
+}
+
+/* Depth row enter animation */
+@keyframes depth-row-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.depth-row-enter {
+  animation: depth-row-in 0.2s ease-out;
+}
+
+/* Step fade transition */
+@keyframes step-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.wizard-step-enter {
+  animation: step-fade-in 0.25s ease-out;
 }
 
 /* Scrollbar hide utility */
@@ -150,29 +193,25 @@
 
 /* Print stylesheet for reports */
 @media print {
-  /* Hide app shell */
   body {
     background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Hide sidebar, header, nav */
   [data-sidebar],
   header,
   nav,
-  .print\\:hidden {
+  .print\:hidden {
     display: none !important;
   }
 
-  /* Remove app layout padding */
   main {
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
   }
 
-  /* Report page styling */
   .report-page {
     box-shadow: none !important;
     border: none !important;
@@ -182,13 +221,11 @@
     margin: 0 !important;
   }
 
-  /* Page margins */
   @page {
     size: A4;
     margin: 10mm;
   }
 
-  /* Avoid breaks in key sections */
   .report-electrode,
   .report-info-section,
   .report-summary {
@@ -196,19 +233,16 @@
     break-inside: avoid;
   }
 
-  /* Keep tables together */
   table {
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
-  /* Images */
   img {
     max-width: 100% !important;
     page-break-inside: avoid;
   }
 
-  /* Footer on each page */
   .report-footer {
     position: fixed;
     bottom: 0;

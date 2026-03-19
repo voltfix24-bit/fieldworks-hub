@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { WizardStepHeader } from '../WizardStepHeader';
-import { Plus, Layers, Paperclip, Save } from 'lucide-react';
+import { Plus, Paperclip, Save } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
+import { cn } from '@/lib/utils';
 
 interface NextActionStepProps {
   onAddPen: () => void;
@@ -12,63 +12,66 @@ interface NextActionStepProps {
 
 export function NextActionStep({ onAddPen, onAddElectrode, onGoToSketch, onSaveAndExit }: NextActionStepProps) {
   return (
-    <div className="space-y-4">
+    <div>
       <WizardStepHeader
         title="Volgende actie"
         subtitle="Kies hoe je verder wilt gaan"
       />
 
-      <div className="space-y-2.5">
-        <ActionButton
-          icon={<Plus className="h-5 w-5" />}
+      <div className="space-y-2">
+        <ActionCard
+          icon={<Plus className="h-[18px] w-[18px]" />}
           label="Pen toevoegen"
           description="Voeg een extra pen toe aan deze elektrode"
           onClick={onAddPen}
         />
-        <ActionButton
-          icon={<GroundingIcon size={20} />}
+        <ActionCard
+          icon={<GroundingIcon size={18} />}
           label="Elektrode toevoegen"
           description="Start een nieuwe elektrode met nieuwe pennen"
           onClick={onAddElectrode}
         />
-        <ActionButton
-          icon={<Paperclip className="h-5 w-5" />}
+        <ActionCard
+          icon={<Paperclip className="h-[18px] w-[18px]" />}
           label="Schets en bijlagen"
           description="Upload schetsen, foto's en andere bestanden"
           onClick={onGoToSketch}
         />
-        <ActionButton
-          icon={<Save className="h-5 w-5" />}
+        <ActionCard
+          icon={<Save className="h-[18px] w-[18px]" />}
           label="Opslaan en later doorgaan"
-          description="Alle voortgang is opgeslagen, je kunt later terugkomen"
+          description="Alle voortgang is opgeslagen"
           onClick={onSaveAndExit}
-          subtle
+          muted
         />
       </div>
     </div>
   );
 }
 
-function ActionButton({ icon, label, description, onClick, subtle }: {
-  icon: React.ReactNode; label: string; description: string; onClick: () => void; subtle?: boolean;
+function ActionCard({ icon, label, description, onClick, muted }: {
+  icon: React.ReactNode; label: string; description: string; onClick: () => void; muted?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3.5 p-4 rounded-xl border transition-all active:scale-[0.99] text-left ${
-        subtle
-          ? 'border-border bg-muted/20 hover:bg-muted/40 text-muted-foreground'
-          : 'border-border bg-card hover:bg-muted/30 hover:border-primary/30'
-      }`}
+      className={cn(
+        'w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-150',
+        'active:scale-[0.995] text-left',
+        muted
+          ? 'border-border/40 bg-muted/10 hover:bg-muted/20 text-muted-foreground'
+          : 'border-border/60 bg-card hover:bg-muted/15 hover:border-primary/25'
+      )}
     >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-        subtle ? 'bg-muted/50 text-muted-foreground' : 'bg-primary/10 text-primary'
-      }`}>
+      <div className={cn(
+        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+        muted ? 'bg-muted/30 text-muted-foreground/60' : 'bg-primary/6 text-primary'
+      )}>
         {icon}
       </div>
-      <div>
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+      <div className="min-w-0">
+        <p className={cn('text-[13px] font-semibold', muted ? 'text-muted-foreground' : 'text-foreground')}>{label}</p>
+        <p className="text-[11px] text-muted-foreground/60 mt-0.5 leading-relaxed">{description}</p>
       </div>
     </button>
   );

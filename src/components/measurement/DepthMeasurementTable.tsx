@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, ArrowDown, Gauge } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { GroundingIcon } from './GroundingIcon';
 
 interface DepthRow {
   id?: string;
@@ -30,22 +31,20 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
     : 27;
   const nextDepth = maxDepth > 0 ? maxDepth + 3 : 33;
 
-  const handleAddDeeper = () => {
-    onAdd(nextDepth, 0);
-  };
+  const filledCount = measurements.filter(m => m.resistance_value > 0).length;
 
   return (
     <div className="space-y-0">
-      {/* Header */}
-      <div className="grid grid-cols-[60px_1fr_44px] sm:grid-cols-[80px_1fr_44px] gap-1 px-1 pb-2">
-        <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Diepte</span>
-        <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Weerstand (Ω)</span>
-        <span></span>
+      {/* Column header */}
+      <div className="grid grid-cols-[56px_1fr_40px] sm:grid-cols-[72px_1fr_40px] gap-2 px-2 pb-2">
+        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/70">Diepte</span>
+        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/70">Weerstand</span>
+        <span />
       </div>
 
       {/* Measurement rows */}
-      <div className="space-y-0.5">
-        {measurements.map((m) => (
+      <div className="space-y-px rounded-xl overflow-hidden border border-border/60 bg-card">
+        {measurements.map((m, idx) => (
           <DepthRowComponent
             key={m.id}
             row={m}
@@ -53,22 +52,23 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
             onDelete={onDelete}
             isLowest={lowestIsValid && m.resistance_value === lowestResistance && m.resistance_value > 0}
             disabled={disabled}
+            isEven={idx % 2 === 0}
           />
         ))}
       </div>
 
       {/* Add deeper action */}
       <button
-        onClick={handleAddDeeper}
+        onClick={() => onAdd(nextDepth, 0)}
         disabled={disabled}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-3.5 mt-2',
-          'rounded-lg border border-dashed border-border',
-          'text-xs font-medium text-muted-foreground',
-          'hover:border-accent/40 hover:text-accent hover:bg-accent/5',
-          'transition-all active:scale-[0.99]',
+          'w-full flex items-center justify-center gap-2 py-3 mt-3',
+          'rounded-xl border border-dashed border-border/60',
+          'text-[13px] font-medium text-muted-foreground',
+          'hover:border-primary/30 hover:text-primary hover:bg-primary/3',
+          'transition-all duration-150 active:scale-[0.995]',
           'disabled:opacity-40 disabled:cursor-not-allowed',
-          'min-h-[44px]'
+          'min-h-[48px]'
         )}
       >
         <ArrowDown className="h-3.5 w-3.5" />
@@ -77,34 +77,41 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
 
       {/* RA summary */}
       {lowestIsValid && (
-        <div className="flex items-center gap-2.5 mt-3 px-3 py-2.5 rounded-lg bg-accent/8 border border-accent/15">
-          <Gauge className="h-4 w-4 text-accent shrink-0" />
+        <div className="flex items-center gap-3 mt-4 px-4 py-3 rounded-xl bg-[hsl(var(--measure-lowest)/0.06)] border border-[hsl(var(--measure-lowest)/0.12)]">
+          <div className="w-9 h-9 rounded-lg bg-[hsl(var(--measure-lowest)/0.1)] flex items-center justify-center shrink-0">
+            <Gauge className="h-4 w-4 text-[hsl(var(--measure-lowest))]" />
+          </div>
           <div className="flex-1">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">RA basis</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-sm font-semibold text-accent">{lowestResistance!.toFixed(2)} Ω</span>
-              <span className="text-xs text-muted-foreground">RA basis — laagst gemeten</span>
+              <span className="text-base font-bold text-[hsl(var(--measure-lowest))] tabular-nums">{lowestResistance!.toFixed(2)} Ω</span>
+              <span className="text-[11px] text-muted-foreground">laagst gemeten</span>
             </div>
           </div>
+          <span className="text-[11px] text-muted-foreground tabular-nums">{filledCount}/{measurements.length}</span>
         </div>
       )}
 
       {measurements.length === 0 && (
-        <div className="text-center py-6">
-          <Gauge className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">Nog geen metingen ingevoerd</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-0.5">Voer weerstandswaarden in bij elke diepte</p>
+        <div className="text-center py-10">
+          <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+            <GroundingIcon size={20} className="text-muted-foreground/30" />
+          </div>
+          <p className="text-[13px] font-medium text-muted-foreground">Nog geen metingen</p>
+          <p className="text-[11px] text-muted-foreground/60 mt-1">Weerstandswaarden worden per diepte ingevoerd</p>
         </div>
       )}
     </div>
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
   isLowest: boolean;
   disabled?: boolean;
+  isEven?: boolean;
 }) {
   const [depth, setDepth] = useState(String(row.depth_meters));
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value) : '');
@@ -126,10 +133,12 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
 
   return (
     <div className={cn(
-      'grid grid-cols-[60px_1fr_44px] sm:grid-cols-[80px_1fr_44px] gap-1 items-center rounded-lg px-1 py-0.5 transition-colors',
-      isLowest && 'bg-accent/8',
+      'grid grid-cols-[56px_1fr_40px] sm:grid-cols-[72px_1fr_40px] gap-2 items-center px-2 transition-colors duration-100 depth-row-enter',
+      isEven ? 'bg-card' : 'bg-[hsl(var(--measure-surface))]',
+      isLowest && 'bg-[hsl(var(--measure-lowest)/0.06)]',
     )}>
-      <div className="relative">
+      {/* Depth */}
+      <div className="relative py-1.5">
         <Input
           type="number"
           inputMode="decimal"
@@ -137,32 +146,44 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled }: {
           value={depth}
           onChange={e => setDepth(e.target.value)}
           onBlur={handleBlur}
-          className={cn('h-11 sm:h-9 text-sm pr-6', isLowest && 'font-semibold text-accent')}
+          className={cn(
+            'h-11 text-[13px] pr-6 text-center border-0 bg-transparent shadow-none',
+            'focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:bg-card',
+            isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]'
+          )}
           disabled={disabled}
         />
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">m</span>
+        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/50 pointer-events-none font-medium">m</span>
       </div>
-      <Input
-        type="number"
-        inputMode="decimal"
-        step="0.01"
-        value={resistance}
-        onChange={e => setResistance(e.target.value)}
-        onBlur={handleBlur}
-        placeholder="—"
-        className={cn(
-          'h-11 sm:h-9 text-sm',
-          isLowest && 'font-semibold text-accent border-accent/30',
-          hasValue ? '' : 'text-muted-foreground'
-        )}
-        disabled={disabled}
-      />
+
+      {/* Resistance */}
+      <div className="relative py-1.5">
+        <Input
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          value={resistance}
+          onChange={e => setResistance(e.target.value)}
+          onBlur={handleBlur}
+          placeholder="—"
+          className={cn(
+            'h-11 text-[13px] pr-6 border-0 bg-transparent shadow-none',
+            'focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:bg-card',
+            isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]',
+            hasValue ? 'text-foreground' : 'text-muted-foreground/40'
+          )}
+          disabled={disabled}
+        />
+        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/50 pointer-events-none font-medium">Ω</span>
+      </div>
+
+      {/* Delete */}
       <Button
-        size="sm"
+        size="icon"
         variant="ghost"
         onClick={() => row.id && onDelete(row.id)}
         disabled={disabled}
-        className="h-11 sm:h-9 w-11 sm:w-9 p-0 text-muted-foreground/40 hover:text-destructive"
+        className="h-9 w-9 text-muted-foreground/25 hover:text-destructive hover:bg-destructive/8 transition-colors"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>

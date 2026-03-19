@@ -19,13 +19,13 @@ export function PhotoStep({
   uploading, penCode,
 }: PhotoStepProps) {
   return (
-    <div className="space-y-4">
+    <div>
       <WizardStepHeader
         title={`Foto's — ${penCode}`}
         subtitle="Upload een detail- en overzichtsfoto voor deze pen"
       />
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         <PhotoUploader
           label="Detailfoto"
           currentUrl={displayPhotoUrl}

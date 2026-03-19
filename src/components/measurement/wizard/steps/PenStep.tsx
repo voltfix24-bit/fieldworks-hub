@@ -18,26 +18,40 @@ export function PenStep({
   penNotes, setPenNotes,
 }: PenStepProps) {
   return (
-    <div className="space-y-4">
+    <div>
       <WizardStepHeader title="Pen" subtitle="Bevestig of pas de pengegevens aan" />
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-sm font-medium">Code</Label>
-            <Input value={penCode} onChange={e => setPenCode(e.target.value)} className="h-11 text-sm mt-1" />
-          </div>
-          <div>
-            <Label className="text-sm font-medium">Label <span className="text-muted-foreground font-normal">(opt.)</span></Label>
-            <Input value={penLabel} onChange={e => setPenLabel(e.target.value)} className="h-11 text-sm mt-1" placeholder="Optioneel" />
-          </div>
+          <FieldGroup label="Code">
+            <Input value={penCode} onChange={e => setPenCode(e.target.value)} className="h-11 text-[13px] font-mono" />
+          </FieldGroup>
+          <FieldGroup label="Label" optional>
+            <Input value={penLabel} onChange={e => setPenLabel(e.target.value)} className="h-11 text-[13px]" placeholder="Optioneel" />
+          </FieldGroup>
         </div>
 
-        <div>
-          <Label className="text-sm font-medium">Notities <span className="text-muted-foreground font-normal">(optioneel)</span></Label>
-          <Textarea value={penNotes} onChange={e => setPenNotes(e.target.value)} className="text-sm min-h-[70px] mt-1" />
-        </div>
+        <FieldGroup label="Notities" optional>
+          <Textarea
+            value={penNotes}
+            onChange={e => setPenNotes(e.target.value)}
+            className="text-[13px] min-h-[70px]"
+            placeholder="Opmerkingen bij deze pen…"
+          />
+        </FieldGroup>
       </div>
+    </div>
+  );
+}
+
+function FieldGroup({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
+        {label}
+        {optional && <span className="font-normal normal-case tracking-normal ml-1.5 text-muted-foreground/50">(optioneel)</span>}
+      </Label>
+      {children}
     </div>
   );
 }
