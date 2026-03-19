@@ -148,10 +148,10 @@ export default function ProjectForm() {
             </div>
             <div className="space-y-2">
               <Label>Monteur</Label>
-              <Select value={form.technician_id} onValueChange={v => set('technician_id', v)}>
+              <Select value={form.technician_id || "none"} onValueChange={v => set('technician_id', v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecteer monteur..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
+                  <SelectItem value="none">Geen</SelectItem>
                   {activeTechs.map(t => <SelectItem key={t.id} value={t.id}>{t.full_name} {t.employee_code ? `(${t.employee_code})` : ''}</SelectItem>)}
                 </SelectContent>
               </Select>
