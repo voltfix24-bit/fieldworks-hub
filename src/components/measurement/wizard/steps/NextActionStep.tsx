@@ -1,16 +1,16 @@
 import { WizardStepHeader } from '../WizardStepHeader';
-import { Plus, Paperclip, Save } from 'lucide-react';
+import { Paperclip, Save } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
 
 interface NextActionStepProps {
-  onAddPen: () => void;
   onAddElectrode: () => void;
   onGoToSketch: () => void;
-  onSaveAndExit: () => void;
+  onSave: () => void;
+  nextElectrodeNumber: number;
 }
 
-export function NextActionStep({ onAddPen, onAddElectrode, onGoToSketch, onSaveAndExit }: NextActionStepProps) {
+export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber }: NextActionStepProps) {
   return (
     <div>
       <WizardStepHeader
@@ -20,14 +20,8 @@ export function NextActionStep({ onAddPen, onAddElectrode, onGoToSketch, onSaveA
 
       <div className="space-y-2">
         <ActionCard
-          icon={<Plus className="h-[18px] w-[18px]" />}
-          label="Pen toevoegen"
-          description="Voeg een extra pen toe aan deze elektrode"
-          onClick={onAddPen}
-        />
-        <ActionCard
           icon={<GroundingIcon size={18} />}
-          label="Elektrode toevoegen"
+          label={`Elektrode ${nextElectrodeNumber} starten`}
           description="Start een nieuwe elektrode met nieuwe pennen"
           onClick={onAddElectrode}
         />
@@ -39,9 +33,9 @@ export function NextActionStep({ onAddPen, onAddElectrode, onGoToSketch, onSaveA
         />
         <ActionCard
           icon={<Save className="h-[18px] w-[18px]" />}
-          label="Opslaan en later doorgaan"
-          description="Alle voortgang is opgeslagen"
-          onClick={onSaveAndExit}
+          label="Opslaan"
+          description="Voortgang opslaan en afsluiten"
+          onClick={onSave}
           muted
         />
       </div>
