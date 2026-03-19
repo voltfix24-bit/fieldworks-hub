@@ -80,3 +80,14 @@ export function useUpdateEquipment() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['equipment'] }),
   });
 }
+
+export function useDeleteEquipment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('equipment').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['equipment'] }),
+  });
+}

@@ -40,7 +40,6 @@ export default function MeasurementWorkspace() {
   const { data: equipment = [] } = useEquipmentList();
   const { data: attachments = [] } = useAttachments(id);
 
-  // Setup form state
   const [measurementDate, setMeasurementDate] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedTechnician, setSelectedTechnician] = useState('');
@@ -48,7 +47,6 @@ export default function MeasurementWorkspace() {
   const [notes, setNotes] = useState('');
   const [setupDirty, setSetupDirty] = useState(false);
 
-  // Prefill from session or project
   useEffect(() => {
     if (session) {
       setMeasurementDate(session.measurement_date || '');
@@ -72,15 +70,10 @@ export default function MeasurementWorkspace() {
       equipment_id: selectedEquipment || null,
       measurement_notes: notes || null,
     };
-
     if (session) {
       await updateSession.mutateAsync({ id: session.id, ...payload });
     } else {
-      await createSession.mutateAsync({
-        ...payload,
-        tenant_id: tenantId,
-        project_id: id,
-      });
+      await createSession.mutateAsync({ ...payload, tenant_id: tenantId, project_id: id });
     }
     setSetupDirty(false);
   };
@@ -88,23 +81,14 @@ export default function MeasurementWorkspace() {
   const handleAddElectrode = () => {
     if (!session) return;
     createElectrode.mutate({
-      tenant_id: tenantId,
-      project_id: id,
-      measurement_session_id: session.id,
-      electrode_code: `E${electrodes.length + 1}`,
-      sort_order: electrodes.length,
+      tenant_id: tenantId, project_id: id, measurement_session_id: session.id,
+      electrode_code: `E${electrodes.length + 1}`, sort_order: electrodes.length,
     });
   };
 
-  if (projectLoading || sessionLoading) {
-    return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-  }
+  if (projectLoading || sessionLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
 
-  if (!project) {
-    return <p className="text-muted-foreground text-center py-12">Project not found</p>;
-  }
-
-  // Readiness checks
   const hasSession = !!session;
   const hasElectrodes = electrodes.length > 0;
   const hasClient = !!(session?.client_id || project.client_id);
@@ -113,182 +97,112 @@ export default function MeasurementWorkspace() {
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
 
   const readinessItems = [
-    { label: 'Measurement setup completed', met: hasSession },
-    { label: 'Client assigned', met: hasClient },
-    { label: 'Technician assigned', met: hasTechnician },
-    { label: 'Equipment assigned', met: hasEquipment },
-    { label: 'At least one electrode', met: hasElectrodes },
-    { label: 'Sketch / photo added', met: hasSketches, optional: true },
+    { label: 'Meetopstelling voltooid', met: hasSession },
+    { label: 'Klant toegewezen', met: hasClient },
+    { label: 'Monteur toegewezen', met: hasTechnician },
+    { label: 'Apparatuur toegewezen', met: hasEquipment },
+    { label: 'Minimaal één elektrode', met: hasElectrodes },
+    { label: 'Schets / foto toegevoegd', met: hasSketches, optional: true },
   ];
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
-      {/* Back button */}
       <div className="mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${id}`)}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Project
+          <ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Project
         </Button>
       </div>
 
-      {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border pb-3 mb-6 -mx-4 px-4 pt-1">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <Ruler className="h-5 w-5 text-primary" />
-              {project.project_name}
+              <Ruler className="h-5 w-5 text-primary" />{project.project_name}
             </h1>
             <div className="flex items-center gap-3 mt-0.5">
               <span className="text-xs text-muted-foreground font-mono">{project.project_number}</span>
-              {measurementDate && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-3 w-3" /> {measurementDate}
-                </span>
-              )}
+              {measurementDate && <span className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> {measurementDate}</span>}
               {selectedTechnician && technicians.find((t: any) => t.id === selectedTechnician) && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <User className="h-3 w-3" /> {(technicians.find((t: any) => t.id === selectedTechnician) as any)?.full_name}
-                </span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><User className="h-3 w-3" /> {(technicians.find((t: any) => t.id === selectedTechnician) as any)?.full_name}</span>
               )}
               {selectedEquipment && equipment.find((e: any) => e.id === selectedEquipment) && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Wrench className="h-3 w-3" /> {(equipment.find((e: any) => e.id === selectedEquipment) as any)?.device_name}
-                </span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><Wrench className="h-3 w-3" /> {(equipment.find((e: any) => e.id === selectedEquipment) as any)?.device_name}</span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{electrodes.length} electrode{electrodes.length !== 1 ? 's' : ''}</span>
+            <span className="text-xs text-muted-foreground">{electrodes.length} elektrode{electrodes.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-        {/* Main content */}
         <div className="space-y-4">
-          {/* Measurement Setup */}
           <Card>
             <CardHeader className="py-3 px-4">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Ruler className="h-4 w-4 text-primary" /> Measurement Setup
-                {hasSession && <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Saved</span>}
+                <Ruler className="h-4 w-4 text-primary" /> Meetopstelling
+                {hasSession && <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Opgeslagen</span>}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-0 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Measurement Date</Label>
-                  <Input
-                    type="date"
-                    value={measurementDate}
-                    onChange={e => { setMeasurementDate(e.target.value); setSetupDirty(true); }}
-                    className="h-9 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Client</Label>
+                <div><Label className="text-xs">Meetdatum</Label><Input type="date" value={measurementDate} onChange={e => { setMeasurementDate(e.target.value); setSetupDirty(true); }} className="h-9 text-sm" /></div>
+                <div><Label className="text-xs">Klant</Label>
                   <Select value={selectedClient} onValueChange={v => { setSelectedClient(v); setSetupDirty(true); }}>
-                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
-                    <SelectContent>
-                      {clients.map((c: any) => (
-                        <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Selecteer klant" /></SelectTrigger>
+                    <SelectContent>{clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-xs">Technician</Label>
+                <div><Label className="text-xs">Monteur</Label>
                   <Select value={selectedTechnician} onValueChange={v => { setSelectedTechnician(v); setSetupDirty(true); }}>
-                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select technician" /></SelectTrigger>
-                    <SelectContent>
-                      {technicians.map((t: any) => (
-                        <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Selecteer monteur" /></SelectTrigger>
+                    <SelectContent>{technicians.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-xs">Equipment</Label>
+                <div><Label className="text-xs">Apparatuur</Label>
                   <Select value={selectedEquipment} onValueChange={v => { setSelectedEquipment(v); setSetupDirty(true); }}>
-                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select equipment" /></SelectTrigger>
-                    <SelectContent>
-                      {equipment.map((e: any) => (
-                        <SelectItem key={e.id} value={e.id}>
-                          {e.device_name}{e.is_default ? ' ★' : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Selecteer apparatuur" /></SelectTrigger>
+                    <SelectContent>{equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}{e.is_default ? ' ★' : ''}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
-              <div>
-                <Label className="text-xs">Notes</Label>
-                <Textarea
-                  value={notes}
-                  onChange={e => { setNotes(e.target.value); setSetupDirty(true); }}
-                  className="text-sm min-h-[60px]"
-                  placeholder="Measurement notes…"
-                />
-              </div>
-              <Button
-                size="sm"
-                onClick={handleSaveSetup}
-                disabled={createSession.isPending || updateSession.isPending}
-              >
-                {session ? 'Update Setup' : 'Create Measurement Session'}
+              <div><Label className="text-xs">Notities</Label><Textarea value={notes} onChange={e => { setNotes(e.target.value); setSetupDirty(true); }} className="text-sm min-h-[60px]" placeholder="Meetnotities…" /></div>
+              <Button size="sm" onClick={handleSaveSetup} disabled={createSession.isPending || updateSession.isPending}>
+                {session ? 'Opslaan' : 'Meetsessie Aanmaken'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Electrodes */}
           {hasSession && (
             <>
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" /> Electrodes
-                </h2>
-                <Button size="sm" onClick={handleAddElectrode} disabled={createElectrode.isPending}>
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Electrode
-                </Button>
+                <h2 className="text-sm font-semibold text-foreground flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Elektrodes</h2>
+                <Button size="sm" onClick={handleAddElectrode} disabled={createElectrode.isPending}><Plus className="mr-1.5 h-3.5 w-3.5" /> Elektrode Toevoegen</Button>
               </div>
 
               {electrodes.length === 0 ? (
-                <Card className="border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <Zap className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No electrodes added yet</p>
-                    <Button variant="outline" size="sm" className="mt-3" onClick={handleAddElectrode}>
-                      <Plus className="mr-1.5 h-3.5 w-3.5" /> Add first electrode
-                    </Button>
-                  </CardContent>
-                </Card>
+                <Card className="border-dashed"><CardContent className="py-8 text-center">
+                  <Zap className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Nog geen elektrodes toegevoegd</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={handleAddElectrode}><Plus className="mr-1.5 h-3.5 w-3.5" /> Eerste elektrode toevoegen</Button>
+                </CardContent></Card>
               ) : (
                 <div className="space-y-3">
                   {electrodes.map((electrode: any) => (
-                    <ElectrodeCard
-                      key={electrode.id}
-                      electrode={electrode}
+                    <ElectrodeCard key={electrode.id} electrode={electrode}
                       onUpdate={(updates) => updateElectrode.mutate({ id: electrode.id, ...updates })}
-                      onDelete={() => deleteElectrode.mutate({ id: electrode.id, sessionId: session!.id })}
-                    />
+                      onDelete={() => deleteElectrode.mutate({ id: electrode.id, sessionId: session!.id })} />
                   ))}
                 </div>
               )}
 
-              {/* Sketch section */}
-              <SketchAttachmentsSection
-                projectId={id!}
-                tenantId={tenantId}
-                sessionId={session?.id}
-              />
+              <SketchAttachmentsSection projectId={id!} tenantId={tenantId} sessionId={session?.id} />
             </>
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          <ReadinessChecklist items={readinessItems} />
-        </div>
+        <div className="space-y-4"><ReadinessChecklist items={readinessItems} /></div>
       </div>
     </div>
   );

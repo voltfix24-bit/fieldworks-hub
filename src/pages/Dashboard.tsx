@@ -22,15 +22,15 @@ export default function Dashboard() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title={`Welcome back${profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}`}
-        description={`${tenant?.company_name || 'Your company'} — Field Operations Dashboard`}
+        title={`Welkom terug${profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}`}
+        description={`${tenant?.company_name || 'Uw bedrijf'} — Veldwerk Dashboard`}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Active Projects" value={planned.length} icon={FolderKanban} description={`${planned.length} planned`} />
-        <StatCard title="Completed" value={completed.length} icon={CheckCircle2} description="Total completed" />
-        <StatCard title="Technicians" value={activeTechs.length} icon={HardHat} description={`${activeTechs.length} active`} />
-        <StatCard title="Total Projects" value={projects?.length ?? 0} icon={FileText} description="All time" />
+        <StatCard title="Actieve Projecten" value={planned.length} icon={FolderKanban} description={`${planned.length} gepland`} />
+        <StatCard title="Afgerond" value={completed.length} icon={CheckCircle2} description="Totaal afgerond" />
+        <StatCard title="Monteurs" value={activeTechs.length} icon={HardHat} description={`${activeTechs.length} actief`} />
+        <StatCard title="Totaal Projecten" value={projects?.length ?? 0} icon={FileText} description="Alle tijd" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -38,7 +38,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              Recent Projects
+              Recente Projecten
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -61,13 +61,13 @@ export default function Dashboard() {
                     <span className={`text-xs px-2 py-0.5 rounded-md font-medium shrink-0 ml-2 ${
                       p.status === 'completed' ? 'status-completed' : 'status-planned'
                     }`}>
-                      {p.status === 'completed' ? 'Completed' : 'Planned'}
+                      {p.status === 'completed' ? 'Afgerond' : 'Gepland'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">No projects yet</p>
+              <p className="text-sm text-muted-foreground text-center py-6">Nog geen projecten</p>
             )}
           </CardContent>
         </Card>
@@ -76,7 +76,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <HardHat className="h-4 w-4 text-muted-foreground" />
-              Team Members
+              Teamleden
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -93,13 +93,13 @@ export default function Dashboard() {
                       <p className="text-xs text-muted-foreground font-mono">{t.employee_code || '—'}</p>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${t.is_active ? 'status-completed' : 'status-archived'}`}>
-                      {t.is_active ? 'Active' : 'Inactive'}
+                      {t.is_active ? 'Actief' : 'Inactief'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">No technicians yet</p>
+              <p className="text-sm text-muted-foreground text-center py-6">Nog geen monteurs</p>
             )}
           </CardContent>
         </Card>

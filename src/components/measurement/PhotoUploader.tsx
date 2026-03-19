@@ -31,34 +31,21 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
           <img src={displayUrl} alt={label} className="w-full h-32 object-cover rounded-md border border-border" />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center gap-2">
             <Button size="sm" variant="secondary" onClick={() => inputRef.current?.click()} disabled={uploading}>
-              <Camera className="h-3 w-3 mr-1" /> Replace
+              <Camera className="h-3 w-3 mr-1" /> Vervangen
             </Button>
             {onRemove && (
-              <Button size="sm" variant="destructive" onClick={onRemove} disabled={uploading}>
-                <X className="h-3 w-3" />
-              </Button>
+              <Button size="sm" variant="destructive" onClick={onRemove} disabled={uploading}><X className="h-3 w-3" /></Button>
             )}
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className="w-full h-24 border-2 border-dashed border-border rounded-md flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-        >
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+          className="w-full h-24 border-2 border-dashed border-border rounded-md flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
           <Upload className="h-5 w-5" />
-          <span className="text-xs">{uploading ? 'Uploading…' : 'Upload photo'}</span>
+          <span className="text-xs">{uploading ? 'Uploaden…' : 'Foto uploaden'}</span>
         </button>
       )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleFile}
-        className="hidden"
-      />
+      <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
     </div>
   );
 }

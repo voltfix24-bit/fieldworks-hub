@@ -62,3 +62,14 @@ export function useUpdateTechnician() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['technicians'] }),
   });
 }
+
+export function useDeleteTechnician() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('technicians').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['technicians'] }),
+  });
+}
