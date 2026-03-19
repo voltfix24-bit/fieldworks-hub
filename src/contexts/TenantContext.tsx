@@ -52,11 +52,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   };
 
   const refetchBranding = async () => {
-    if (profile?.tenant_id) {
+    if (tenant?.id) {
       const { data } = await supabase
         .from('tenant_branding')
         .select('*')
-        .eq('tenant_id', profile.tenant_id)
+        .eq('tenant_id', tenant.id)
         .single();
       if (data) {
         setBranding(data);

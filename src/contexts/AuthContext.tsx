@@ -5,6 +5,9 @@ import type { Database } from '@/integrations/supabase/types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
+// Dev mode tenant ID — used when not logged in
+const DEV_TENANT_ID = '11111111-1111-1111-1111-111111111111';
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -34,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Defer profile fetch to avoid deadlock
           setTimeout(async () => {
             const { data } = await supabase
               .from('profiles')
@@ -45,7 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setLoading(false);
           }, 0);
         } else {
-          setProfile(null);
+          // Dev mode: create a mock profile so the app works without auth
+          setProfile({
+            id: 'dev-user',
+            tenant_id: DEV_TENANT_ID,
+            full_name: 'Dev User',
+            role: 'tenant_admin',
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
           setLoading(false);
         }
       }
@@ -65,6 +76,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setLoading(false);
           });
       } else {
+        // Dev mode mock
+        setProfile({
+          id: 'dev-user',
+          tenant_id: DEV_TENANT_ID,
+          full_name: 'Dev User',
+          role: 'tenant_admin',
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
         setLoading(false);
       }
     });
