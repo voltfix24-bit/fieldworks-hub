@@ -73,6 +73,160 @@ export type Database = {
           },
         ]
       }
+      depth_measurements: {
+        Row: {
+          created_at: string
+          depth_meters: number
+          electrode_id: string
+          id: string
+          measurement_session_id: string
+          pen_id: string
+          project_id: string
+          resistance_value: number
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          depth_meters?: number
+          electrode_id: string
+          id?: string
+          measurement_session_id: string
+          pen_id: string
+          project_id: string
+          resistance_value?: number
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          depth_meters?: number
+          electrode_id?: string
+          id?: string
+          measurement_session_id?: string
+          pen_id?: string
+          project_id?: string
+          resistance_value?: number
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "depth_measurements_electrode_id_fkey"
+            columns: ["electrode_id"]
+            isOneToOne: false
+            referencedRelation: "electrodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depth_measurements_measurement_session_id_fkey"
+            columns: ["measurement_session_id"]
+            isOneToOne: false
+            referencedRelation: "project_measurement_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depth_measurements_pen_id_fkey"
+            columns: ["pen_id"]
+            isOneToOne: false
+            referencedRelation: "pens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depth_measurements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depth_measurements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      electrodes: {
+        Row: {
+          created_at: string
+          electrode_code: string
+          id: string
+          is_coupled: boolean
+          label: string | null
+          measurement_session_id: string
+          notes: string | null
+          project_id: string
+          ra_value: number | null
+          rv_value: number | null
+          sort_order: number
+          target_met: boolean | null
+          target_value: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          electrode_code?: string
+          id?: string
+          is_coupled?: boolean
+          label?: string | null
+          measurement_session_id: string
+          notes?: string | null
+          project_id: string
+          ra_value?: number | null
+          rv_value?: number | null
+          sort_order?: number
+          target_met?: boolean | null
+          target_value?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          electrode_code?: string
+          id?: string
+          is_coupled?: boolean
+          label?: string | null
+          measurement_session_id?: string
+          notes?: string | null
+          project_id?: string
+          ra_value?: number | null
+          rv_value?: number | null
+          sort_order?: number
+          target_met?: boolean | null
+          target_value?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "electrodes_measurement_session_id_fkey"
+            columns: ["measurement_session_id"]
+            isOneToOne: false
+            referencedRelation: "project_measurement_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "electrodes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "electrodes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           brand: string | null
@@ -126,6 +280,86 @@ export type Database = {
           },
         ]
       }
+      pens: {
+        Row: {
+          created_at: string
+          display_photo_url: string | null
+          electrode_id: string
+          id: string
+          label: string | null
+          measurement_session_id: string
+          notes: string | null
+          overview_photo_url: string | null
+          pen_code: string
+          pen_depth_meters: number | null
+          project_id: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_photo_url?: string | null
+          electrode_id: string
+          id?: string
+          label?: string | null
+          measurement_session_id: string
+          notes?: string | null
+          overview_photo_url?: string | null
+          pen_code?: string
+          pen_depth_meters?: number | null
+          project_id: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_photo_url?: string | null
+          electrode_id?: string
+          id?: string
+          label?: string | null
+          measurement_session_id?: string
+          notes?: string | null
+          overview_photo_url?: string | null
+          pen_code?: string
+          pen_depth_meters?: number | null
+          project_id?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pens_electrode_id_fkey"
+            columns: ["electrode_id"]
+            isOneToOne: false
+            referencedRelation: "electrodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pens_measurement_session_id_fkey"
+            columns: ["measurement_session_id"]
+            isOneToOne: false
+            referencedRelation: "project_measurement_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pens_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pens_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -157,6 +391,145 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_attachments: {
+        Row: {
+          attachment_type: string
+          caption: string | null
+          created_at: string
+          file_name: string | null
+          file_url: string
+          id: string
+          measurement_session_id: string | null
+          project_id: string
+          tenant_id: string
+        }
+        Insert: {
+          attachment_type?: string
+          caption?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_url: string
+          id?: string
+          measurement_session_id?: string | null
+          project_id: string
+          tenant_id: string
+        }
+        Update: {
+          attachment_type?: string
+          caption?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_url?: string
+          id?: string
+          measurement_session_id?: string | null
+          project_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_attachments_measurement_session_id_fkey"
+            columns: ["measurement_session_id"]
+            isOneToOne: false
+            referencedRelation: "project_measurement_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_attachments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_attachments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_measurement_sessions: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          equipment_id: string | null
+          id: string
+          measurement_date: string | null
+          measurement_notes: string | null
+          project_id: string
+          sketch_mode: string | null
+          sketch_notes: string | null
+          technician_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          equipment_id?: string | null
+          id?: string
+          measurement_date?: string | null
+          measurement_notes?: string | null
+          project_id: string
+          sketch_mode?: string | null
+          sketch_notes?: string | null
+          technician_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          equipment_id?: string | null
+          id?: string
+          measurement_date?: string | null
+          measurement_notes?: string | null
+          project_id?: string
+          sketch_mode?: string | null
+          sketch_notes?: string | null
+          technician_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_measurement_sessions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_measurement_sessions_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_measurement_sessions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_measurement_sessions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_measurement_sessions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
