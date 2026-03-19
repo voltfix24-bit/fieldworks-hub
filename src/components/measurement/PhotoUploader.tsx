@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, X, Upload, ImageIcon } from 'lucide-react';
+import { Camera, X, ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PhotoUploaderProps {
@@ -25,17 +25,31 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
   const displayUrl = preview || currentUrl;
 
   return (
-    <div className="space-y-1.5">
-      <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{label}</p>
+    <div className="space-y-2">
+      <p className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/70">{label}</p>
       {displayUrl ? (
-        <div className="relative group rounded-lg overflow-hidden border border-border">
-          <img src={displayUrl} alt={label} className="w-full h-28 sm:h-32 object-cover" />
-          <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button size="sm" variant="secondary" onClick={() => inputRef.current?.click()} disabled={uploading} className="h-8 text-xs">
-              <Camera className="h-3 w-3 mr-1" /> Vervangen
+        <div className="relative group rounded-xl overflow-hidden border border-border/60 bg-muted/20">
+          <img src={displayUrl} alt={label} className="w-full h-32 sm:h-36 object-cover" />
+          <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="h-9 text-xs font-medium shadow-sm"
+            >
+              <Camera className="h-3.5 w-3.5 mr-1.5" /> Vervangen
             </Button>
             {onRemove && (
-              <Button size="sm" variant="destructive" onClick={onRemove} disabled={uploading} className="h-8 w-8 p-0"><X className="h-3 w-3" /></Button>
+              <Button
+                size="icon"
+                variant="destructive"
+                onClick={onRemove}
+                disabled={uploading}
+                className="h-9 w-9 shadow-sm"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
             )}
           </div>
         </div>
@@ -45,14 +59,22 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className={cn(
-            'w-full h-24 sm:h-28 rounded-lg border-2 border-dashed border-border',
-            'flex flex-col items-center justify-center gap-1.5',
-            'text-muted-foreground/50 hover:border-accent/40 hover:text-accent/70',
-            'transition-all active:scale-[0.99]'
+            'w-full h-28 sm:h-32 rounded-xl',
+            'border border-dashed border-border/60 bg-muted/10',
+            'flex flex-col items-center justify-center gap-2',
+            'text-muted-foreground/40',
+            'hover:border-primary/30 hover:text-primary/50 hover:bg-primary/3',
+            'transition-all duration-150 active:scale-[0.995]'
           )}
         >
-          <ImageIcon className="h-5 w-5" />
-          <span className="text-[10px] font-medium">{uploading ? 'Uploaden…' : 'Foto uploaden'}</span>
+          {uploading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <ImageIcon className="h-5 w-5" />
+          )}
+          <span className="text-[11px] font-medium">
+            {uploading ? 'Uploaden…' : 'Tik om foto te maken'}
+          </span>
         </button>
       )}
       <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />

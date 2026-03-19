@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StickyActionBarProps {
@@ -19,20 +19,35 @@ export function StickyActionBar({
 }: StickyActionBarProps) {
   return (
     <div className={cn(
-      'sticky bottom-0 z-20 bg-background/95 backdrop-blur-sm border-t border-border',
-      'px-4 py-3 -mx-4 mt-6',
+      'sticky bottom-0 z-20',
+      'bg-background/80 backdrop-blur-md',
+      'border-t border-border/60',
+      'px-4 py-3 -mx-1 sm:-mx-4 mt-8',
       'flex items-center gap-3',
       showPrev ? 'justify-between' : 'justify-end',
       className
     )}>
       {showPrev && onPrev && (
-        <Button variant="ghost" size="sm" onClick={onPrev} className="min-h-[44px] px-4">
-          <ChevronLeft className="h-4 w-4 mr-1" /> {prevLabel}
+        <Button
+          variant="ghost"
+          onClick={onPrev}
+          className="h-11 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1.5" />
+          {prevLabel}
         </Button>
       )}
       {onNext && (
-        <Button size="sm" onClick={onNext} disabled={nextDisabled || nextLoading} className="min-h-[44px] px-5">
-          {nextLoading ? 'Bezig…' : nextLabel} <ChevronRight className="h-4 w-4 ml-1" />
+        <Button
+          onClick={onNext}
+          disabled={nextDisabled || nextLoading}
+          className="h-11 px-6 text-[13px] font-semibold shadow-sm"
+        >
+          {nextLoading ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : null}
+          {nextLoading ? 'Bezig…' : nextLabel}
+          {!nextLoading && <ChevronRight className="h-4 w-4 ml-1.5" />}
         </Button>
       )}
     </div>

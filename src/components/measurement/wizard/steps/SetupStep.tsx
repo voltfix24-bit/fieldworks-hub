@@ -29,53 +29,70 @@ export function SetupStep({
   clients, technicians, equipment,
 }: SetupStepProps) {
   return (
-    <div className="space-y-4">
+    <div>
       <WizardStepHeader title="Meetopstelling" subtitle="Stel de basisgegevens in voor deze meetsessie" />
 
-      <div className="space-y-4">
-        <div>
-          <Label className="text-sm font-medium">Meetdatum</Label>
-          <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-11 text-sm mt-1" />
-        </div>
+      <div className="space-y-5">
+        <FieldGroup label="Meetdatum">
+          <Input
+            type="date"
+            value={measurementDate}
+            onChange={e => setMeasurementDate(e.target.value)}
+            className="h-11 text-[13px]"
+          />
+        </FieldGroup>
 
-        <div>
-          <Label className="text-sm font-medium">Opdrachtgever</Label>
+        <FieldGroup label="Opdrachtgever">
           <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
-            <SelectTrigger className="h-11 text-sm mt-1"><SelectValue placeholder="Selecteer opdrachtgever" /></SelectTrigger>
+            <SelectTrigger className="h-11 text-[13px]"><SelectValue placeholder="Selecteer opdrachtgever" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="none">— Geen selectie —</SelectItem>
               {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FieldGroup>
 
-        <div>
-          <Label className="text-sm font-medium">Monteur</Label>
+        <FieldGroup label="Monteur">
           <Select value={selectedTechnician || 'none'} onValueChange={v => setSelectedTechnician(v === 'none' ? '' : v)}>
-            <SelectTrigger className="h-11 text-sm mt-1"><SelectValue placeholder="Selecteer monteur" /></SelectTrigger>
+            <SelectTrigger className="h-11 text-[13px]"><SelectValue placeholder="Selecteer monteur" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="none">— Geen selectie —</SelectItem>
               {technicians.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FieldGroup>
 
-        <div>
-          <Label className="text-sm font-medium">Apparatuur</Label>
+        <FieldGroup label="Apparatuur">
           <Select value={selectedEquipment || 'none'} onValueChange={v => setSelectedEquipment(v === 'none' ? '' : v)}>
-            <SelectTrigger className="h-11 text-sm mt-1"><SelectValue placeholder="Selecteer apparatuur" /></SelectTrigger>
+            <SelectTrigger className="h-11 text-[13px]"><SelectValue placeholder="Selecteer apparatuur" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="none">— Geen selectie —</SelectItem>
               {equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}{e.is_default ? ' ★' : ''}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FieldGroup>
 
-        <div>
-          <Label className="text-sm font-medium">Notities <span className="text-muted-foreground font-normal">(optioneel)</span></Label>
-          <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="text-sm min-h-[80px] mt-1" placeholder="Meetnotities…" />
-        </div>
+        <FieldGroup label="Notities" optional>
+          <Textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            className="text-[13px] min-h-[80px]"
+            placeholder="Meetnotities…"
+          />
+        </FieldGroup>
       </div>
+    </div>
+  );
+}
+
+function FieldGroup({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
+        {label}
+        {optional && <span className="font-normal normal-case tracking-normal ml-1.5 text-muted-foreground/50">(optioneel)</span>}
+      </Label>
+      {children}
     </div>
   );
 }

@@ -9,7 +9,7 @@ interface SketchStepProps {
 
 export function SketchStep({ projectId, tenantId, sessionId }: SketchStepProps) {
   return (
-    <div className="space-y-4">
+    <div>
       <WizardStepHeader
         title="Schets & Bijlagen"
         subtitle="Upload optioneel een schets, foto of ander bestand"

@@ -109,11 +109,10 @@ export default function MeasurementWorkspace() {
       setSelectedTechnician(session.technician_id || '');
       setSelectedEquipment(session.equipment_id || '');
       setNotes(session.measurement_notes || '');
-      // If session already exists, skip to a later step
       if (electrodes.length > 0) {
-        setStep(3); // go to measurements
+        setStep(3);
       } else {
-        setStep(1); // go to electrode
+        setStep(1);
       }
     } else if (project) {
       setMeasurementDate(project.planned_date || new Date().toISOString().split('T')[0]);
@@ -121,7 +120,7 @@ export default function MeasurementWorkspace() {
       setSelectedTechnician(project.technician_id || '');
       setSelectedEquipment(project.equipment_id || '');
     }
-  }, [session?.id, project?.id]); // Only run when session/project IDs change
+  }, [session?.id, project?.id]);
 
   // Sync active electrode
   useEffect(() => {
@@ -188,7 +187,6 @@ export default function MeasurementWorkspace() {
     } else {
       sessionData = await createSession.mutateAsync({ ...payload, tenant_id: tenantId, project_id: id });
     }
-    // Auto-create first electrode
     if (electrodes.length === 0 && sessionData) {
       const newElectrode = await createElectrode.mutateAsync({
         tenant_id: tenantId, project_id: id,
@@ -210,7 +208,6 @@ export default function MeasurementWorkspace() {
         notes: electrodeNotes || null,
       });
     }
-    // Auto-create first pen if none exists
     if (pens.length === 0 && activeElectrode) {
       const newPen = await createPen.mutateAsync({
         tenant_id: tenantId, project_id: activeElectrode.project_id,
@@ -276,7 +273,6 @@ export default function MeasurementWorkspace() {
     } finally { setUploading(false); }
   };
 
-  // Next action handlers
   const handleAddNewPen = async () => {
     if (!activeElectrode) return;
     const newPen = await createPen.mutateAsync({
@@ -289,7 +285,7 @@ export default function MeasurementWorkspace() {
     setPenCode(`P${pens.length + 1}`);
     setPenLabel('');
     setPenNotes('');
-    setStep(2); // Go to pen step
+    setStep(2);
   };
 
   const handleAddNewElectrode = async () => {
@@ -305,14 +301,18 @@ export default function MeasurementWorkspace() {
     setIsCoupled(false);
     setTargetValue('');
     setElectrodeNotes('');
-    setStep(1); // Go to electrode step
+    setStep(1);
   };
 
   // Loading
   if (projectLoading || sessionLoading) return (
-    <div className="flex justify-center py-16"><GroundingLoader /></div>
+    <div className="flex justify-center py-20"><GroundingLoader /></div>
   );
-  if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
+  if (!project) return (
+    <div className="text-center py-16">
+      <p className="text-[13px] text-muted-foreground">Project niet gevonden</p>
+    </div>
+  );
 
   // Readiness
   const hasSession = !!session;
@@ -336,35 +336,47 @@ export default function MeasurementWorkspace() {
   ];
 
   const techName = technicians.find((t: any) => t.id === selectedTechnician)?.full_name;
-  const equipName = equipment.find((e: any) => e.id === selectedEquipment)?.device_name;
 
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto px-1">
-      {/* Back + header */}
-      <div className="flex items-center gap-2 mb-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${id}`)} className="h-9 px-2 text-muted-foreground">
+    <div className="animate-fade-in max-w-2xl mx-auto px-1 sm:px-4">
+      {/* ─── Project context header ─── */}
+      <div className="flex items-center gap-3 mb-4 pt-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(`/projects/${id}`)}
+          className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold text-foreground truncate flex items-center gap-1.5">
-            <GroundingIcon size={16} className="text-primary shrink-0" />
+          <h1 className="text-[15px] font-semibold text-foreground truncate flex items-center gap-2 tracking-tight">
+            <GroundingIcon size={15} className="text-primary shrink-0" />
             {project.project_name}
           </h1>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] text-muted-foreground font-mono">{project.project_number}</span>
-            {measurementDate && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{measurementDate}</span>}
-            {techName && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><User className="h-2.5 w-2.5" />{techName}</span>}
+          <div className="flex items-center gap-3 mt-0.5">
+            <span className="text-[11px] text-muted-foreground font-mono tracking-wide">{project.project_number}</span>
+            {measurementDate && (
+              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <Calendar className="h-3 w-3 opacity-50" />{measurementDate}
+              </span>
+            )}
+            {techName && (
+              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <User className="h-3 w-3 opacity-50" />{techName}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Step indicator */}
-      <div className="mb-4 -mx-1">
+      {/* ─── Step indicator ─── */}
+      <div className="mb-5 -mx-1 sm:mx-0">
         <WizardStepIndicator steps={WIZARD_STEPS} currentStep={step} />
       </div>
 
-      {/* Step content */}
-      <div className="min-h-[50vh]">
+      {/* ─── Step content ─── */}
+      <div className="min-h-[50vh] wizard-step-enter" key={step}>
         {step === 0 && (
           <SetupStep
             measurementDate={measurementDate} setMeasurementDate={setMeasurementDate}
@@ -438,7 +450,7 @@ export default function MeasurementWorkspace() {
         )}
       </div>
 
-      {/* Sticky action bar */}
+      {/* ─── Sticky action bar ─── */}
       {step !== 5 && (
         <StickyActionBar
           showPrev={step > 0}
