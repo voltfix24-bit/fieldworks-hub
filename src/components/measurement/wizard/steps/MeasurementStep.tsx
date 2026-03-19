@@ -1,9 +1,9 @@
-import { useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { WizardStepHeader } from '../WizardStepHeader';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { Input } from '@/components/ui/input';
 import { GroundingIcon } from '../../GroundingIcon';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 
@@ -27,39 +27,58 @@ export function MeasurementStep({
   const hasTarget = electrode.target_value != null;
   const targetMet = hasTarget && electrode.ra_value != null && electrode.ra_value <= electrode.target_value;
 
-  return (
-    <div className="space-y-5">
-      <WizardStepHeader
-        title={`Metingen — ${electrode.electrode_code}`}
-        subtitle={`${pens.length} ${pens.length === 1 ? 'pen' : 'pennen'} · Voer weerstandswaarden in per diepte`}
-      />
+  // Track which pen is expanded — default to last pen
+  const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
 
-      {/* ─── RA / RV insight block ─── */}
-      <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-9 h-9 rounded-lg bg-primary/6 flex items-center justify-center shrink-0">
-            <GroundingIcon size={16} className="text-primary" />
-          </div>
+  // Auto-expand the latest pen when pens change
+  useEffect(() => {
+    if (pens.length > 0) {
+      setExpandedPenId(pens[pens.length - 1].id);
+    }
+  }, [pens.length]);
+
+  const lastPen = pens[pens.length - 1];
+
+  return (
+    <div className="space-y-4 pb-24">
+      {/* ─── Active context heading ─── */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+          <GroundingIcon size={18} className="text-primary" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-[16px] font-bold text-foreground tracking-tight leading-tight">
+            {electrode.electrode_code} / {expandedPenId ? pens.find((p: any) => p.id === expandedPenId)?.pen_code || 'P1' : 'P1'}
+          </h2>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {pens.length} {pens.length === 1 ? 'pen' : 'pennen'} · Voer weerstandswaarden in per diepte
+          </p>
+        </div>
+      </div>
+
+      {/* ─── RA insight block ─── */}
+      <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
+        <div className="flex items-center gap-3 px-3.5 py-2.5">
           <div className="flex-1 min-w-0">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold block">RA-waarde</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold block">RA-waarde</span>
             <div className="flex items-baseline gap-2 mt-0.5">
               <span className={cn(
-                'text-lg font-bold tabular-nums leading-none',
-                electrode.ra_value != null ? 'text-primary' : 'text-muted-foreground/30'
+                'text-[17px] font-bold tabular-nums leading-none',
+                electrode.ra_value != null ? 'text-primary' : 'text-muted-foreground/25'
               )}>
                 {electrode.ra_value != null ? `${Number(electrode.ra_value).toFixed(2)} Ω` : '—'}
               </span>
               {electrode.ra_value != null && (
-                <span className="text-[11px] text-muted-foreground">laagst gemeten</span>
+                <span className="text-[10px] text-muted-foreground/60">laagst gemeten</span>
               )}
             </div>
           </div>
           {hasTarget && (
             <div className={cn(
-              'text-right shrink-0 px-3 py-1.5 rounded-lg',
+              'text-right shrink-0 px-2.5 py-1 rounded-lg',
               targetMet ? 'bg-[hsl(var(--status-completed)/0.08)]' : 'bg-muted/30'
             )}>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium block">Doel</span>
+              <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-medium block">Doel</span>
               <span className={cn(
                 'text-[13px] font-semibold tabular-nums',
                 targetMet ? 'text-[hsl(var(--status-completed))]' : 'text-muted-foreground'
@@ -69,50 +88,70 @@ export function MeasurementStep({
             </div>
           )}
         </div>
-
-        {showRv && (
-          <div className="flex items-center gap-3 px-4 py-3 border-t border-border/40 bg-muted/10">
-            <div className="w-9" />
-            <div className="flex-1 space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold block">RV-waarde</span>
-              <Input
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                value={electrode.rv_value ?? ''}
-                onChange={e => onUpdateElectrode({ rv_value: e.target.value ? parseFloat(e.target.value) : null })}
-                placeholder="Ω"
-                className="h-10 text-[13px] font-semibold max-w-[180px]"
-              />
-              <span className="text-[10px] text-muted-foreground/50">In te vullen bij gekoppelde pennen</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ─── Per-pen measurement sections ─── */}
-      {pens.map((pen: any) => (
-        <PenMeasurementSection
-          key={pen.id}
-          pen={pen}
-          electrode={electrode}
-          tenantId={tenantId}
-          recalcRa={recalcRa}
-          depthsInitRef={depthsInitRef}
-          initializeDepthRows={initializeDepthRows}
-        />
-      ))}
+      {pens.map((pen: any, idx: number) => {
+        const isExpanded = expandedPenId === pen.id;
+        const isLast = idx === pens.length - 1;
+
+        return (
+          <div key={pen.id}>
+            {isExpanded ? (
+              <PenMeasurementSection
+                pen={pen}
+                electrode={electrode}
+                tenantId={tenantId}
+                recalcRa={recalcRa}
+                depthsInitRef={depthsInitRef}
+                initializeDepthRows={initializeDepthRows}
+              />
+            ) : (
+              <CollapsedPenSummary
+                pen={pen}
+                electrode={electrode}
+                tenantId={tenantId}
+                depthsInitRef={depthsInitRef}
+                initializeDepthRows={initializeDepthRows}
+                onExpand={() => setExpandedPenId(pen.id)}
+              />
+            )}
+
+            {/* RV block: directly below the last pen */}
+            {isLast && showRv && (
+              <div className="mt-3 rounded-xl border border-border/50 bg-muted/5 px-3.5 py-3 flex items-start gap-3 transition-all duration-200">
+                <div className="w-8 h-8 rounded-lg bg-primary/6 flex items-center justify-center shrink-0 mt-0.5">
+                  <GroundingIcon size={14} className="text-primary/70" />
+                </div>
+                <div className="flex-1 space-y-1.5 min-w-0">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold block">RV-waarde</span>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    value={electrode.rv_value ?? ''}
+                    onChange={e => onUpdateElectrode({ rv_value: e.target.value ? parseFloat(e.target.value) : null })}
+                    placeholder="0.00 Ω"
+                    className="h-10 text-[13px] font-semibold max-w-[160px] tabular-nums"
+                  />
+                  <span className="text-[10px] text-muted-foreground/40">Weerstand van gekoppelde pennen</span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {/* ─── Add pen action ─── */}
       <button
         onClick={onAddPen}
         className={cn(
-          'w-full flex items-center justify-center gap-2.5 py-4 mt-2',
-          'rounded-xl border border-dashed border-primary/30',
-          'text-[13px] font-semibold text-primary',
-          'hover:bg-primary/4 hover:border-primary/50',
-          'transition-all duration-150 active:scale-[0.995]',
-          'min-h-[52px]'
+          'w-full flex items-center justify-center gap-2 py-3.5',
+          'rounded-xl border border-dashed border-primary/25',
+          'text-[13px] font-semibold text-primary/80',
+          'hover:bg-primary/4 hover:border-primary/40 hover:text-primary',
+          'transition-all duration-200 active:scale-[0.997]',
+          'min-h-[48px]'
         )}
       >
         <Plus className="h-4 w-4" />
@@ -122,7 +161,54 @@ export function MeasurementStep({
   );
 }
 
-/** Individual pen section with its own depth measurements */
+/** Collapsed summary for a previous pen */
+function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initializeDepthRows, onExpand }: {
+  pen: any;
+  electrode: any;
+  tenantId: string;
+  depthsInitRef: React.MutableRefObject<Set<string>>;
+  initializeDepthRows: (penId: string, pen: any) => void;
+  onExpand: () => void;
+}) {
+  const { data: measurements = [] } = useDepthMeasurements(pen.id);
+
+  // Init if needed
+  if (measurements.length === 0 && !depthsInitRef.current.has(pen.id)) {
+    initializeDepthRows(pen.id, pen);
+  }
+
+  const filledCount = measurements.filter((m: any) => m.resistance_value > 0).length;
+  const validValues = measurements.filter((m: any) => m.resistance_value > 0).map((m: any) => m.resistance_value);
+  const lowest = validValues.length > 0 ? Math.min(...validValues) : null;
+
+  return (
+    <button
+      onClick={onExpand}
+      className={cn(
+        'w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border/40',
+        'bg-muted/5 hover:bg-muted/15 transition-all duration-200',
+        'text-left active:scale-[0.998]'
+      )}
+    >
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+      <div className="w-7 h-7 rounded-md bg-muted/30 flex items-center justify-center shrink-0">
+        <span className="text-[9px] font-bold text-muted-foreground/70 tabular-nums">{pen.pen_code}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-[12px] font-semibold text-foreground/80">{pen.pen_code}</span>
+        {pen.label && <span className="text-[11px] text-muted-foreground/50 ml-1.5">· {pen.label}</span>}
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        <span className="text-[11px] text-muted-foreground/50 tabular-nums">{filledCount}/{measurements.length}</span>
+        {lowest != null && (
+          <span className="text-[11px] font-semibold text-primary/70 tabular-nums">{lowest.toFixed(2)} Ω</span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+/** Expanded pen section with depth measurements */
 function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitRef, initializeDepthRows }: {
   pen: any;
   electrode: any;
@@ -136,7 +222,6 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
   const updateMeasurement = useUpdateDepthMeasurement();
   const deleteMeasurement = useDeleteDepthMeasurement();
 
-  // Init depths for this pen if needed
   if (measurements.length === 0 && !depthsInitRef.current.has(pen.id)) {
     initializeDepthRows(pen.id, pen);
   }
@@ -166,14 +251,15 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
   };
 
   return (
-    <div id={`pen-section-${pen.id}`} className="space-y-3">
+    <div id={`pen-section-${pen.id}`} className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Pen header */}
-      <div className="flex items-center gap-2 px-1">
-        <div className="w-6 h-6 rounded-md bg-muted/40 flex items-center justify-center">
-          <span className="text-[10px] font-bold text-muted-foreground">{pen.pen_code}</span>
+      <div className="flex items-center gap-2.5 px-1 py-1">
+        <ChevronDown className="h-3.5 w-3.5 text-primary/50 shrink-0" />
+        <div className="w-7 h-7 rounded-md bg-primary/8 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-primary tabular-nums">{pen.pen_code}</span>
         </div>
         <span className="text-[12px] font-semibold text-foreground">{pen.pen_code}</span>
-        {pen.label && <span className="text-[11px] text-muted-foreground">· {pen.label}</span>}
+        {pen.label && <span className="text-[11px] text-muted-foreground/50">· {pen.label}</span>}
       </div>
 
       <DepthMeasurementTable

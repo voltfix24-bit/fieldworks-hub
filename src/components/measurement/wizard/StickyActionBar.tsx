@@ -19,11 +19,12 @@ export function StickyActionBar({
 }: StickyActionBarProps) {
   return (
     <div className={cn(
-      'sticky bottom-0 z-20',
-      'bg-background/80 backdrop-blur-md',
-      'border-t border-border/60',
-      'px-4 py-3 -mx-1 sm:-mx-4 mt-8',
+      'sticky bottom-0 z-30',
+      'bg-background/85 backdrop-blur-xl',
+      'border-t border-border/50',
+      'px-4 py-3 -mx-1 sm:-mx-4 mt-6',
       'flex items-center gap-3',
+      'safe-bottom',
       showPrev ? 'justify-between' : 'justify-end',
       className
     )}>
@@ -33,7 +34,7 @@ export function StickyActionBar({
           onClick={onPrev}
           className="h-11 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-4 w-4 mr-1.5" />
+          <ChevronLeft className="h-4 w-4 mr-1" />
           {prevLabel}
         </Button>
       )}
@@ -41,13 +42,13 @@ export function StickyActionBar({
         <Button
           onClick={onNext}
           disabled={nextDisabled || nextLoading}
-          className="h-11 px-6 text-[13px] font-semibold shadow-sm"
+          className="h-11 px-6 text-[13px] font-semibold shadow-sm min-w-[120px]"
         >
           {nextLoading ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : null}
           {nextLoading ? 'Bezig…' : nextLabel}
-          {!nextLoading && <ChevronRight className="h-4 w-4 ml-1.5" />}
+          {!nextLoading && <ChevronRight className="h-4 w-4 ml-1" />}
         </Button>
       )}
     </div>

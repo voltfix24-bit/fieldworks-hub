@@ -36,14 +36,14 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   return (
     <div className="space-y-0">
       {/* Column header */}
-      <div className="grid grid-cols-[56px_1fr_40px] sm:grid-cols-[72px_1fr_40px] gap-2 px-2 pb-2">
-        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/70">Diepte</span>
-        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/70">Weerstand</span>
+      <div className="grid grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-2 pb-1.5">
+        <span className="text-[9px] uppercase tracking-widest font-semibold text-muted-foreground/50">Diepte</span>
+        <span className="text-[9px] uppercase tracking-widest font-semibold text-muted-foreground/50">Weerstand</span>
         <span />
       </div>
 
       {/* Measurement rows */}
-      <div className="space-y-px rounded-xl overflow-hidden border border-border/60 bg-card">
+      <div className="rounded-xl overflow-hidden border border-border/50 bg-card">
         {measurements.map((m, idx) => (
           <DepthRowComponent
             key={m.id}
@@ -62,43 +62,35 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
         onClick={() => onAdd(nextDepth, 0)}
         disabled={disabled}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-3 mt-3',
-          'rounded-xl border border-dashed border-border/60',
-          'text-[13px] font-medium text-muted-foreground',
+          'w-full flex items-center justify-center gap-2 py-2.5 mt-2',
+          'rounded-lg border border-dashed border-border/50',
+          'text-[12px] font-medium text-muted-foreground/70',
           'hover:border-primary/30 hover:text-primary hover:bg-primary/3',
-          'transition-all duration-150 active:scale-[0.995]',
+          'transition-all duration-150 active:scale-[0.997]',
           'disabled:opacity-40 disabled:cursor-not-allowed',
-          'min-h-[48px]'
+          'min-h-[40px]'
         )}
       >
-        <ArrowDown className="h-3.5 w-3.5" />
+        <ArrowDown className="h-3 w-3" />
         Dieper slaan — {nextDepth}m
       </button>
 
-      {/* RA summary */}
+      {/* Inline RA summary */}
       {lowestIsValid && (
-        <div className="flex items-center gap-3 mt-4 px-4 py-3 rounded-xl bg-[hsl(var(--measure-lowest)/0.06)] border border-[hsl(var(--measure-lowest)/0.12)]">
-          <div className="w-9 h-9 rounded-lg bg-[hsl(var(--measure-lowest)/0.1)] flex items-center justify-center shrink-0">
-            <Gauge className="h-4 w-4 text-[hsl(var(--measure-lowest))]" />
-          </div>
-          <div className="flex-1">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">RA basis</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-base font-bold text-[hsl(var(--measure-lowest))] tabular-nums">{lowestResistance!.toFixed(2)} Ω</span>
-              <span className="text-[11px] text-muted-foreground">laagst gemeten</span>
-            </div>
-          </div>
-          <span className="text-[11px] text-muted-foreground tabular-nums">{filledCount}/{measurements.length}</span>
+        <div className="flex items-center gap-2.5 mt-2.5 px-3 py-2 rounded-lg bg-[hsl(var(--measure-lowest)/0.05)] border border-[hsl(var(--measure-lowest)/0.1)]">
+          <Gauge className="h-3.5 w-3.5 text-[hsl(var(--measure-lowest))] shrink-0" />
+          <span className="text-[11px] font-semibold text-[hsl(var(--measure-lowest))] tabular-nums">{lowestResistance!.toFixed(2)} Ω</span>
+          <span className="text-[10px] text-muted-foreground/50">laagst</span>
+          <span className="ml-auto text-[10px] text-muted-foreground/40 tabular-nums">{filledCount}/{measurements.length}</span>
         </div>
       )}
 
       {measurements.length === 0 && (
-        <div className="text-center py-10">
-          <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-            <GroundingIcon size={20} className="text-muted-foreground/30" />
+        <div className="text-center py-8">
+          <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-2">
+            <GroundingIcon size={16} className="text-muted-foreground/25" />
           </div>
-          <p className="text-[13px] font-medium text-muted-foreground">Nog geen metingen</p>
-          <p className="text-[11px] text-muted-foreground/60 mt-1">Weerstandswaarden worden per diepte ingevoerd</p>
+          <p className="text-[12px] font-medium text-muted-foreground/60">Nog geen metingen</p>
         </div>
       )}
     </div>
@@ -133,12 +125,12 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
 
   return (
     <div className={cn(
-      'grid grid-cols-[56px_1fr_40px] sm:grid-cols-[72px_1fr_40px] gap-2 items-center px-2 transition-colors duration-100 depth-row-enter',
+      'grid grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 items-center px-1.5 transition-colors duration-100',
       isEven ? 'bg-card' : 'bg-[hsl(var(--measure-surface))]',
       isLowest && 'bg-[hsl(var(--measure-lowest)/0.06)]',
     )}>
       {/* Depth */}
-      <div className="relative py-1.5">
+      <div className="relative py-1">
         <Input
           type="number"
           inputMode="decimal"
@@ -147,17 +139,17 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
           onChange={e => setDepth(e.target.value)}
           onBlur={handleBlur}
           className={cn(
-            'h-11 text-[13px] pr-6 text-center border-0 bg-transparent shadow-none',
+            'h-9 text-[12px] pr-5 text-center border-0 bg-transparent shadow-none',
             'focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:bg-card',
             isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]'
           )}
           disabled={disabled}
         />
-        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/50 pointer-events-none font-medium">m</span>
+        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/40 pointer-events-none font-medium">m</span>
       </div>
 
       {/* Resistance */}
-      <div className="relative py-1.5">
+      <div className="relative py-1">
         <Input
           type="number"
           inputMode="decimal"
@@ -167,14 +159,14 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
           onBlur={handleBlur}
           placeholder="—"
           className={cn(
-            'h-11 text-[13px] pr-6 border-0 bg-transparent shadow-none',
+            'h-9 text-[12px] pr-5 border-0 bg-transparent shadow-none',
             'focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:bg-card',
             isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]',
-            hasValue ? 'text-foreground' : 'text-muted-foreground/40'
+            hasValue ? 'text-foreground' : 'text-muted-foreground/30'
           )}
           disabled={disabled}
         />
-        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/50 pointer-events-none font-medium">Ω</span>
+        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/40 pointer-events-none font-medium">Ω</span>
       </div>
 
       {/* Delete */}
@@ -183,9 +175,9 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         variant="ghost"
         onClick={() => row.id && onDelete(row.id)}
         disabled={disabled}
-        className="h-9 w-9 text-muted-foreground/25 hover:text-destructive hover:bg-destructive/8 transition-colors"
+        className="h-8 w-8 text-muted-foreground/20 hover:text-destructive hover:bg-destructive/8 transition-colors"
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-3 w-3" />
       </Button>
     </div>
   );
