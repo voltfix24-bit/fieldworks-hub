@@ -72,6 +72,9 @@ const App = () => (
 
                 <Route path="/reports" element={<ReportsPage />} />
 
+                <Route path="/planning" element={<PlanningPage />} />
+                <Route path="/meer" element={<MeerPage />} />
+
                 <Route path="/settings" element={<SettingsIndex />} />
                 <Route path="/settings/branding" element={<BrandingSettings />} />
                 <Route path="/settings/profile" element={<UserProfile />} />
