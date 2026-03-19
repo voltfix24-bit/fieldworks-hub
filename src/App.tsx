@@ -27,6 +27,8 @@ import SettingsIndex from "@/pages/settings/SettingsIndex";
 import BrandingSettings from "@/pages/settings/BrandingSettings";
 import UserProfile from "@/pages/settings/UserProfile";
 import TenantOverview from "@/pages/settings/TenantOverview";
+import PlanningPage from "@/pages/modules/PlanningPage";
+import MeerPage from "@/pages/modules/MeerPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +71,9 @@ const App = () => (
                 <Route path="/equipment/:id/edit" element={<EquipmentForm />} />
 
                 <Route path="/reports" element={<ReportsPage />} />
+
+                <Route path="/planning" element={<PlanningPage />} />
+                <Route path="/meer" element={<MeerPage />} />
 
                 <Route path="/settings" element={<SettingsIndex />} />
                 <Route path="/settings/branding" element={<BrandingSettings />} />
