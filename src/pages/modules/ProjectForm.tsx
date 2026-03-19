@@ -138,30 +138,30 @@ export default function ProjectForm() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Klant</Label>
-              <Select value={form.client_id} onValueChange={v => set('client_id', v)}>
+              <Select value={form.client_id || "none"} onValueChange={v => set('client_id', v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecteer klant..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
+                  <SelectItem value="none">Geen</SelectItem>
                   {activeClients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Monteur</Label>
-              <Select value={form.technician_id} onValueChange={v => set('technician_id', v)}>
+              <Select value={form.technician_id || "none"} onValueChange={v => set('technician_id', v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecteer monteur..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
+                  <SelectItem value="none">Geen</SelectItem>
                   {activeTechs.map(t => <SelectItem key={t.id} value={t.id}>{t.full_name} {t.employee_code ? `(${t.employee_code})` : ''}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Apparatuur</Label>
-              <Select value={form.equipment_id} onValueChange={v => set('equipment_id', v)}>
+              <Select value={form.equipment_id || "none"} onValueChange={v => set('equipment_id', v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecteer apparatuur..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
+                  <SelectItem value="none">Geen</SelectItem>
                   {activeEquip.map(e => <SelectItem key={e.id} value={e.id}>{e.device_name} {e.is_default ? '⭐' : ''} — {e.brand} {e.model}</SelectItem>)}
                 </SelectContent>
               </Select>
