@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import ProjectsPage from "@/pages/modules/ProjectsPage";
 import ProjectForm from "@/pages/modules/ProjectForm";
 import ProjectDetail from "@/pages/modules/ProjectDetail";
+import MeasurementWorkspace from "@/pages/modules/MeasurementWorkspace";
 import ClientsPage from "@/pages/modules/ClientsPage";
 import ClientForm from "@/pages/modules/ClientForm";
 import ClientDetail from "@/pages/modules/ClientDetail";
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/projects/new" element={<ProjectForm />} />
                 <Route path="/projects/:id" element={<ProjectDetail />} />
                 <Route path="/projects/:id/edit" element={<ProjectForm />} />
+                <Route path="/projects/:id/measurements" element={<MeasurementWorkspace />} />
 
                 <Route path="/clients" element={<ClientsPage />} />
                 <Route path="/clients/new" element={<ClientForm />} />

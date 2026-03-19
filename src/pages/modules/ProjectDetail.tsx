@@ -5,8 +5,12 @@ import { InfoRow } from '@/components/ui/info-row';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProject, useUpdateProject } from '@/hooks/use-projects';
+import { useMeasurementSession } from '@/hooks/use-measurement-sessions';
+import { useElectrodes } from '@/hooks/use-electrodes';
+import { useAttachments } from '@/hooks/use-attachments';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Pencil, CheckCircle2, RotateCcw, MapPin, Users, HardHat, Wrench, FileText, Ruler, Paperclip, ClipboardList, Lock } from 'lucide-react';
+import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
+import { ArrowLeft, Pencil, CheckCircle2, RotateCcw, MapPin, Users, HardHat, Wrench, FileText, Ruler, Paperclip, ClipboardList, Play } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -14,6 +18,9 @@ export default function ProjectDetail() {
   const { toast } = useToast();
   const { data: project, isLoading, refetch } = useProject(id);
   const updateMut = useUpdateProject();
+  const { data: session } = useMeasurementSession(id);
+  const { data: electrodes = [] } = useElectrodes(session?.id);
+  const { data: attachments = [] } = useAttachments(id);
 
   if (isLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project not found</p>;
@@ -36,6 +43,22 @@ export default function ProjectDetail() {
   const tech = project.technicians as any;
   const equip = project.equipment as any;
 
+  const hasSession = !!session;
+  const hasElectrodes = electrodes.length > 0;
+  const hasClient = !!(session?.client_id || project.client_id);
+  const hasTechnician = !!(session?.technician_id || project.technician_id);
+  const hasEquipment = !!(session?.equipment_id || project.equipment_id);
+  const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
+
+  const readinessItems = [
+    { label: 'Measurement setup completed', met: hasSession },
+    { label: 'Client assigned', met: hasClient },
+    { label: 'Technician assigned', met: hasTechnician },
+    { label: 'Equipment assigned', met: hasEquipment },
+    { label: 'At least one electrode', met: hasElectrodes },
+    { label: 'Sketch / photo added', met: hasSketches, optional: true },
+  ];
+
   return (
     <div className="animate-fade-in">
       <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => navigate('/projects')}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects</Button></div>
@@ -56,8 +79,11 @@ export default function ProjectDetail() {
           <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/edit`)}>
             <Pencil className="mr-2 h-4 w-4" /> Edit
           </Button>
+          <Button size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
+            <Play className="mr-2 h-4 w-4" /> Measurements
+          </Button>
           {project.status === 'planned' ? (
-            <Button size="sm" onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending}>
+            <Button variant="outline" size="sm" onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending}>
               <CheckCircle2 className="mr-2 h-4 w-4" /> Mark Completed
             </Button>
           ) : (
@@ -138,30 +164,30 @@ export default function ProjectDetail() {
         </DetailCard>
       )}
 
-      {/* Next Steps / Future Modules */}
-      <div className="mt-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Workflow Steps</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { title: 'Measurement Setup', description: 'Configure measurement parameters', icon: Ruler },
-            { title: 'Measurements', description: 'Enter field measurement data', icon: ClipboardList },
-            { title: 'Attachments', description: 'Add sketches and photos', icon: Paperclip },
-            { title: 'Report', description: 'Generate branded PDF report', icon: FileText },
-          ].map((step, i) => (
-            <Card key={step.title} className="border-dashed opacity-60">
-              <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center mb-2">
-                  <step.icon className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground mb-0.5">{step.title}</p>
-                <p className="text-xs text-muted-foreground">{step.description}</p>
-                <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                  <Lock className="h-3 w-3" /> Coming soon
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      {/* Measurement summary + Readiness */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Measurement summary */}
+        <DetailCard
+          title="Measurement Setup"
+          icon={<Ruler className="h-4 w-4 text-muted-foreground" />}
+          action={
+            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
+              {hasSession ? 'Open Workspace' : 'Start Measurements'}
+            </Button>
+          }
+        >
+          {hasSession ? (
+            <>
+              <InfoRow label="Date" value={session?.measurement_date} />
+              <InfoRow label="Electrodes" value={String(electrodes.length)} />
+              {session?.measurement_notes && <InfoRow label="Notes" value={session.measurement_notes} />}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">No measurement session yet. Start measuring to configure the setup.</p>
+          )}
+        </DetailCard>
+
+        <ReadinessChecklist items={readinessItems} />
       </div>
     </div>
   );
