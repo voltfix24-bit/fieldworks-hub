@@ -171,7 +171,7 @@ export default function MeasurementWorkspace() {
       tenant_id: tenantId, project_id: activeElectrode.project_id,
       measurement_session_id: activeElectrode.measurement_session_id,
       electrode_id: activeElectrode.id,
-      pen_code: `P${pens.length + 1}`, sort_order: pens.length,
+      pen_code: `Pen ${pens.length + 1}`, sort_order: pens.length,
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
