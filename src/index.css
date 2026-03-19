@@ -251,3 +251,29 @@
     padding: 4mm 20mm;
   }
 }
+
+/* Safe area bottom for sticky bars on mobile */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Animate-in utilities */
+.animate-in {
+  animation-fill-mode: both;
+  animation-duration: 300ms;
+}
+.fade-in {
+  animation-name: fadeIn;
+}
+.slide-in-from-bottom-2 {
+  --tw-translate-y: 0.5rem;
+  animation-name: slideInFromBottom;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideInFromBottom {
+  from { opacity: 0; transform: translateY(var(--tw-translate-y, 0.5rem)); }
+  to { opacity: 1; transform: translateY(0); }
+}
