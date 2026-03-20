@@ -270,10 +270,13 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
 
   return (
     <div id={`pen-section-${pen.id}`} className="space-y-0.5 animate-in fade-in duration-150">
-      <div className={cn('flex items-center gap-2', compact ? 'px-1 py-1' : 'px-0.5 py-1')}>
-        <ChevronDown className="h-3 w-3 text-[hsl(var(--tenant-primary,var(--primary))/0.4)] shrink-0" />
-        <span className={cn('font-bold text-foreground', compact ? 'text-[12px]' : 'text-[13px]')}>{pen.pen_code}</span>
-        {pen.label && <span className="text-[10px] text-muted-foreground/50 font-medium">· {pen.label}</span>}
+      <div className={cn(
+        'flex items-center gap-2 border-b border-[hsl(var(--tenant-primary,var(--primary))/0.1)]',
+        compact ? 'px-1 py-1.5 mb-0.5' : 'px-0.5 py-1.5 mb-1'
+      )}>
+        <ChevronDown className="h-3.5 w-3.5 text-[hsl(var(--tenant-primary,var(--primary))/0.5)] shrink-0" />
+        <span className={cn('font-bold text-foreground', compact ? 'text-[13px]' : 'text-[14px]')}>{pen.pen_code}</span>
+        {pen.label && <span className="text-[10px] text-muted-foreground/60 font-medium">· {pen.label}</span>}
       </div>
 
       <DepthMeasurementTable

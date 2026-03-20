@@ -208,17 +208,17 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0',
-              compact ? 'h-7 text-[12px] pr-4 px-1' : 'h-9 text-[13px] pr-5 px-2',
+              compact ? 'h-8 text-[13px] pr-4 px-1' : 'h-9 text-[14px] pr-5 px-2',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
-              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/25',
-              'placeholder:text-muted-foreground/20'
+              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
+              'placeholder:text-muted-foreground/25'
             )}
             disabled={disabled}
           />
           <span className={cn(
-            'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/35 pointer-events-none font-semibold',
-            compact ? 'text-[8px]' : 'text-[9px]'
+            'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
+            compact ? 'text-[9px]' : 'text-[9px]'
           )}>Ω</span>
         </div>
 
