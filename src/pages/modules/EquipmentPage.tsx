@@ -62,7 +62,7 @@ export default function EquipmentPage() {
                   <td className="px-4 py-3 text-sm">
                     <span className={isCalibrationWarning(eq.next_calibration_date) ? 'text-destructive font-medium flex items-center gap-1' : 'text-muted-foreground'}>
                       {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}
-                      {eq.next_calibration_date || '—'}
+                      {formatNlDate(eq.next_calibration_date)}
                     </span>
                   </td>
                   <td className="px-4 py-3"><StatusBadge status={eq.is_active ? 'active' : 'inactive'} /></td>
