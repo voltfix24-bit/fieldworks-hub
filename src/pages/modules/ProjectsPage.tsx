@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProjects } from '@/hooks/use-projects';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { formatNlDate } from '@/lib/nl-date';
+import { formatNlDate, formatNlDateCompact } from '@/lib/nl-date';
 import { cn } from '@/lib/utils';
 import { FolderKanban, Plus, Calendar, MapPin, User, ChevronRight } from 'lucide-react';
 
