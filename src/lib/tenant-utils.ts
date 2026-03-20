@@ -26,9 +26,24 @@ export function hexToHsl(hex: string): string {
 
 export function applyTenantBranding(primaryColor: string, secondaryColor: string, accentColor: string) {
   const root = document.documentElement;
-  root.style.setProperty('--tenant-primary', hexToHsl(primaryColor));
-  root.style.setProperty('--tenant-secondary', hexToHsl(secondaryColor));
-  root.style.setProperty('--tenant-accent', hexToHsl(accentColor));
+  const primaryHsl = hexToHsl(primaryColor);
+  const secondaryHsl = hexToHsl(secondaryColor);
+  const accentHsl = hexToHsl(accentColor);
+
+  // Tenant-specific variables
+  root.style.setProperty('--tenant-primary', primaryHsl);
+  root.style.setProperty('--tenant-secondary', secondaryHsl);
+  root.style.setProperty('--tenant-accent', accentHsl);
+
+  // Override core design system so all components (buttons, rings, etc.) use tenant branding
+  root.style.setProperty('--primary', primaryHsl);
+  root.style.setProperty('--ring', primaryHsl);
+  root.style.setProperty('--secondary', secondaryHsl);
+  root.style.setProperty('--accent', accentHsl);
+
+  // Sidebar theming
+  root.style.setProperty('--sidebar-primary', primaryHsl);
+  root.style.setProperty('--sidebar-ring', primaryHsl);
 }
 
 export function clearTenantBranding() {
