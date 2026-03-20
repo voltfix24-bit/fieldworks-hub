@@ -136,13 +136,13 @@ export function MeasurementStep({
 
             {isLast && showRv && (
               <div className={cn(
-                'mt-1.5 rounded-lg border border-border/30 bg-muted/5 flex items-center gap-2.5 transition-all duration-200',
+                'mt-1.5 rounded-lg border border-border/30 bg-muted/8 flex items-center gap-2.5 transition-all duration-200',
                 compact ? 'px-3 py-2' : 'px-3.5 py-3'
               )}>
-                <GroundingIcon size={12} className="text-muted-foreground/50 shrink-0" />
+                <GroundingIcon size={13} className="text-muted-foreground/60 shrink-0" />
                 <div className="flex flex-col gap-0 shrink-0">
-                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-bold leading-none">RV</span>
-                  <span className="text-[8px] text-muted-foreground/35 font-medium leading-tight">gekoppeld</span>
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold leading-none">RV</span>
+                  <span className="text-[8px] text-muted-foreground/45 font-medium leading-tight">gekoppeld</span>
                 </div>
                 <input
                   type="text"
@@ -152,12 +152,12 @@ export function MeasurementStep({
                   onBlur={handleRvBlur}
                   placeholder="0,00"
                   className={cn(
-                    'bg-transparent outline-none border-0 font-bold tabular-nums max-w-[100px]',
-                    compact ? 'h-7 text-[13px]' : 'h-9 text-[14px]',
-                    'placeholder:text-muted-foreground/25'
+                    'bg-transparent outline-none border-0 font-bold tabular-nums max-w-[100px] text-foreground',
+                    compact ? 'h-7 text-[14px]' : 'h-9 text-[15px]',
+                    'placeholder:text-muted-foreground/30'
                   )}
                 />
-                <span className="text-[9px] text-muted-foreground/35 font-semibold">Ω</span>
+                <span className="text-[10px] text-muted-foreground/45 font-semibold">Ω</span>
               </div>
             )}
           </div>
