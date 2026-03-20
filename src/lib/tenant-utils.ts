@@ -48,9 +48,12 @@ export function applyTenantBranding(primaryColor: string, secondaryColor: string
 
 export function clearTenantBranding() {
   const root = document.documentElement;
-  root.style.removeProperty('--tenant-primary');
-  root.style.removeProperty('--tenant-secondary');
-  root.style.removeProperty('--tenant-accent');
+  const props = [
+    '--tenant-primary', '--tenant-secondary', '--tenant-accent',
+    '--primary', '--ring', '--secondary', '--accent',
+    '--sidebar-primary', '--sidebar-ring',
+  ];
+  props.forEach(p => root.style.removeProperty(p));
 }
 
 export const DEFAULT_BRANDING = {
