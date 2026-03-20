@@ -184,14 +184,14 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         <div className="relative">
           <span className={cn(
             'block text-center tabular-nums font-semibold leading-none',
-            compact ? 'text-[11px] py-2' : 'text-[13px] py-2.5',
-            isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/70' : 'text-muted-foreground/40'
+            compact ? 'text-[12px] py-2' : 'text-[13px] py-2.5',
+            isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/80' : 'text-muted-foreground/45'
           )}>
             {row.depth_meters}
           </span>
           <span className={cn(
-            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/35 pointer-events-none font-semibold',
-            compact ? 'text-[8px]' : 'text-[9px]'
+            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
+            compact ? 'text-[9px]' : 'text-[9px]'
           )}>m</span>
         </div>
 
