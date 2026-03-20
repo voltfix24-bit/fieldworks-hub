@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Trash2, ArrowDown, Gauge } from 'lucide-react';
+import { Trash2, ArrowDown, Gauge, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GroundingIcon } from './GroundingIcon';
 import { parseNlNumber, parseNlNumberOrZero, formatNlNumber } from '@/lib/nl-number';
@@ -23,6 +22,26 @@ interface DepthMeasurementTableProps {
 
 const PRESET_DEPTHS = new Set([3, 6, 9, 12, 15, 18, 21, 24, 27, 30]);
 
+/**
+ * Check if a row's resistance is higher than the previous filled row.
+ * Returns the set of row IDs that violate the "deeper = lower resistance" rule.
+ */
+export function getDepthProgressionWarnings(measurements: DepthRow[]): Set<string> {
+  const warnings = new Set<string>();
+  const sorted = [...measurements].sort((a, b) => a.depth_meters - b.depth_meters);
+  let prevValue: number | null = null;
+
+  for (const m of sorted) {
+    if (m.resistance_value > 0) {
+      if (prevValue !== null && m.resistance_value > prevValue) {
+        if (m.id) warnings.add(m.id);
+      }
+      prevValue = m.resistance_value;
+    }
+  }
+  return warnings;
+}
+
 export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete, disabled, compact }: DepthMeasurementTableProps) {
   const lowestResistance = measurements.length > 0
     ? Math.min(...measurements.filter(m => m.resistance_value > 0).map(m => m.resistance_value))
@@ -35,6 +54,9 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   const nextDepth = maxDepth > 0 ? maxDepth + 3 : 33;
 
   const filledCount = measurements.filter(m => m.resistance_value > 0).length;
+
+  // Depth progression validation
+  const warningIds = getDepthProgressionWarnings(measurements);
 
   return (
     <div className="space-y-0">
@@ -51,6 +73,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
             isEven={idx % 2 === 0}
             compact={compact}
             isPreset={PRESET_DEPTHS.has(m.depth_meters)}
+            hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
           />
         ))}
       </div>
@@ -60,16 +83,16 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
         onClick={() => onAdd(nextDepth, 0)}
         disabled={disabled}
         className={cn(
-          'w-full flex items-center justify-center gap-1',
+          'w-full flex items-center justify-center gap-1.5',
           'rounded-md border border-dashed border-border/30',
-          'font-medium text-muted-foreground/50',
+          'font-semibold text-muted-foreground/50',
           'hover:border-primary/30 hover:text-primary hover:bg-primary/3',
           'transition-all duration-150 active:scale-[0.997]',
           'disabled:opacity-40 disabled:cursor-not-allowed',
-          compact ? 'py-1 text-[9px] mt-0.5 min-h-[26px]' : 'py-2.5 text-[12px] mt-1.5 min-h-[40px]'
+          compact ? 'py-1.5 text-[10px] mt-0.5 min-h-[30px]' : 'py-2.5 text-[12px] mt-1.5 min-h-[40px]'
         )}
       >
-        <ArrowDown className={cn(compact ? 'h-2 w-2' : 'h-3 w-3')} />
+        <ArrowDown className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
         Dieper — {nextDepth}m
       </button>
 
@@ -77,12 +100,27 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
       {lowestIsValid && (
         <div className={cn(
           'flex items-center gap-2 rounded-md bg-[hsl(var(--measure-lowest)/0.04)] border border-[hsl(var(--measure-lowest)/0.08)]',
-          compact ? 'px-2 py-1 mt-1' : 'px-3 py-2 mt-1.5'
+          compact ? 'px-2.5 py-1.5 mt-1' : 'px-3 py-2 mt-1.5'
         )}>
-          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5')} />
-          <span className={cn('font-semibold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[10px]' : 'text-[11px]')}>{formatNlNumber(lowestResistance!)} Ω</span>
-          <span className={cn('text-muted-foreground/40', compact ? 'text-[8px]' : 'text-[10px]')}>laagst</span>
-          <span className={cn('ml-auto text-muted-foreground/35 tabular-nums', compact ? 'text-[8px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
+          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+          <span className={cn('font-bold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[11px]' : 'text-[11px]')}>{formatNlNumber(lowestResistance!)} Ω</span>
+          <span className={cn('text-muted-foreground/50 font-medium', compact ? 'text-[9px]' : 'text-[10px]')}>laagst</span>
+          <span className={cn('ml-auto text-muted-foreground/40 tabular-nums font-medium', compact ? 'text-[9px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
+        </div>
+      )}
+
+      {/* Progression warnings summary */}
+      {warningIds.size > 0 && (
+        <div className={cn(
+          'flex items-start gap-2 rounded-md bg-amber-500/5 border border-amber-500/15',
+          compact ? 'px-2.5 py-1.5 mt-1' : 'px-3 py-2 mt-1.5'
+        )}>
+          <AlertTriangle className={cn('text-amber-500 shrink-0 mt-0.5', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+          <span className={cn('text-amber-700 dark:text-amber-400 font-medium leading-snug', compact ? 'text-[10px]' : 'text-[11px]')}>
+            {warningIds.size === 1
+              ? 'Let op: 1 waarde is hoger dan de vorige diepte'
+              : `Let op: ${warningIds.size} waarden zijn hoger dan de vorige diepte`}
+          </span>
         </div>
       )}
 
@@ -91,14 +129,14 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
           <div className="w-8 h-8 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-1.5">
             <GroundingIcon size={14} className="text-muted-foreground/25" />
           </div>
-          <p className="text-[11px] font-medium text-muted-foreground/60">Nog geen metingen</p>
+          <p className="text-[12px] font-medium text-muted-foreground/60">Nog geen metingen</p>
         </div>
       )}
     </div>
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, hasProgressionWarning }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
@@ -107,6 +145,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   isEven?: boolean;
   compact?: boolean;
   isPreset?: boolean;
+  hasProgressionWarning?: boolean;
 }) {
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
   const [isFocused, setIsFocused] = useState(false);
@@ -128,72 +167,94 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
 
   return (
     <div className={cn(
-      'grid items-center transition-colors duration-75',
-      compact
-        ? 'grid-cols-[38px_1fr_24px] gap-0 px-0.5'
-        : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-1.5',
-      isEven ? 'bg-card' : 'bg-muted/20',
-      isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
-      isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.12)]',
+      'transition-colors duration-75',
+      hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
     )}>
-      {/* Depth — static display */}
-      <div className="relative">
-        <span className={cn(
-          'block text-center tabular-nums font-medium leading-none',
-          compact ? 'text-[10px] py-1.5' : 'text-[12px] py-2.5',
-          isLowest ? 'text-[hsl(var(--measure-lowest))] font-semibold' : 'text-muted-foreground/60'
-        )}>
-          {row.depth_meters}
-        </span>
-        <span className={cn(
-          'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/30 pointer-events-none font-medium',
-          compact ? 'text-[7px]' : 'text-[9px]'
-        )}>m</span>
-      </div>
+      <div className={cn(
+        'grid items-center',
+        compact
+          ? 'grid-cols-[40px_1fr_24px] gap-0 px-1'
+          : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-1.5',
+        isEven ? 'bg-card' : 'bg-muted/20',
+        isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
+        hasProgressionWarning && 'bg-amber-500/[0.04]',
+        isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
+      )}>
+        {/* Depth — static display */}
+        <div className="relative">
+          <span className={cn(
+            'block text-center tabular-nums font-semibold leading-none',
+            compact ? 'text-[11px] py-2' : 'text-[13px] py-2.5',
+            isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/70' : 'text-muted-foreground/40'
+          )}>
+            {row.depth_meters}
+          </span>
+          <span className={cn(
+            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/35 pointer-events-none font-semibold',
+            compact ? 'text-[8px]' : 'text-[9px]'
+          )}>m</span>
+        </div>
 
-      {/* Resistance — the main input, accepts comma */}
-      <div className="relative">
-        <input
-          ref={resistanceRef}
-          type="text"
-          inputMode="decimal"
-          value={resistance}
-          onChange={e => setResistance(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={handleBlur}
-          placeholder="—"
-          className={cn(
-            'w-full bg-transparent outline-none border-0',
-            compact ? 'h-6 text-[11px] pr-3 px-1' : 'h-9 text-[12px] pr-5 px-2',
-            isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]',
-            hasValue ? 'text-foreground font-medium' : 'text-muted-foreground/25',
-            'placeholder:text-muted-foreground/20'
-          )}
-          disabled={disabled}
-        />
-        <span className={cn(
-          'absolute right-0.5 top-1/2 -translate-y-1/2 text-muted-foreground/30 pointer-events-none font-medium',
-          compact ? 'text-[7px]' : 'text-[9px]'
-        )}>Ω</span>
-      </div>
-
-      {/* Delete — only for non-preset rows */}
-      <div className="flex justify-center">
-        {!isPreset ? (
-          <button
-            onClick={() => row.id && onDelete(row.id)}
-            disabled={disabled}
+        {/* Resistance — the main input, accepts comma */}
+        <div className="relative">
+          <input
+            ref={resistanceRef}
+            type="text"
+            inputMode="decimal"
+            value={resistance}
+            onChange={e => setResistance(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={handleBlur}
+            placeholder="—"
             className={cn(
-              'text-muted-foreground/15 hover:text-destructive transition-colors rounded',
-              compact ? 'h-5 w-5 flex items-center justify-center' : 'h-8 w-8 flex items-center justify-center'
+              'w-full bg-transparent outline-none border-0',
+              compact ? 'h-7 text-[12px] pr-4 px-1' : 'h-9 text-[13px] pr-5 px-2',
+              isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
+              hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
+              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/25',
+              'placeholder:text-muted-foreground/20'
             )}
-          >
-            <Trash2 className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
-          </button>
-        ) : (
-          <span className={cn(compact ? 'w-5' : 'w-8')} />
-        )}
+            disabled={disabled}
+          />
+          <span className={cn(
+            'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/35 pointer-events-none font-semibold',
+            compact ? 'text-[8px]' : 'text-[9px]'
+          )}>Ω</span>
+        </div>
+
+        {/* Delete / warning icon */}
+        <div className="flex justify-center">
+          {hasProgressionWarning ? (
+            <AlertTriangle className={cn('text-amber-500', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+          ) : !isPreset ? (
+            <button
+              onClick={() => row.id && onDelete(row.id)}
+              disabled={disabled}
+              className={cn(
+                'text-muted-foreground/15 hover:text-destructive transition-colors rounded',
+                compact ? 'h-5 w-5 flex items-center justify-center' : 'h-8 w-8 flex items-center justify-center'
+              )}
+            >
+              <Trash2 className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
+            </button>
+          ) : (
+            <span className={cn(compact ? 'w-5' : 'w-8')} />
+          )}
+        </div>
       </div>
+
+      {/* Inline warning text */}
+      {hasProgressionWarning && (
+        <div className={cn(
+          'flex items-center gap-1.5 bg-amber-500/[0.04]',
+          compact ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-[10px]',
+          isEven ? '' : ''
+        )}>
+          <span className="text-amber-600 dark:text-amber-400 font-medium">
+            Let op: waarde is hoger dan vorige diepte
+          </span>
+        </div>
+      )}
     </div>
   );
 }

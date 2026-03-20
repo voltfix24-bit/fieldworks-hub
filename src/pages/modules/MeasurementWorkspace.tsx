@@ -5,7 +5,7 @@ import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
 import { useElectrodes, useCreateElectrode, useUpdateElectrode } from '@/hooks/use-electrodes';
 import { usePens, useCreatePen, useUpdatePen } from '@/hooks/use-pens';
-import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
+import { useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { useClients } from '@/hooks/use-clients';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
@@ -62,6 +62,9 @@ export default function MeasurementWorkspace() {
   const [activePenId, setActivePenId] = useState<string | null>(null);
   const activePen = pens.find((p: any) => p.id === activePenId);
 
+  // Warning count from MeasurementStep (reported via callback)
+  const [warningCount, setWarningCount] = useState(0);
+
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
 
@@ -80,6 +83,7 @@ export default function MeasurementWorkspace() {
 
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
+  const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // Sync form fields from session or project
@@ -247,22 +251,22 @@ export default function MeasurementWorkspace() {
   if (isMobile) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
-        {/* ─── Ultra-compact mobile header ─── */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-border/20 bg-background shrink-0">
+        {/* ─── Compact mobile header ─── */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/20 bg-background shrink-0">
           <button
             onClick={() => navigate(`/projects/${id}`)}
-            className="h-7 w-7 -ml-1 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md active:scale-95 transition-all"
+            className="h-8 w-8 -ml-1 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md active:scale-95 transition-all"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4.5 w-4.5" />
           </button>
-          <div className="flex-1 min-w-0 flex items-center gap-1.5">
-            <GroundingIcon size={11} className="text-[hsl(var(--tenant-primary,var(--primary)))] shrink-0" />
-            <span className="text-[12px] font-semibold text-foreground truncate leading-none">
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            <GroundingIcon size={13} className="text-[hsl(var(--tenant-primary,var(--primary)))] shrink-0" />
+            <span className="text-[13px] font-bold text-foreground truncate leading-none">
               {project.project_name}
             </span>
           </div>
           {activeElectrode && !showSketch && (
-            <span className="text-[9px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] px-1.5 py-0.5 rounded shrink-0 leading-none">
+            <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] px-2 py-1 rounded-md shrink-0 leading-none">
               {activeElectrode.electrode_code}
               {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
             </span>
@@ -271,11 +275,11 @@ export default function MeasurementWorkspace() {
 
         {/* ─── Step indicator ─── */}
         {!showSketch && (
-          <div className="px-3 py-1 border-b border-border/15 bg-muted/5 shrink-0">
+          <div className="px-3 py-1.5 border-b border-border/15 bg-muted/5 shrink-0">
             <WizardStepIndicator
               steps={WIZARD_STEPS}
               currentStep={displayStep}
-              onStepClick={(i) => { setShowSketch(false); setStep(i); }}
+              onStepClick={(i) => { setShowSketch(false); setStep(i); setProgressionWarningDismissed(false); }}
               compact
             />
           </div>
@@ -314,6 +318,7 @@ export default function MeasurementWorkspace() {
                 recalcRa={recalcRa}
                 depthsInitRef={depthsInitRef}
                 initializeDepthRows={initializeDepthRows}
+                onWarningCountChange={setWarningCount}
                 compact
               />
             )}
@@ -352,11 +357,24 @@ export default function MeasurementWorkspace() {
         {step < 2 && !showSketch && (
           <StickyActionBar
             showPrev={step > 0}
-            onPrev={() => setStep(Math.max(0, step - 1))}
-            onNext={() => setStep(step + 1)}
+            onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
+            onNext={() => {
+              if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
+                return;
+              }
+              setProgressionWarningDismissed(false);
+              setStep(step + 1);
+            }}
             nextLabel="Volgende"
             nextLoading={false}
             compact
+            warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
+              ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
+              : undefined}
+            onConfirmWarning={() => {
+              setProgressionWarningDismissed(true);
+              setStep(step + 1);
+            }}
           />
         )}
 
@@ -515,31 +533,31 @@ function MobileContextBlock({
     <div className="mb-2 rounded-lg border border-border/20 bg-muted/5 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-2.5 py-1.5 active:bg-muted/10 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 active:bg-muted/10 transition-colors"
       >
         <div className="min-w-0 flex-1">
-          <span className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/40">Meetgegevens</span>
-          <p className="text-[10px] text-muted-foreground/70 truncate leading-snug mt-0.5">
+          <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Meetgegevens</span>
+          <p className="text-[11px] text-muted-foreground/70 truncate leading-snug mt-0.5 font-medium">
             {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Geen gegevens ingesteld'}
           </p>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground/40 shrink-0 ml-2">
-          <span className="text-[8px] font-medium">Aanpassen</span>
-          {open ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
+        <div className="flex items-center gap-1 text-muted-foreground/50 shrink-0 ml-2">
+          <span className="text-[9px] font-semibold">Aanpassen</span>
+          {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </div>
       </button>
 
       {open && (
-        <div className="px-2.5 pb-2.5 pt-1 space-y-2 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Datum</Label>
-              <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-7 text-[10px]" />
+        <div className="px-3 pb-3 pt-1.5 space-y-2.5 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Datum</Label>
+              <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-8 text-[11px]" />
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Apparaat</Label>
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Apparaat</Label>
               <Select value={selectedEquipment || 'none'} onValueChange={v => setSelectedEquipment(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   {equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}</SelectItem>)}
@@ -547,21 +565,21 @@ function MobileContextBlock({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Opdrachtgever</Label>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Opdrachtgever</Label>
               <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Monteur</Label>
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Monteur</Label>
               <Select value={selectedTechnician || 'none'} onValueChange={v => setSelectedTechnician(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   {technicians.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
@@ -572,7 +590,7 @@ function MobileContextBlock({
           <button
             onClick={onSave}
             disabled={saving}
-            className="w-full h-7 rounded-md bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[10px] font-semibold active:scale-[0.97] transition-all disabled:opacity-50"
+            className="w-full h-8 rounded-md bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[11px] font-bold active:scale-[0.97] transition-all disabled:opacity-50"
           >
             {saving ? 'Opslaan…' : 'Opslaan'}
           </button>
