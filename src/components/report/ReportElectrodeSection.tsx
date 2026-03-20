@@ -10,7 +10,6 @@ interface ReportElectrodeSectionProps {
 }
 
 export function ReportElectrodeSection({ electrode, index, totalElectrodes }: ReportElectrodeSectionProps) {
-  // Only show pens that have at least one filled measurement
   const activePens = electrode.pens.filter(
     pen => pen.measurements.some(m => m.resistance_value > 0)
   );
@@ -20,59 +19,77 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
   const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
 
   return (
-    <div className="report-electrode mb-8 page-break-inside-avoid">
+    <div className="report-electrode mb-10 page-break-inside-avoid">
+      {/* Elektrode header */}
       {showElectrodeHeader && (
-        <div className="flex items-baseline gap-3 mb-3 pb-2 border-b border-border">
+        <div className="mb-4 pb-2 border-b border-foreground/15">
           <h3 className="text-sm font-bold text-foreground">
             Elektrode {electrode.electrode_code || index + 1}
+            {electrode.label && (
+              <span className="font-normal text-muted-foreground ml-2">— {electrode.label}</span>
+            )}
           </h3>
-          {electrode.label && <span className="text-xs text-muted-foreground">{electrode.label}</span>}
         </div>
       )}
 
-      {/* RA + RV summary row */}
-      <div className="flex flex-wrap gap-x-6 gap-y-1 mb-4">
+      {/* RA + RV summary */}
+      <div className="flex flex-wrap gap-x-8 gap-y-2 mb-5">
         {electrode.ra_value != null && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xs text-muted-foreground">RA-waarde:</span>
-            <span className="text-sm font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.ra_value))} Ω</span>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mb-0.5">RA-waarde</p>
+            <p className="text-base font-bold text-foreground tabular-nums">
+              {formatNlNumber(Number(electrode.ra_value))} Ω
+            </p>
           </div>
         )}
         {hasRv && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xs text-muted-foreground">RV-waarde:</span>
-            <span className="text-sm font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.rv_value))} Ω</span>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mb-0.5">RV-waarde</p>
+            <p className="text-base font-bold text-foreground tabular-nums">
+              {formatNlNumber(Number(electrode.rv_value))} Ω
+            </p>
           </div>
         )}
         {electrode.target_value != null && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xs text-muted-foreground">Doelwaarde:</span>
-            <span className="text-sm font-medium text-foreground tabular-nums">≤ {formatNlNumber(Number(electrode.target_value))} Ω</span>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mb-0.5">Doelwaarde</p>
+            <p className="text-base font-medium text-foreground tabular-nums">
+              ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            </p>
           </div>
         )}
       </div>
 
-      {electrode.notes && <p className="text-xs text-muted-foreground mb-4 italic">{electrode.notes}</p>}
+      {electrode.notes && (
+        <p className="text-[11px] text-muted-foreground mb-4 italic leading-relaxed">{electrode.notes}</p>
+      )}
 
+      {/* Pens */}
       {activePens.map((pen) => {
         const hasPhotos = !!pen.display_photo_url || !!pen.overview_photo_url;
         const showPenHeader = activePens.length > 1;
 
         return (
-          <div key={pen.id} className={`mb-5 page-break-inside-avoid ${showPenHeader ? 'ml-3 pl-4 border-l-2 border-border/60' : ''}`}>
+          <div key={pen.id} className="mb-6 page-break-inside-avoid">
             {showPenHeader && (
-              <div className="mb-1.5">
-                <p className="text-xs font-semibold text-foreground">
+              <div className="mb-2">
+                <p className="text-[12px] font-bold text-foreground">
                   Pen {pen.pen_code}
-                  {pen.label && <span className="font-normal text-muted-foreground ml-1.5">— {pen.label}</span>}
+                  {pen.label && (
+                    <span className="font-normal text-muted-foreground ml-1.5">— {pen.label}</span>
+                  )}
                 </p>
                 {pen.pen_depth_meters != null && (
-                  <p className="text-[10px] text-muted-foreground">Pendiepte: {formatNlNumber(Number(pen.pen_depth_meters), 1)} m</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Pendiepte: {formatNlNumber(Number(pen.pen_depth_meters), 1)} m
+                  </p>
                 )}
               </div>
             )}
 
-            {pen.notes && <p className="text-[10px] text-muted-foreground mb-1 italic">{pen.notes}</p>}
+            {pen.notes && (
+              <p className="text-[10px] text-muted-foreground mb-1.5 italic">{pen.notes}</p>
+            )}
 
             <ReportMeasurementTable measurements={pen.measurements} />
 

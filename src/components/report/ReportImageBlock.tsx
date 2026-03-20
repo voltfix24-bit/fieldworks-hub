@@ -7,11 +7,15 @@ export function ReportImageBlock({ images }: ReportImageBlockProps) {
   if (validImages.length === 0) return null;
 
   return (
-    <div className={`grid gap-4 mt-3 ${validImages.length === 1 ? 'grid-cols-1 max-w-xs' : 'grid-cols-2'}`}>
+    <div className={`grid gap-4 mt-4 mb-2 ${validImages.length === 1 ? 'grid-cols-1 max-w-[240px]' : 'grid-cols-2 max-w-md'}`}>
       {validImages.map((img, i) => (
         <figure key={i} className="page-break-inside-avoid">
-          <img src={img.url} alt={img.label} className="w-full h-auto max-h-52 object-cover rounded border border-border print:max-h-40" />
-          <figcaption className="text-[10px] text-muted-foreground mt-1">{img.label}</figcaption>
+          <img
+            src={img.url}
+            alt={img.label}
+            className="w-full h-auto max-h-48 object-cover border border-foreground/10 print:max-h-36"
+          />
+          <figcaption className="text-[10px] text-muted-foreground mt-1.5 italic">{img.label}</figcaption>
         </figure>
       ))}
     </div>

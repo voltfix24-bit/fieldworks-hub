@@ -12,13 +12,18 @@ export function ReportSummaryStats({ stats }: ReportSummaryStatsProps) {
   if (items.length === 0) return null;
 
   return (
-    <div className="report-summary mb-6 flex gap-6">
-      {items.map(s => (
-        <div key={s.label} className="text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{s.value}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
-        </div>
-      ))}
+    <div className="report-summary mb-8 page-break-inside-avoid">
+      <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-3 pb-2 border-b border-foreground/15">
+        Samenvatting
+      </h2>
+      <div className="flex gap-8">
+        {items.map(s => (
+          <div key={s.label}>
+            <p className="text-[12px] text-muted-foreground">{s.label}</p>
+            <p className="text-base font-bold text-foreground tabular-nums">{s.value}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

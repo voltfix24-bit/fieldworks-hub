@@ -193,39 +193,60 @@
 
 /* Print stylesheet for reports */
 @media print {
-  body {
+  /* Reset everything */
+  html, body {
     background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    font-size: 11pt !important;
   }
 
+  /* Hide all app chrome */
   [data-sidebar],
   header,
   nav,
-  .print\:hidden {
+  .print\:hidden,
+  .mobile-tab-bar,
+  [role="banner"],
+  [role="navigation"] {
     display: none !important;
   }
 
-  main {
+  /* Reset layout containers */
+  main,
+  #root,
+  #root > div {
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
+    min-height: auto !important;
+    background: white !important;
   }
 
-  .report-page {
+  /* A4 page setup */
+  @page {
+    size: A4 portrait;
+    margin: 18mm 20mm 22mm 20mm;
+  }
+
+  /* Suppress browser-generated headers/footers (title, URL, date) */
+  @page { margin-top: 18mm; margin-bottom: 22mm; }
+
+  /* Document container */
+  .report-document {
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    padding: 15mm 20mm !important;
-    max-width: none !important;
+    padding: 0 !important;
     margin: 0 !important;
+    max-width: none !important;
+    background: white !important;
+    width: 100% !important;
   }
 
-  @page {
-    size: A4;
-    margin: 10mm;
-  }
-
+  /* Page break control */
   .report-electrode,
   .report-info-section,
   .report-summary {
@@ -238,17 +259,29 @@
     break-inside: avoid;
   }
 
+  h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
   img {
     max-width: 100% !important;
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
+  /* Report footer as repeated element */
   .report-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 4mm 20mm;
+    margin-top: 40pt;
+  }
+
+  /* Prevent empty last page */
+  .report-document::after {
+    content: '';
+    display: block;
+    height: 0;
+    clear: both;
+    page-break-after: avoid;
   }
 }
 

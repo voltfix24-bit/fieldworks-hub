@@ -50,6 +50,15 @@ export default function ProjectReport() {
   const location = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
 
+  const handlePrint = () => {
+    // Set document title to project name for cleaner PDF filename
+    const originalTitle = document.title;
+    document.title = `Rapport ${project.project_number} - ${project.project_name}`;
+    window.print();
+    // Restore after a short delay
+    setTimeout(() => { document.title = originalTitle; }, 1000);
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Toolbar — hidden in print */}
@@ -62,8 +71,8 @@ export default function ProjectReport() {
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
           {isReady && (
-            <Button size="sm" onClick={() => window.print()}>
-              <Printer className="mr-2 h-4 w-4" /> Afdrukken / PDF
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" /> Rapport exporteren
             </Button>
           )}
         </div>
@@ -83,10 +92,12 @@ export default function ProjectReport() {
         </div>
       )}
 
-      {/* Report document */}
+      {/* ─── REPORT DOCUMENT ─── */}
       <div className={`${!isReady ? 'print:hidden opacity-30 pointer-events-none' : ''}`}>
-        <div className="report-page max-w-[210mm] mx-auto bg-white px-10 py-10 sm:px-14 sm:py-12 shadow-sm border border-border rounded print:shadow-none print:border-0 print:rounded-none print:p-0 print:max-w-none">
+        <div className="report-document max-w-[210mm] mx-auto bg-white px-12 py-12 sm:px-16 sm:py-14 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
+             style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
+          {/* 1. Header */}
           <ReportHeader
             projectName={project.project_name}
             projectNumber={project.project_number}
@@ -94,18 +105,16 @@ export default function ProjectReport() {
             location={location}
           />
 
-          {/* Projectgegevens */}
+          {/* 2. Projectgegevens */}
           <ReportInfoSection title="Projectgegevens" rows={[
             { label: 'Projectnummer', value: project.project_number },
             { label: 'Projectnaam', value: project.project_name },
             { label: 'Locatie', value: project.site_name },
             { label: 'Adres', value: location || null },
             { label: 'Meetdatum', value: formatNlDate(session?.measurement_date, 'long') },
-            { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
-            { label: 'Afronddatum', value: formatNlDate(project.completed_date) },
           ]} />
 
-          {/* Opdrachtgever */}
+          {/* 3. Opdrachtgever */}
           {client && (
             <ReportInfoSection title="Opdrachtgever" rows={[
               { label: 'Bedrijf', value: client.company_name },
@@ -116,8 +125,8 @@ export default function ProjectReport() {
             ]} />
           )}
 
-          {/* Monteur + Meetapparatuur side by side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 mb-2">
+          {/* 4. Monteur + Meetapparatuur side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
             {tech && (
               <ReportInfoSection title="Monteur" rows={[
                 { label: 'Naam', value: tech.full_name },
@@ -135,21 +144,23 @@ export default function ProjectReport() {
             )}
           </div>
 
-          {/* Summary counts */}
+          {/* 5. Samenvatting */}
           <ReportSummaryStats stats={stats} />
 
-          {/* Meetnotities — only if present */}
+          {/* 6. Meetnotities — only if present */}
           {session?.measurement_notes && (
-            <div className="mb-6">
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2 pb-1.5 border-b border-border">Opmerkingen</h2>
-              <p className="text-xs text-foreground whitespace-pre-wrap leading-relaxed">{session.measurement_notes}</p>
+            <div className="mb-8 page-break-inside-avoid">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-3 pb-2 border-b border-foreground/15">Opmerkingen</h2>
+              <p className="text-[12px] text-foreground whitespace-pre-wrap leading-relaxed">{session.measurement_notes}</p>
             </div>
           )}
 
-          {/* Meetresultaten */}
+          {/* 7. Meetresultaten */}
           {electrodes.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-4 pb-1.5 border-b border-border">Meetresultaten</h2>
+            <div className="mb-10">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-6 pb-2 border-b-2 border-foreground/20">
+                Meetresultaten
+              </h2>
               {electrodes.map((electrode, i) => (
                 <ReportElectrodeSection
                   key={electrode.id}
@@ -161,29 +172,40 @@ export default function ProjectReport() {
             </div>
           )}
 
-          {/* Schets / bijlagen — only if present */}
+          {/* 8. Situatieschets — only if present */}
           {sketchAttachments.length > 0 && (
-            <div className="mb-8 page-break-inside-avoid">
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-3 pb-1.5 border-b border-border">Situatieschets</h2>
+            <div className="mb-10 page-break-inside-avoid">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-4 pb-2 border-b border-foreground/15">
+                Situatieschets
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {sketchAttachments.map((att: any) => (
                   <figure key={att.id} className="page-break-inside-avoid">
-                    {att.file_url && <img src={att.file_url} alt={att.file_name || 'Schets'} className="w-full h-auto max-h-72 object-contain rounded border border-border print:max-h-56" />}
-                    {att.caption && <figcaption className="text-[10px] text-muted-foreground mt-1">{att.caption}</figcaption>}
+                    {att.file_url && (
+                      <img
+                        src={att.file_url}
+                        alt={att.file_name || 'Schets'}
+                        className="w-full h-auto max-h-64 object-contain border border-foreground/10 print:max-h-48"
+                      />
+                    )}
+                    {att.caption && (
+                      <figcaption className="text-[10px] text-muted-foreground mt-1.5 italic">{att.caption}</figcaption>
+                    )}
                   </figure>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Project notes — only if present */}
+          {/* 9. Projectnotities — only if present */}
           {project.notes && (
-            <div className="mb-6">
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2 pb-1.5 border-b border-border">Projectnotities</h2>
-              <p className="text-xs text-foreground whitespace-pre-wrap leading-relaxed">{project.notes}</p>
+            <div className="mb-8 page-break-inside-avoid">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-3 pb-2 border-b border-foreground/15">Projectnotities</h2>
+              <p className="text-[12px] text-foreground whitespace-pre-wrap leading-relaxed">{project.notes}</p>
             </div>
           )}
 
+          {/* 10. Footer */}
           <ReportFooter />
         </div>
       </div>

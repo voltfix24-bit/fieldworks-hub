@@ -12,15 +12,15 @@ export function ReportFooter() {
   ].filter(Boolean);
 
   return (
-    <footer className="report-footer mt-16 pt-4 border-t border-border">
-      <div className="flex items-end justify-between text-[10px] text-muted-foreground">
+    <footer className="report-footer mt-auto pt-6 border-t border-foreground/10">
+      <div className="flex items-end justify-between text-[9px] text-muted-foreground leading-relaxed">
         <div className="space-y-0.5">
-          <p className="font-medium text-foreground text-[11px]">{company}</p>
+          <p className="font-semibold text-foreground text-[10px]">{company}</p>
           {addressParts && <p>{addressParts}</p>}
-          {contactParts.length > 0 && <p>{contactParts.join(' · ')}</p>}
+          {contactParts.length > 0 && <p>{contactParts.join('  ·  ')}</p>}
         </div>
         {branding?.logo_url && (
-          <img src={branding.logo_url} alt="" className="h-6 w-auto opacity-30 print:opacity-20" />
+          <img src={branding.logo_url} alt="" className="h-5 w-auto opacity-20 print:opacity-15" />
         )}
       </div>
     </footer>
