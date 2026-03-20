@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Zap, Settings2, Trash2, ChevronDown, ChevronUp, Target, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
 
 interface ElectrodeSummaryPanelProps {
   electrode: any;
@@ -18,8 +19,9 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
   const [editCode, setEditCode] = useState(electrode.electrode_code);
   const [editLabel, setEditLabel] = useState(electrode.label || '');
   const [editCoupled, setEditCoupled] = useState(electrode.is_coupled);
-  const [editTarget, setEditTarget] = useState(String(electrode.target_value || ''));
+  const [editTarget, setEditTarget] = useState(electrode.target_value != null ? String(electrode.target_value).replace('.', ',') : '');
   const [editNotes, setEditNotes] = useState(electrode.notes || '');
+  const [rvInput, setRvInput] = useState(electrode.rv_value != null ? String(electrode.rv_value).replace('.', ',') : '');
 
   const showRv = penCount > 1;
   const hasTarget = electrode.target_value != null;
@@ -29,10 +31,17 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
       electrode_code: editCode,
       label: editLabel || null,
       is_coupled: editCoupled,
-      target_value: editTarget ? parseFloat(editTarget) : null,
+      target_value: parseNlNumberOrNull(editTarget),
       notes: editNotes || null,
     });
     setShowSettings(false);
+  };
+
+  const handleRvBlur = () => {
+    const parsed = parseNlNumberOrNull(rvInput);
+    if (parsed !== electrode.rv_value) {
+      onUpdate({ rv_value: parsed });
+    }
   };
 
   return (
@@ -68,24 +77,24 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <MiniStat label="RA-waarde" value={electrode.ra_value != null ? `${Number(electrode.ra_value).toFixed(2)} Ω` : '—'} accent />
+        <MiniStat label="RA-waarde" value={electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'} accent />
         {showRv && (
           <div className="space-y-1">
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">RV-waarde</span>
-            <Input
-              type="number"
+            <input
+              type="text"
               inputMode="decimal"
-              step="0.01"
-              value={electrode.rv_value ?? ''}
-              onChange={e => onUpdate({ rv_value: e.target.value ? parseFloat(e.target.value) : null })}
-              placeholder="Ω"
-              className="h-8 text-sm font-semibold"
+              value={rvInput}
+              onChange={e => setRvInput(e.target.value)}
+              onBlur={handleRvBlur}
+              placeholder="0,00 Ω"
+              className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
             <span className="text-[10px] text-muted-foreground">In te vullen bij meerdere pennen</span>
           </div>
         )}
         {hasTarget && (
-          <MiniStat label="Doelwaarde" value={`${Number(electrode.target_value).toFixed(2)} Ω`} />
+          <MiniStat label="Doelwaarde" value={`${formatNlNumber(Number(electrode.target_value))} Ω`} />
         )}
         {hasTarget && electrode.target_met != null && (
           <div className="space-y-1">
@@ -106,7 +115,17 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
             <div><Label className="text-xs">Label</Label><Input value={editLabel} onChange={e => setEditLabel(e.target.value)} className="h-8 text-sm" placeholder="Optioneel" /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><Label className="text-xs">Doelwaarde (Ω)</Label><Input type="number" inputMode="decimal" value={editTarget} onChange={e => setEditTarget(e.target.value)} className="h-8 text-sm" placeholder="Optioneel" /></div>
+            <div>
+              <Label className="text-xs">Doelwaarde (Ω)</Label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={editTarget}
+                onChange={e => setEditTarget(e.target.value)}
+                className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="Bijv. 2,00"
+              />
+            </div>
             <div className="flex items-center gap-2 pt-5"><Switch checked={editCoupled} onCheckedChange={setEditCoupled} /><Label className="text-xs">Gekoppeld</Label></div>
           </div>
           <div><Label className="text-xs">Notities</Label><Textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} className="text-sm min-h-[60px]" /></div>

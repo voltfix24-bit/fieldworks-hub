@@ -1,3 +1,5 @@
+import { formatNlNumber } from '@/lib/nl-number';
+
 interface ReportMeasurementTableProps {
   measurements: { depth_meters: number; resistance_value: number }[];
   lowestResistance?: number | null;
@@ -21,8 +23,8 @@ export function ReportMeasurementTable({ measurements, lowestResistance }: Repor
           return (
             <tr key={i} className={`border-b border-border/50 ${isLowest ? 'bg-accent/5' : ''}`}>
               <td className="py-1 px-2 text-muted-foreground">{i + 1}</td>
-              <td className={`py-1 px-2 ${isLowest ? 'font-semibold tenant-accent-text' : ''}`}>{Number(m.depth_meters).toFixed(1)}</td>
-              <td className={`py-1 px-2 ${isLowest ? 'font-semibold tenant-accent-text' : ''}`}>{Number(m.resistance_value).toFixed(2)}</td>
+              <td className={`py-1 px-2 ${isLowest ? 'font-semibold tenant-accent-text' : ''}`}>{formatNlNumber(Number(m.depth_meters), 1)}</td>
+              <td className={`py-1 px-2 ${isLowest ? 'font-semibold tenant-accent-text' : ''}`}>{formatNlNumber(Number(m.resistance_value))}</td>
             </tr>
           );
         })}
