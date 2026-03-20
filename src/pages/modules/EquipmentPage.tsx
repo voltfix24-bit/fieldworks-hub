@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEquipmentList } from '@/hooks/use-equipment';
+import { formatNlDate } from '@/lib/nl-date';
 import { Wrench, Plus, AlertTriangle, Star } from 'lucide-react';
 
 function isCalibrationWarning(nextDate: string | null): boolean {
