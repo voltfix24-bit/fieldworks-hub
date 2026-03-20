@@ -221,17 +221,24 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
   );
 }
 
-function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitRef, initializeDepthRows, compact }: {
+function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitRef, initializeDepthRows, onWarningCount, compact }: {
   pen: any; electrode: any; tenantId: string;
   recalcRa: (electrodeId: string, measurements: any[]) => void;
   depthsInitRef: React.MutableRefObject<Set<string>>;
   initializeDepthRows: (penId: string, pen: any) => void;
+  onWarningCount?: (count: number) => void;
   compact?: boolean;
 }) {
   const { data: measurements = [] } = useDepthMeasurements(pen.id);
   const createMeasurement = useCreateDepthMeasurement();
   const updateMeasurement = useUpdateDepthMeasurement();
   const deleteMeasurement = useDeleteDepthMeasurement();
+
+  // Report warning count
+  const warnings = getDepthProgressionWarnings(measurements);
+  useEffect(() => {
+    onWarningCount?.(warnings.size);
+  }, [warnings.size, onWarningCount]);
 
   if (measurements.length === 0 && !depthsInitRef.current.has(pen.id)) {
     initializeDepthRows(pen.id, pen);
