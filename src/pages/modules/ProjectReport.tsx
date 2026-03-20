@@ -126,7 +126,6 @@ export default function ProjectReport() {
             {tech && (
               <ReportInfoSection title="Monteur" rows={[
                 { label: 'Naam', value: tech.full_name },
-                { label: 'Medewerkernr.', value: tech.employee_code },
               ]} />
             )}
             {equip && (
