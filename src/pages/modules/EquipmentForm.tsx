@@ -72,8 +72,8 @@ export default function EquipmentForm() {
 
         <FormSection title="Kalibratie">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Laatste Kalibratie</Label><Input type="date" value={form.calibration_date} onChange={e => set('calibration_date', e.target.value)} /></div>
-            <div className="space-y-2"><Label>Volgende Kalibratie</Label><Input type="date" value={form.next_calibration_date} onChange={e => set('next_calibration_date', e.target.value)} /></div>
+            <div className="space-y-2"><Label>Laatste kalibratie</Label><Input type="date" value={form.calibration_date} onChange={e => set('calibration_date', e.target.value)} /></div>
+            <div className="space-y-2"><Label>Volgende kalibratie</Label><Input type="date" value={form.next_calibration_date} onChange={e => set('next_calibration_date', e.target.value)} /></div>
           </div>
         </FormSection>
 
