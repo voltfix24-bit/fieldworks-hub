@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
+import { formatNlDate } from '@/lib/nl-date';
 import { DetailCard } from '@/components/ui/detail-card';
 import { InfoRow } from '@/components/ui/info-row';
 import { StatusBadge } from '@/components/ui/status-badge';
