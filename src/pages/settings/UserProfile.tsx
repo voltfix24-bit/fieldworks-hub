@@ -37,7 +37,7 @@ export default function UserProfile() {
         <CardHeader><CardTitle className="text-base">Persoonlijke gegevens</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="full-name">Volledige Naam</Label>
+            <Label htmlFor="full-name">Volledige naam</Label>
             <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Uw volledige naam" />
           </div>
           <Button onClick={handleSave} disabled={saving}>{saving ? 'Opslaan...' : 'Wijzigingen Opslaan'}</Button>
