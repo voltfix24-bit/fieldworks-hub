@@ -206,15 +206,15 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
         'w-full flex items-center gap-2.5 rounded-lg border border-border/25',
         'bg-muted/8 hover:bg-muted/20 transition-all duration-150',
         'text-left active:scale-[0.998]',
-        compact ? 'px-3 py-2' : 'px-3.5 py-3'
+        compact ? 'px-3 py-2.5' : 'px-3.5 py-3'
       )}
     >
-      <ChevronRight className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-      <span className={cn('font-bold text-foreground/70 min-w-0 truncate', compact ? 'text-[11px]' : 'text-[12px]')}>{pen.pen_code}</span>
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+      <span className={cn('font-bold text-foreground/80 min-w-0 truncate', compact ? 'text-[12px]' : 'text-[13px]')}>{pen.pen_code}</span>
       <div className="flex items-center gap-2 shrink-0 ml-auto">
-        <span className="text-[10px] text-muted-foreground/40 tabular-nums font-medium">{filledCount}/{measurements.length}</span>
+        <span className="text-[10px] text-muted-foreground/50 tabular-nums font-medium">{filledCount}/{measurements.length}</span>
         {lowest != null && (
-          <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.7)] tabular-nums">{formatNlNumber(lowest)} Ω</span>
+          <span className="text-[11px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.8)] tabular-nums">{formatNlNumber(lowest)} Ω</span>
         )}
       </div>
     </button>
