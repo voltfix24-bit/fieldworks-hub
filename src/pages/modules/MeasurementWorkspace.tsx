@@ -353,39 +353,43 @@ export default function MeasurementWorkspace() {
           </div>
         </div>
 
-        {/* ─── Sticky bottom actions ─── */}
+        {/* ─── Sticky bottom CTA ─── */}
         {step < 2 && !showSketch && (
-          <StickyActionBar
-            showPrev={step > 0}
-            onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
-            onNext={() => {
-              if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
-                return;
-              }
-              setProgressionWarningDismissed(false);
-              setStep(step + 1);
-            }}
-            nextLabel="Volgende"
-            nextLoading={false}
-            compact
-            warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
-              ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
-              : undefined}
-            onConfirmWarning={() => {
-              setProgressionWarningDismissed(true);
-              setStep(step + 1);
-            }}
-          />
+          <div className="shrink-0 border-t border-border/30 bg-background">
+            <StickyActionBar
+              showPrev={step > 0}
+              onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
+              onNext={() => {
+                if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
+                  return;
+                }
+                setProgressionWarningDismissed(false);
+                setStep(step + 1);
+              }}
+              nextLabel="Volgende"
+              nextLoading={false}
+              compact
+              warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
+                ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
+                : undefined}
+              onConfirmWarning={() => {
+                setProgressionWarningDismissed(true);
+                setStep(step + 1);
+              }}
+            />
+          </div>
         )}
 
         {showSketch && (
-          <StickyActionBar
-            showPrev
-            onPrev={() => setShowSketch(false)}
-            onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
-            nextLabel="Opslaan"
-            compact
-          />
+          <div className="shrink-0 border-t border-border/30 bg-background">
+            <StickyActionBar
+              showPrev
+              onPrev={() => setShowSketch(false)}
+              onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
+              nextLabel="Opslaan"
+              compact
+            />
+          </div>
         )}
       </div>
     );
