@@ -9,15 +9,15 @@ export function ReportInfoSection({ title, rows }: ReportInfoSectionProps) {
 
   return (
     <div className="report-info-section mb-6">
-      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 pb-1 border-b border-border">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2.5 pb-1.5 border-b border-border">{title}</h2>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1">
         {filledRows.map(row => (
-          <div key={row.label} className="flex justify-between py-0.5">
-            <span className="text-xs text-muted-foreground">{row.label}</span>
-            <span className="text-xs font-medium text-foreground text-right">{row.value}</span>
+          <div key={row.label} className="contents">
+            <dt className="text-xs text-muted-foreground py-0.5 whitespace-nowrap">{row.label}</dt>
+            <dd className="text-xs font-medium text-foreground py-0.5">{row.value}</dd>
           </div>
         ))}
-      </div>
+      </dl>
     </div>
   );
 }

@@ -4,38 +4,34 @@ import { formatNlDate } from '@/lib/nl-date';
 interface ReportHeaderProps {
   projectName: string;
   projectNumber: string;
-  status: string;
   measurementDate?: string | null;
   location?: string;
 }
 
-export function ReportHeader({ projectName, projectNumber, status, measurementDate, location }: ReportHeaderProps) {
+export function ReportHeader({ projectName, projectNumber, measurementDate, location }: ReportHeaderProps) {
   const { tenant, branding } = useTenant();
 
   return (
-    <div className="report-header mb-8">
-      <div className="flex items-center justify-between pb-4 mb-6 border-b-2" style={{ borderColor: `hsl(var(--tenant-primary))` }}>
+    <div className="report-header mb-10">
+      {/* Brand bar */}
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           {branding?.logo_url && (
-            <img src={branding.logo_url} alt={tenant?.company_name || ''} className="h-12 w-auto max-w-[180px] object-contain" />
+            <img src={branding.logo_url} alt="" className="h-10 w-auto max-w-[160px] object-contain print:h-8" />
           )}
-          <div>
-            <p className="text-lg font-bold tenant-primary-text">{tenant?.company_name}</p>
-            <p className="text-xs text-muted-foreground">Veldmeting Rapport</p>
-          </div>
+          <span className="text-sm font-semibold text-foreground tracking-tight">{tenant?.company_name}</span>
         </div>
-        <div className="text-right">
-          <span className={`text-xs px-2 py-0.5 rounded font-medium ${status === 'completed' ? 'status-completed' : 'status-planned'}`}>
-            {status === 'completed' ? 'Afgerond' : 'Gepland'}
-          </span>
-        </div>
+        {measurementDate && (
+          <span className="text-xs text-muted-foreground">{formatNlDate(measurementDate, 'long')}</span>
+        )}
       </div>
 
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">{projectName}</h1>
-        <p className="text-sm font-mono text-muted-foreground mt-1">{projectNumber}</p>
-        {location && <p className="text-sm text-muted-foreground mt-1">{location}</p>}
-        {measurementDate && <p className="text-xs text-muted-foreground mt-2">Meetdatum: {formatNlDate(measurementDate, 'long')}</p>}
+      {/* Title block */}
+      <div className="border-l-[3px] pl-5 py-1" style={{ borderColor: `hsl(var(--tenant-primary))` }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground mb-1">Aardingsmeting Rapport</p>
+        <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight">{projectName}</h1>
+        <p className="text-sm text-muted-foreground mt-1 font-mono">{projectNumber}</p>
+        {location && <p className="text-xs text-muted-foreground mt-1">{location}</p>}
       </div>
     </div>
   );
