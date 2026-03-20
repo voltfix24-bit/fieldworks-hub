@@ -63,6 +63,26 @@ export default function MeasurementWorkspace() {
   const [activePenId, setActivePenId] = useState<string | null>(null);
   const activePen = pens.find((p: any) => p.id === activePenId);
 
+  // Fetch measurements for all pens (for validation)
+  const penMeasurementQueries = pens.map((p: any) => useDepthMeasurements(p.id));
+  const allPenMeasurements = penMeasurementQueries.flatMap(q => q.data || []);
+  const allWarningIds = useMemo(() => {
+    // Group measurements by pen_id and check each pen
+    const byPen = new Map<string, any[]>();
+    for (const m of allPenMeasurements) {
+      const arr = byPen.get(m.pen_id) || [];
+      arr.push(m);
+      byPen.set(m.pen_id, arr);
+    }
+    const warnings = new Set<string>();
+    for (const [, penMeasurements] of byPen) {
+      for (const id of getDepthProgressionWarnings(penMeasurements)) {
+        warnings.add(id);
+      }
+    }
+    return warnings;
+  }, [allPenMeasurements]);
+
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
 
