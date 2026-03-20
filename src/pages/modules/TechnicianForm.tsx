@@ -48,7 +48,7 @@ export default function TechnicianForm() {
   return (
     <div className="animate-fade-in max-w-2xl">
       <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => navigate('/technicians')}><ArrowLeft className="mr-2 h-4 w-4" /> Terug</Button></div>
-      <PageHeader title={isEdit ? 'Monteur Bewerken' : 'Nieuwe Monteur'} />
+      <PageHeader title={isEdit ? 'Monteur bewerken' : 'Nieuwe monteur'} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection title="Monteurgegevens">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
