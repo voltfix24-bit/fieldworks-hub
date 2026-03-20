@@ -286,7 +286,7 @@ export default function MeasurementWorkspace() {
         )}
 
         {/* ─── Scrollable content ─── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-3 pt-2 pb-16" key={showSketch ? 'sketch' : step}>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 pt-1.5 pb-2" key={showSketch ? 'sketch' : step}>
           <div className="wizard-step-enter">
 
             {/* Project context block — shown above measurements */}
