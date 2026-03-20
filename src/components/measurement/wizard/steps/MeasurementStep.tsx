@@ -17,12 +17,14 @@ interface MeasurementStepProps {
   depthsInitRef: React.MutableRefObject<Set<string>>;
   initializeDepthRows: (penId: string, pen: any) => void;
   compact?: boolean;
+  onWarningCountChange?: (count: number) => void;
 }
 
 export function MeasurementStep({
   electrode, pens, tenantId,
   onUpdateElectrode, onAddPen, recalcRa,
   depthsInitRef, initializeDepthRows, compact,
+  onWarningCountChange,
 }: MeasurementStepProps) {
   const showRv = pens.length > 1;
   const hasTarget = electrode.target_value != null;
