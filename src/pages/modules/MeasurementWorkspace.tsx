@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
 import { useElectrodes, useCreateElectrode, useUpdateElectrode } from '@/hooks/use-electrodes';
@@ -214,10 +213,130 @@ export default function MeasurementWorkspace() {
   const techName = technicians.find((t: any) => t.id === selectedTechnician)?.full_name;
   const displayStep = showSketch ? 3 : step;
 
+  // Mobile: true fullscreen work mode
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+        {/* ─── Ultra-compact mobile header ─── */}
+        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/30 bg-background shrink-0">
+          <button
+            onClick={() => navigate(`/projects/${id}`)}
+            className="h-7 w-7 -ml-1 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md active:scale-95 transition-all"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <GroundingIcon size={11} className="text-primary shrink-0" />
+            <span className="text-[12px] font-semibold text-foreground truncate leading-none">
+              {project.project_name}
+            </span>
+          </div>
+          {activeElectrode && step > 0 && (
+            <span className="text-[9px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] px-1.5 py-0.5 rounded shrink-0 leading-none">
+              {activeElectrode.electrode_code}
+              {activePen && step >= 1 && step <= 2 ? ` · ${activePen.pen_code}` : ''}
+            </span>
+          )}
+        </div>
+
+        {/* ─── Inline step indicator ─── */}
+        <div className="px-3 py-1 border-b border-border/20 bg-muted/5 shrink-0">
+          <WizardStepIndicator
+            steps={WIZARD_STEPS}
+            currentStep={displayStep}
+            onStepClick={(i) => { setShowSketch(false); setStep(i); }}
+            compact
+          />
+        </div>
+
+        {/* ─── Step content — scrollable area ─── */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 pt-2 pb-16" key={showSketch ? 'sketch' : step}>
+          <div className="wizard-step-enter">
+            {step === 0 && !showSketch && (
+              <SetupStep
+                measurementDate={measurementDate} setMeasurementDate={setMeasurementDate}
+                selectedClient={selectedClient} setSelectedClient={setSelectedClient}
+                selectedTechnician={selectedTechnician} setSelectedTechnician={setSelectedTechnician}
+                selectedEquipment={selectedEquipment} setSelectedEquipment={setSelectedEquipment}
+                notes={notes} setNotes={setNotes}
+                clients={clients} technicians={technicians} equipment={equipment}
+                compact
+              />
+            )}
+
+            {step === 1 && !showSketch && activeElectrode && (
+              <MeasurementStep
+                electrode={activeElectrode}
+                pens={pens}
+                tenantId={tenantId}
+                onUpdateElectrode={(updates) => updateElectrode.mutate({ id: activeElectrode.id, ...updates })}
+                onAddPen={handleAddNewPen}
+                recalcRa={recalcRa}
+                depthsInitRef={depthsInitRef}
+                initializeDepthRows={initializeDepthRows}
+                compact
+              />
+            )}
+
+            {step === 2 && !showSketch && activePen && (
+              <PhotoStep
+                displayPhotoUrl={activePen.display_photo_url}
+                overviewPhotoUrl={activePen.overview_photo_url}
+                onUploadDisplay={(file) => handlePhotoUpload('display_photo_url', file)}
+                onUploadOverview={(file) => handlePhotoUpload('overview_photo_url', file)}
+                onRemoveDisplay={() => updatePen.mutate({ id: activePen.id, display_photo_url: null })}
+                onRemoveOverview={() => updatePen.mutate({ id: activePen.id, overview_photo_url: null })}
+                uploading={uploading}
+                penCode={activePen.pen_code}
+                compact
+              />
+            )}
+
+            {step === 3 && !showSketch && (
+              <NextActionStep
+                onAddElectrode={handleAddNewElectrode}
+                onGoToSketch={() => setShowSketch(true)}
+                onSave={() => navigate(`/projects/${id}`)}
+                nextElectrodeNumber={electrodes.length + 1}
+                compact
+              />
+            )}
+
+            {showSketch && (
+              <SketchStep projectId={id!} tenantId={tenantId} sessionId={session?.id} />
+            )}
+          </div>
+        </div>
+
+        {/* ─── Sticky bottom actions ─── */}
+        {step !== 3 && !showSketch && (
+          <StickyActionBar
+            showPrev={step > 0}
+            onPrev={() => setStep(Math.max(0, step - 1))}
+            onNext={step === 0 ? handleSaveSetup : () => setStep(step + 1)}
+            nextLabel={step === 0 ? (session ? 'Opslaan & Verder' : 'Sessie Aanmaken') : 'Volgende'}
+            nextLoading={createSession.isPending || updateSession.isPending || createElectrode.isPending || createPen.isPending}
+            compact
+          />
+        )}
+
+        {showSketch && (
+          <StickyActionBar
+            showPrev
+            onPrev={() => setShowSketch(false)}
+            onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
+            nextLabel="Opslaan"
+            compact
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Desktop layout (unchanged logic)
   return (
-    <div className={`animate-fade-in max-w-2xl mx-auto ${isMobile ? 'px-2' : 'px-1 sm:px-4'}`}>
-      {/* ─── Compact header ─── */}
-      <div className={`flex items-center gap-2 ${isMobile ? 'mb-1.5 pt-0.5' : 'mb-4 pt-1'}`}>
+    <div className="animate-fade-in max-w-2xl mx-auto px-1 sm:px-4">
+      <div className="flex items-center gap-2 mb-4 pt-1">
         <button
           onClick={() => navigate(`/projects/${id}`)}
           className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 rounded-lg active:scale-95 transition-all"
@@ -225,46 +344,25 @@ export default function MeasurementWorkspace() {
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className={`font-semibold text-foreground truncate flex items-center gap-1.5 tracking-tight ${isMobile ? 'text-[13px]' : 'text-[15px]'}`}>
+          <h1 className="font-semibold text-foreground truncate flex items-center gap-1.5 tracking-tight text-[15px]">
             <GroundingIcon size={13} className="text-primary shrink-0" />
             {project.project_name}
           </h1>
-          {!isMobile && (
-            <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-[11px] text-muted-foreground font-mono tracking-wide">{project.project_number}</span>
-              {measurementDate && (
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-3 w-3 opacity-50" />{measurementDate}
-                </span>
-              )}
-              {techName && (
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <User className="h-3 w-3 opacity-50" />{techName}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-3 mt-0.5">
+            <span className="text-[11px] text-muted-foreground font-mono tracking-wide">{project.project_number}</span>
+          </div>
         </div>
-        {/* Mobile: compact context chips */}
-        {isMobile && activeElectrode && step > 0 && (
-          <span className="text-[10px] font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-md shrink-0">
-            {activeElectrode.electrode_code}
-          </span>
-        )}
       </div>
 
-      {/* ─── Step indicator ─── */}
-      <div className={`${isMobile ? 'mb-2 -mx-0.5' : 'mb-5 -mx-1 sm:mx-0'}`}>
+      <div className="mb-5 -mx-1 sm:mx-0">
         <WizardStepIndicator
           steps={WIZARD_STEPS}
           currentStep={displayStep}
           onStepClick={(i) => { setShowSketch(false); setStep(i); }}
-          compact={isMobile}
         />
       </div>
 
-      {/* ─── Step content ─── */}
-      <div className={`wizard-step-enter ${isMobile ? 'min-h-[40vh]' : 'min-h-[50vh]'}`} key={showSketch ? 'sketch' : step}>
+      <div className="min-h-[50vh] wizard-step-enter" key={showSketch ? 'sketch' : step}>
         {step === 0 && !showSketch && (
           <SetupStep
             measurementDate={measurementDate} setMeasurementDate={setMeasurementDate}
@@ -273,7 +371,6 @@ export default function MeasurementWorkspace() {
             selectedEquipment={selectedEquipment} setSelectedEquipment={setSelectedEquipment}
             notes={notes} setNotes={setNotes}
             clients={clients} technicians={technicians} equipment={equipment}
-            compact={isMobile}
           />
         )}
 
@@ -287,7 +384,6 @@ export default function MeasurementWorkspace() {
             recalcRa={recalcRa}
             depthsInitRef={depthsInitRef}
             initializeDepthRows={initializeDepthRows}
-            compact={isMobile}
           />
         )}
 
@@ -301,7 +397,6 @@ export default function MeasurementWorkspace() {
             onRemoveOverview={() => updatePen.mutate({ id: activePen.id, overview_photo_url: null })}
             uploading={uploading}
             penCode={activePen.pen_code}
-            compact={isMobile}
           />
         )}
 
@@ -311,7 +406,6 @@ export default function MeasurementWorkspace() {
             onGoToSketch={() => setShowSketch(true)}
             onSave={() => navigate(`/projects/${id}`)}
             nextElectrodeNumber={electrodes.length + 1}
-            compact={isMobile}
           />
         )}
 
@@ -320,7 +414,6 @@ export default function MeasurementWorkspace() {
         )}
       </div>
 
-      {/* ─── Sticky action bar ─── */}
       {step !== 3 && !showSketch && (
         <StickyActionBar
           showPrev={step > 0}
@@ -328,7 +421,6 @@ export default function MeasurementWorkspace() {
           onNext={step === 0 ? handleSaveSetup : () => setStep(step + 1)}
           nextLabel={step === 0 ? (session ? 'Opslaan & Verder' : 'Sessie Aanmaken') : 'Volgende'}
           nextLoading={createSession.isPending || updateSession.isPending || createElectrode.isPending || createPen.isPending}
-          compact={isMobile}
         />
       )}
 
@@ -338,7 +430,6 @@ export default function MeasurementWorkspace() {
           onPrev={() => setShowSketch(false)}
           onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
           nextLabel="Opslaan"
-          compact={isMobile}
         />
       )}
     </div>
