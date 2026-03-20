@@ -10,6 +10,7 @@ import { PhotoUploader } from './PhotoUploader';
 import { uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateElectrode } from '@/hooks/use-electrodes';
+import { parseNlNumberOrNull } from '@/lib/nl-number';
 
 interface PenSectionProps {
   pen: any;
@@ -23,7 +24,7 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
   const [showSettings, setShowSettings] = useState(false);
   const [editCode, setEditCode] = useState(pen.pen_code);
   const [editLabel, setEditLabel] = useState(pen.label || '');
-  const [editDepth, setEditDepth] = useState(String(pen.pen_depth_meters || ''));
+  const [editDepth, setEditDepth] = useState(pen.pen_depth_meters != null ? String(pen.pen_depth_meters).replace('.', ',') : '');
   const [editNotes, setEditNotes] = useState(pen.notes || '');
   const [uploading, setUploading] = useState(false);
 
@@ -34,7 +35,12 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
   const updateElectrode = useUpdateElectrode();
 
   const handleSaveEdit = () => {
-    onUpdate({ pen_code: editCode, label: editLabel || null, pen_depth_meters: editDepth ? parseFloat(editDepth) : null, notes: editNotes || null });
+    onUpdate({
+      pen_code: editCode,
+      label: editLabel || null,
+      pen_depth_meters: parseNlNumberOrNull(editDepth),
+      notes: editNotes || null,
+    });
     setShowSettings(false);
   };
 
@@ -96,7 +102,17 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
             <div><Label className="text-xs">Code</Label><Input value={editCode} onChange={e => setEditCode(e.target.value)} className="h-8 text-sm" /></div>
             <div><Label className="text-xs">Label</Label><Input value={editLabel} onChange={e => setEditLabel(e.target.value)} className="h-8 text-sm" /></div>
           </div>
-          <div><Label className="text-xs">Pendiepte (m)</Label><Input type="number" inputMode="decimal" value={editDepth} onChange={e => setEditDepth(e.target.value)} className="h-8 text-sm" /></div>
+          <div>
+            <Label className="text-xs">Pendiepte (m)</Label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={editDepth}
+              onChange={e => setEditDepth(e.target.value)}
+              className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              placeholder="Bijv. 1,50"
+            />
+          </div>
           <div><Label className="text-xs">Notities</Label><Textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} className="text-sm min-h-[50px]" /></div>
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSaveEdit} className="h-7 text-xs">Opslaan</Button>

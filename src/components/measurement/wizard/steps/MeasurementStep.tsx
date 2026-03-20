@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
-import { Input } from '@/components/ui/input';
 import { GroundingIcon } from '../../GroundingIcon';
 import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
+import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
 
 interface MeasurementStepProps {
   electrode: any;
@@ -28,12 +28,25 @@ export function MeasurementStep({
   const targetMet = hasTarget && electrode.ra_value != null && electrode.ra_value <= electrode.target_value;
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
+  const [rvInput, setRvInput] = useState('');
 
   useEffect(() => {
     if (pens.length > 0) {
       setExpandedPenId(pens[pens.length - 1].id);
     }
   }, [pens.length]);
+
+  // Sync RV input with electrode value
+  useEffect(() => {
+    setRvInput(electrode.rv_value != null ? String(electrode.rv_value).replace('.', ',') : '');
+  }, [electrode.rv_value]);
+
+  const handleRvBlur = () => {
+    const parsed = parseNlNumberOrNull(rvInput);
+    if (parsed !== electrode.rv_value) {
+      onUpdateElectrode({ rv_value: parsed });
+    }
+  };
 
   return (
     <div className={cn(compact ? 'space-y-1.5 pb-2' : 'space-y-4 pb-24')}>
@@ -56,7 +69,7 @@ export function MeasurementStep({
           compact ? 'text-[13px]' : 'text-[17px]',
           electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/20'
         )}>
-          {electrode.ra_value != null ? `${Number(electrode.ra_value).toFixed(2)} Ω` : '—'}
+          {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
         </span>
         {electrode.ra_value != null && (
           <span className="text-[8px] text-muted-foreground/40">laagst</span>
@@ -69,7 +82,7 @@ export function MeasurementStep({
               ? 'bg-[hsl(var(--status-completed)/0.08)] text-[hsl(var(--status-completed))]'
               : 'bg-muted/30 text-muted-foreground/60'
           )}>
-            ≤ {Number(electrode.target_value).toFixed(2)} Ω
+            ≤ {formatNlNumber(Number(electrode.target_value))} Ω
           </span>
         )}
       </div>
@@ -110,16 +123,17 @@ export function MeasurementStep({
               )}>
                 <GroundingIcon size={10} className="text-muted-foreground/40 shrink-0" />
                 <span className="text-[8px] uppercase tracking-widest text-muted-foreground/40 font-semibold shrink-0">RV</span>
-                <Input
-                  type="number"
+                <input
+                  type="text"
                   inputMode="decimal"
-                  step="0.01"
-                  value={electrode.rv_value ?? ''}
-                  onChange={e => onUpdateElectrode({ rv_value: e.target.value ? parseFloat(e.target.value) : null })}
-                  placeholder="0.00"
+                  value={rvInput}
+                  onChange={e => setRvInput(e.target.value)}
+                  onBlur={handleRvBlur}
+                  placeholder="0,00"
                   className={cn(
-                    'font-semibold tabular-nums max-w-[100px] border-0 bg-transparent shadow-none focus-visible:ring-0',
-                    compact ? 'h-6 text-[11px]' : 'h-9 text-[13px]'
+                    'bg-transparent outline-none border-0 font-semibold tabular-nums max-w-[100px]',
+                    compact ? 'h-6 text-[11px]' : 'h-9 text-[13px]',
+                    'placeholder:text-muted-foreground/25'
                   )}
                 />
                 <span className="text-[8px] text-muted-foreground/30">Ω</span>
@@ -179,7 +193,7 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
       <div className="flex items-center gap-1.5 shrink-0 ml-auto">
         <span className="text-[9px] text-muted-foreground/35 tabular-nums">{filledCount}/{measurements.length}</span>
         {lowest != null && (
-          <span className="text-[9px] font-semibold text-[hsl(var(--tenant-primary,var(--primary))/0.6)] tabular-nums">{lowest.toFixed(2)} Ω</span>
+          <span className="text-[9px] font-semibold text-[hsl(var(--tenant-primary,var(--primary))/0.6)] tabular-nums">{formatNlNumber(lowest)} Ω</span>
         )}
       </div>
     </button>
@@ -228,7 +242,6 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
 
   return (
     <div id={`pen-section-${pen.id}`} className="space-y-0.5 animate-in fade-in duration-150">
-      {/* Pen header — minimal */}
       <div className={cn('flex items-center gap-1.5', compact ? 'px-0.5 py-0.5' : 'px-0.5 py-1')}>
         <ChevronDown className="h-2.5 w-2.5 text-[hsl(var(--tenant-primary,var(--primary))/0.35)] shrink-0" />
         <span className={cn('font-semibold text-foreground', compact ? 'text-[10px]' : 'text-[11px]')}>{pen.pen_code}</span>
