@@ -54,7 +54,7 @@ export default function EquipmentDetail() {
             <span className="text-sm font-medium text-muted-foreground sm:w-40 shrink-0">Volgende kalibratie</span>
             <span className={`text-sm flex items-center gap-1 ${calWarning ? 'text-destructive font-medium' : 'text-foreground'}`}>
               {calWarning && <AlertTriangle className="h-4 w-4" />}
-              {eq.next_calibration_date || '—'}
+              {formatNlDate(eq.next_calibration_date)}
               {calWarning && <span className="text-xs ml-1">(binnenkort)</span>}
             </span>
           </div>

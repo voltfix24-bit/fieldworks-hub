@@ -105,7 +105,7 @@ export default function ClientForm() {
         </FormSection>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Klant Bijwerken' : 'Klant Aanmaken'}</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Klant aanmaken'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/clients')}>Annuleren</Button>
         </div>
       </form>

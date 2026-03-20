@@ -42,7 +42,7 @@ export default function TechnicianDetail() {
         <InfoRow label="Medewerkernummer" value={tech.employee_code} />
         <InfoRow label="E-mail" value={tech.email} />
         <InfoRow label="Telefoon" value={tech.phone} />
-        <InfoRow label="Toegevoegd" value={new Date(tech.created_at).toLocaleDateString('nl-NL')} />
+        <InfoRow label="Toegevoegd" value={formatNlDate(tech.created_at)} />
       </DetailCard>
     </div>
   );
