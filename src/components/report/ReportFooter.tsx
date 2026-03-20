@@ -11,8 +11,11 @@ export function ReportFooter() {
     branding?.footer_website,
   ].filter(Boolean);
 
+  // Don't render footer if no meaningful content
+  if (!company && !addressParts && contactParts.length === 0) return null;
+
   return (
-    <footer className="report-footer mt-auto pt-6 border-t border-foreground/10">
+    <footer className="report-footer pt-4 border-t border-foreground/8">
       <div className="flex items-end justify-between text-[9px] text-muted-foreground leading-relaxed">
         <div className="space-y-0.5">
           <p className="font-semibold text-foreground text-[10px]">{company}</p>
@@ -20,7 +23,7 @@ export function ReportFooter() {
           {contactParts.length > 0 && <p>{contactParts.join('  ·  ')}</p>}
         </div>
         {branding?.logo_url && (
-          <img src={branding.logo_url} alt="" className="h-5 w-auto opacity-20 print:opacity-15" />
+          <img src={branding.logo_url} alt="" className="h-4 w-auto opacity-15" />
         )}
       </div>
     </footer>

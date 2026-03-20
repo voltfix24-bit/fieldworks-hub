@@ -51,11 +51,9 @@ export default function ProjectReport() {
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
 
   const handlePrint = () => {
-    // Set document title to project name for cleaner PDF filename
     const originalTitle = document.title;
     document.title = `Rapport ${project.project_number} - ${project.project_name}`;
     window.print();
-    // Restore after a short delay
     setTimeout(() => { document.title = originalTitle; }, 1000);
   };
 
@@ -94,7 +92,7 @@ export default function ProjectReport() {
 
       {/* ─── REPORT DOCUMENT ─── */}
       <div className={`${!isReady ? 'print:hidden opacity-30 pointer-events-none' : ''}`}>
-        <div className="report-document max-w-[210mm] mx-auto bg-white px-12 py-12 sm:px-16 sm:py-14 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
+        <div className="report-document max-w-[210mm] mx-auto bg-white px-10 py-10 sm:px-14 sm:py-12 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
              style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
           {/* 1. Header */}
@@ -105,28 +103,28 @@ export default function ProjectReport() {
             location={location}
           />
 
-          {/* 2. Projectgegevens */}
-          <ReportInfoSection title="Projectgegevens" rows={[
-            { label: 'Projectnummer', value: project.project_number },
-            { label: 'Projectnaam', value: project.project_name },
-            { label: 'Locatie', value: project.site_name },
-            { label: 'Adres', value: location || null },
-            { label: 'Meetdatum', value: formatNlDate(session?.measurement_date, 'long') },
-          ]} />
-
-          {/* 3. Opdrachtgever */}
-          {client && (
-            <ReportInfoSection title="Opdrachtgever" rows={[
-              { label: 'Bedrijf', value: client.company_name },
-              { label: 'Contactpersoon', value: client.contact_name },
-              { label: 'E-mail', value: client.email },
-              { label: 'Telefoon', value: client.phone },
-              { label: 'Adres', value: [client.address_line_1, client.postal_code, client.city].filter(Boolean).join(', ') || null },
+          {/* 2. Projectgegevens + Opdrachtgever side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 page-break-inside-avoid">
+            <ReportInfoSection title="Projectgegevens" rows={[
+              { label: 'Projectnummer', value: project.project_number },
+              { label: 'Projectnaam', value: project.project_name },
+              { label: 'Locatie', value: project.site_name },
+              { label: 'Adres', value: location || null },
+              { label: 'Meetdatum', value: formatNlDate(session?.measurement_date, 'long') },
             ]} />
-          )}
 
-          {/* 4. Monteur + Meetapparatuur side by side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
+            {client && (
+              <ReportInfoSection title="Opdrachtgever" rows={[
+                { label: 'Bedrijf', value: client.company_name },
+                { label: 'Contactpersoon', value: client.contact_name },
+                { label: 'E-mail', value: client.email },
+                { label: 'Telefoon', value: client.phone },
+              ]} />
+            )}
+          </div>
+
+          {/* 3. Monteur + Meetapparatuur side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 page-break-inside-avoid">
             {tech && (
               <ReportInfoSection title="Monteur" rows={[
                 { label: 'Naam', value: tech.full_name },
@@ -144,21 +142,27 @@ export default function ProjectReport() {
             )}
           </div>
 
-          {/* 5. Samenvatting */}
-          <ReportSummaryStats stats={stats} />
-
-          {/* 6. Meetnotities — only if present */}
-          {session?.measurement_notes && (
-            <div className="mb-8 page-break-inside-avoid">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-3 pb-2 border-b border-foreground/15">Opmerkingen</h2>
-              <p className="text-[12px] text-foreground whitespace-pre-wrap leading-relaxed">{session.measurement_notes}</p>
+          {/* 4. Compact inline summary — not a separate section */}
+          {(stats.electrodeCount > 0 || stats.penCount > 0 || stats.measurementCount > 0) && (
+            <div className="mb-6 flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-muted-foreground page-break-inside-avoid">
+              {stats.electrodeCount > 0 && <span><strong className="text-foreground font-semibold">{stats.electrodeCount}</strong> elektrode{stats.electrodeCount !== 1 ? 's' : ''}</span>}
+              {stats.penCount > 0 && <span><strong className="text-foreground font-semibold">{stats.penCount}</strong> {stats.penCount === 1 ? 'pen' : 'pennen'}</span>}
+              {stats.measurementCount > 0 && <span><strong className="text-foreground font-semibold">{stats.measurementCount}</strong> metingen</span>}
             </div>
           )}
 
-          {/* 7. Meetresultaten */}
+          {/* 5. Meetnotities — only if present */}
+          {session?.measurement_notes && (
+            <div className="mb-6 page-break-inside-avoid">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-2 pb-1.5 border-b border-foreground/12">Opmerkingen</h2>
+              <p className="text-[11px] text-foreground whitespace-pre-wrap leading-relaxed">{session.measurement_notes}</p>
+            </div>
+          )}
+
+          {/* 6. Meetresultaten */}
           {electrodes.length > 0 && (
-            <div className="mb-10">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-6 pb-2 border-b-2 border-foreground/20">
+            <div className="mb-8">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-5 pb-2 border-b-2 border-foreground/20">
                 Meetresultaten
               </h2>
               {electrodes.map((electrode, i) => (
@@ -172,40 +176,34 @@ export default function ProjectReport() {
             </div>
           )}
 
-          {/* 8. Situatieschets — only if present */}
+          {/* 7. Situatieschets — only if present */}
           {sketchAttachments.length > 0 && (
-            <div className="mb-10 page-break-inside-avoid">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-4 pb-2 border-b border-foreground/15">
+            <div className="mb-8 page-break-inside-avoid">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-3 pb-1.5 border-b border-foreground/12">
                 Situatieschets
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {sketchAttachments.map((att: any) => (
                   <figure key={att.id} className="page-break-inside-avoid">
                     {att.file_url && (
-                      <img
-                        src={att.file_url}
-                        alt={att.file_name || 'Schets'}
-                        className="w-full h-auto max-h-64 object-contain border border-foreground/10 print:max-h-48"
-                      />
+                      <img src={att.file_url} alt={att.file_name || 'Schets'} className="w-full h-auto max-h-56 object-contain border border-foreground/8 print:max-h-44" />
                     )}
-                    {att.caption && (
-                      <figcaption className="text-[10px] text-muted-foreground mt-1.5 italic">{att.caption}</figcaption>
-                    )}
+                    {att.caption && <figcaption className="text-[10px] text-muted-foreground mt-1 italic">{att.caption}</figcaption>}
                   </figure>
                 ))}
               </div>
             </div>
           )}
 
-          {/* 9. Projectnotities — only if present */}
+          {/* 8. Projectnotities — only if present */}
           {project.notes && (
-            <div className="mb-8 page-break-inside-avoid">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-3 pb-2 border-b border-foreground/15">Projectnotities</h2>
-              <p className="text-[12px] text-foreground whitespace-pre-wrap leading-relaxed">{project.notes}</p>
+            <div className="mb-6 page-break-inside-avoid">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-2 pb-1.5 border-b border-foreground/12">Projectnotities</h2>
+              <p className="text-[11px] text-foreground whitespace-pre-wrap leading-relaxed">{project.notes}</p>
             </div>
           )}
 
-          {/* 10. Footer */}
+          {/* 9. Footer */}
           <ReportFooter />
         </div>
       </div>
