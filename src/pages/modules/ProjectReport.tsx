@@ -55,8 +55,8 @@ export default function ProjectReport() {
       <div className="print:hidden mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${id}`)}><ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Project</Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}><FileText className="mr-2 h-4 w-4" /> Metingen Bewerken</Button>
-          {isReady && <Button size="sm" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Afdrukken / PDF Exporteren</Button>}
+          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}><FileText className="mr-2 h-4 w-4" /> Metingen bewerken</Button>
+          {isReady && <Button size="sm" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Afdrukken / PDF</Button>}
         </div>
       </div>
 
