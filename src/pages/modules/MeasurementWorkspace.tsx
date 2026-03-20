@@ -318,6 +318,7 @@ export default function MeasurementWorkspace() {
                 recalcRa={recalcRa}
                 depthsInitRef={depthsInitRef}
                 initializeDepthRows={initializeDepthRows}
+                onWarningCountChange={setWarningCount}
                 compact
               />
             )}
