@@ -119,6 +119,7 @@ export function MeasurementStep({
                 recalcRa={recalcRa}
                 depthsInitRef={depthsInitRef}
                 initializeDepthRows={initializeDepthRows}
+                onWarningCount={(count) => handlePenWarnings(pen.id, count)}
                 compact={compact}
               />
             ) : (
