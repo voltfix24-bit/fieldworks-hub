@@ -81,7 +81,7 @@ export default function EquipmentForm() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Switch checked={form.is_default} onCheckedChange={v => set('is_default', v)} />
-              <div><Label>Standaard Apparaat</Label><p className="text-xs text-muted-foreground">Wordt automatisch geselecteerd bij nieuwe projecten</p></div>
+              <div><Label>Standaard apparaat</Label><p className="text-xs text-muted-foreground">Wordt automatisch geselecteerd bij nieuwe projecten</p></div>
             </div>
             <div className="flex items-center gap-3"><Switch checked={form.is_active} onCheckedChange={v => set('is_active', v)} /><Label>Actief</Label></div>
           </div>
