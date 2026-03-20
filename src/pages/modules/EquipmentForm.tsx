@@ -59,7 +59,7 @@ export default function EquipmentForm() {
   return (
     <div className="animate-fade-in max-w-2xl">
       <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => navigate('/equipment')}><ArrowLeft className="mr-2 h-4 w-4" /> Terug</Button></div>
-      <PageHeader title={isEdit ? 'Apparaat Bewerken' : 'Nieuw Apparaat'} />
+      <PageHeader title={isEdit ? 'Apparaat bewerken' : 'Nieuw apparaat'} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection title="Apparaatinformatie">
           <div className="space-y-2"><Label>Apparaatnaam *</Label><Input value={form.device_name} onChange={e => set('device_name', e.target.value)} required /></div>
@@ -72,8 +72,8 @@ export default function EquipmentForm() {
 
         <FormSection title="Kalibratie">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Laatste Kalibratie</Label><Input type="date" value={form.calibration_date} onChange={e => set('calibration_date', e.target.value)} /></div>
-            <div className="space-y-2"><Label>Volgende Kalibratie</Label><Input type="date" value={form.next_calibration_date} onChange={e => set('next_calibration_date', e.target.value)} /></div>
+            <div className="space-y-2"><Label>Laatste kalibratie</Label><Input type="date" value={form.calibration_date} onChange={e => set('calibration_date', e.target.value)} /></div>
+            <div className="space-y-2"><Label>Volgende kalibratie</Label><Input type="date" value={form.next_calibration_date} onChange={e => set('next_calibration_date', e.target.value)} /></div>
           </div>
         </FormSection>
 
@@ -81,7 +81,7 @@ export default function EquipmentForm() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Switch checked={form.is_default} onCheckedChange={v => set('is_default', v)} />
-              <div><Label>Standaard Apparaat</Label><p className="text-xs text-muted-foreground">Wordt automatisch geselecteerd bij nieuwe projecten</p></div>
+              <div><Label>Standaard apparaat</Label><p className="text-xs text-muted-foreground">Wordt automatisch geselecteerd bij nieuwe projecten</p></div>
             </div>
             <div className="flex items-center gap-3"><Switch checked={form.is_active} onCheckedChange={v => set('is_active', v)} /><Label>Actief</Label></div>
           </div>
@@ -92,7 +92,7 @@ export default function EquipmentForm() {
         </FormSection>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Apparaat Aanmaken'}</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Apparaat aanmaken'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/equipment')}>Annuleren</Button>
         </div>
       </form>

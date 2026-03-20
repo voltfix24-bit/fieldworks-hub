@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEquipmentList } from '@/hooks/use-equipment';
+import { formatNlDate } from '@/lib/nl-date';
 import { Wrench, Plus, AlertTriangle, Star } from 'lucide-react';
 
 function isCalibrationWarning(nextDate: string | null): boolean {
@@ -57,11 +58,11 @@ export default function EquipmentPage() {
                   </div></td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{[eq.brand, eq.model].filter(Boolean).join(' ') || '—'}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground font-mono">{eq.serial_number || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{eq.calibration_date || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{formatNlDate(eq.calibration_date)}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={isCalibrationWarning(eq.next_calibration_date) ? 'text-destructive font-medium flex items-center gap-1' : 'text-muted-foreground'}>
                       {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}
-                      {eq.next_calibration_date || '—'}
+                      {formatNlDate(eq.next_calibration_date)}
                     </span>
                   </td>
                   <td className="px-4 py-3"><StatusBadge status={eq.is_active ? 'active' : 'inactive'} /></td>
@@ -83,7 +84,7 @@ export default function EquipmentPage() {
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
                     {eq.serial_number && <span className="font-mono">SN: {eq.serial_number}</span>}
                     {eq.next_calibration_date && <span className={isCalibrationWarning(eq.next_calibration_date) ? 'text-destructive font-medium flex items-center gap-1' : ''}>
-                      {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}Volg. kal: {eq.next_calibration_date}
+                      {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}Volg. kal.: {formatNlDate(eq.next_calibration_date)}
                     </span>}
                   </div>
                 </CardContent>

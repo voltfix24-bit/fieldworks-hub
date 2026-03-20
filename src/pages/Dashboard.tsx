@@ -6,6 +6,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjects } from '@/hooks/use-projects';
 import { useTechnicians } from '@/hooks/use-technicians';
+import { formatNlDate } from '@/lib/nl-date';
 import { FolderKanban, CheckCircle2, HardHat, FileText, Clock, MapPin, Calendar } from 'lucide-react';
 
 export default function Dashboard() {
@@ -27,10 +28,10 @@ export default function Dashboard() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Actieve Projecten" value={planned.length} icon={FolderKanban} description={`${planned.length} gepland`} />
+        <StatCard title="Actieve projecten" value={planned.length} icon={FolderKanban} description={`${planned.length} gepland`} />
         <StatCard title="Afgerond" value={completed.length} icon={CheckCircle2} description="Totaal afgerond" />
         <StatCard title="Monteurs" value={activeTechs.length} icon={HardHat} description={`${activeTechs.length} actief`} />
-        <StatCard title="Totaal Projecten" value={projects?.length ?? 0} icon={FileText} description="Alle tijd" />
+        <StatCard title="Totaal projecten" value={projects?.length ?? 0} icon={FileText} description="Alle tijd" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -38,7 +39,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              Recente Projecten
+              Recente projecten
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -55,7 +56,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                         <span className="font-mono">{p.project_number}</span>
                         {p.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.city}</span>}
-                        {p.planned_date && <span className="flex items-center gap-1 hidden sm:flex"><Calendar className="h-3 w-3" />{p.planned_date}</span>}
+                        {p.planned_date && <span className="flex items-center gap-1 hidden sm:flex"><Calendar className="h-3 w-3" />{formatNlDate(p.planned_date)}</span>}
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-md font-medium shrink-0 ml-2 ${

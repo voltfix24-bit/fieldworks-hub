@@ -67,7 +67,7 @@ export default function ClientForm() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Klanten
         </Button>
       </div>
-      <PageHeader title={isEdit ? 'Klant Bewerken' : 'Nieuwe Klant'} />
+      <PageHeader title={isEdit ? 'Klant bewerken' : 'Nieuwe klant'} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection title="Bedrijfsgegevens">
           <div className="space-y-2">
@@ -105,7 +105,7 @@ export default function ClientForm() {
         </FormSection>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Klant Bijwerken' : 'Klant Aanmaken'}</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Klant aanmaken'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/clients')}>Annuleren</Button>
         </div>
       </form>

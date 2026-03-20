@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, FileText, AlertCircle } from 'lucide-react';
+import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
 import { ReportHeader } from '@/components/report/ReportHeader';
@@ -54,8 +55,8 @@ export default function ProjectReport() {
       <div className="print:hidden mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${id}`)}><ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Project</Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}><FileText className="mr-2 h-4 w-4" /> Metingen Bewerken</Button>
-          {isReady && <Button size="sm" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Afdrukken / PDF Exporteren</Button>}
+          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}><FileText className="mr-2 h-4 w-4" /> Metingen bewerken</Button>
+          {isReady && <Button size="sm" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Afdrukken / PDF</Button>}
         </div>
       </div>
 
@@ -83,8 +84,8 @@ export default function ProjectReport() {
             { label: 'Adres', value: project.address_line_1 },
             { label: 'Plaats', value: project.city },
             { label: 'Land', value: project.country },
-            { label: 'Geplande Datum', value: project.planned_date },
-            { label: 'Afronddatum', value: project.completed_date },
+            { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
+            { label: 'Afronddatum', value: formatNlDate(project.completed_date) },
           ]} />
 
           {client && <ReportInfoSection title="Opdrachtgever" rows={[
@@ -107,8 +108,8 @@ export default function ProjectReport() {
               { label: 'Merk', value: equip.brand },
               { label: 'Model', value: equip.model },
               { label: 'Serienummer', value: equip.serial_number },
-              { label: 'Kalibratie', value: equip.calibration_date },
-              { label: 'Volgende Kalibratie', value: equip.next_calibration_date },
+              { label: 'Kalibratie', value: formatNlDate(equip.calibration_date) },
+              { label: 'Volgende kalibratie', value: formatNlDate(equip.next_calibration_date) },
             ]} />}
           </div>
 
