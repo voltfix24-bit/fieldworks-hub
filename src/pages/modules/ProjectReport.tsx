@@ -84,8 +84,8 @@ export default function ProjectReport() {
             { label: 'Adres', value: project.address_line_1 },
             { label: 'Plaats', value: project.city },
             { label: 'Land', value: project.country },
-            { label: 'Geplande Datum', value: project.planned_date },
-            { label: 'Afronddatum', value: project.completed_date },
+            { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
+            { label: 'Afronddatum', value: formatNlDate(project.completed_date) },
           ]} />
 
           {client && <ReportInfoSection title="Opdrachtgever" rows={[
