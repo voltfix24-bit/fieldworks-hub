@@ -75,21 +75,21 @@ export function MeasurementStep({
           ? 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
           : 'border-border/30 bg-card'
       )}>
-        <GroundingIcon size={compact ? 13 : 14} className="text-[hsl(var(--tenant-primary,var(--primary))/0.6)] shrink-0" />
+        <GroundingIcon size={compact ? 14 : 15} className="text-[hsl(var(--tenant-primary,var(--primary))/0.7)] shrink-0" />
         <span className={cn(
           'uppercase tracking-widest font-bold shrink-0',
-          compact ? 'text-[9px]' : 'text-[10px]',
-          'text-muted-foreground/50'
+          compact ? 'text-[10px]' : 'text-[10px]',
+          'text-muted-foreground/60'
         )}>RA</span>
         <span className={cn(
           'font-bold tabular-nums leading-none',
-          compact ? 'text-[15px]' : 'text-[17px]',
-          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/20'
+          compact ? 'text-[16px]' : 'text-[17px]',
+          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/25'
         )}>
           {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
         </span>
         {electrode.ra_value != null && (
-          <span className="text-[10px] text-muted-foreground/50 font-medium">laagst</span>
+          <span className="text-[10px] text-muted-foreground/60 font-semibold">laagst</span>
         )}
         {hasTarget && (
           <span className={cn(
