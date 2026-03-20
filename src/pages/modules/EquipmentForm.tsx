@@ -92,7 +92,7 @@ export default function EquipmentForm() {
         </FormSection>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Apparaat Aanmaken'}</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Apparaat aanmaken'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/equipment')}>Annuleren</Button>
         </div>
       </form>

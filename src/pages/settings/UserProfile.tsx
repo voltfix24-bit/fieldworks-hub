@@ -40,7 +40,7 @@ export default function UserProfile() {
             <Label htmlFor="full-name">Volledige naam</Label>
             <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Uw volledige naam" />
           </div>
-          <Button onClick={handleSave} disabled={saving}>{saving ? 'Opslaan...' : 'Wijzigingen Opslaan'}</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? 'Opslaan...' : 'Wijzigingen opslaan'}</Button>
         </CardContent>
       </Card>
 

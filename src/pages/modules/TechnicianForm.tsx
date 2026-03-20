@@ -60,7 +60,7 @@ export default function TechnicianForm() {
           <div className="flex items-center gap-3 pt-2"><Switch checked={form.is_active} onCheckedChange={v => set('is_active', v)} /><Label>Actief</Label></div>
         </FormSection>
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Monteur Aanmaken'}</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Monteur aanmaken'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/technicians')}>Annuleren</Button>
         </div>
       </form>
