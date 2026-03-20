@@ -252,7 +252,7 @@ export default function MeasurementWorkspace() {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
         {/* ─── Compact mobile header ─── */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/20 bg-background shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/30 bg-background shrink-0">
           <button
             onClick={() => navigate(`/projects/${id}`)}
             className="h-8 w-8 -ml-1 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md active:scale-95 transition-all"
@@ -260,13 +260,13 @@ export default function MeasurementWorkspace() {
             <ArrowLeft className="h-4.5 w-4.5" />
           </button>
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <GroundingIcon size={13} className="text-[hsl(var(--tenant-primary,var(--primary)))] shrink-0" />
-            <span className="text-[13px] font-bold text-foreground truncate leading-none">
+            <GroundingIcon size={14} className="text-[hsl(var(--tenant-primary,var(--primary)))] shrink-0" />
+            <span className="text-[13px] font-bold text-foreground truncate leading-none tracking-tight">
               {project.project_name}
             </span>
           </div>
           {activeElectrode && !showSketch && (
-            <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] px-2 py-1 rounded-md shrink-0 leading-none">
+            <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] px-2 py-1 rounded-md shrink-0 leading-none tracking-tight">
               {activeElectrode.electrode_code}
               {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
             </span>
