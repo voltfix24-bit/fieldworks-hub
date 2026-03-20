@@ -32,11 +32,20 @@ export function MeasurementStep({
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
-  const warningCountsRef = useCallback(() => {
-    // Using a ref pattern via closure
-    const map = new Map<string, number>();
-    return map;
+  const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
+
+  const handlePenWarnings = useCallback((penId: string, count: number) => {
+    setPenWarnings(prev => {
+      if (prev[penId] === count) return prev;
+      return { ...prev, [penId]: count };
+    });
   }, []);
+
+  // Report total warnings to parent
+  const totalWarnings = Object.values(penWarnings).reduce((a, b) => a + b, 0);
+  useEffect(() => {
+    onWarningCountChange?.(totalWarnings);
+  }, [totalWarnings, onWarningCountChange]);
 
   useEffect(() => {
     if (pens.length > 0) {
