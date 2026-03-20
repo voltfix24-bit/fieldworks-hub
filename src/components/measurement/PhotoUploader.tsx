@@ -9,9 +9,10 @@ interface PhotoUploaderProps {
   onUpload: (file: File) => Promise<void>;
   onRemove?: () => void;
   uploading?: boolean;
+  compact?: boolean;
 }
 
-export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading }: PhotoUploaderProps) {
+export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading, compact }: PhotoUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -25,20 +26,26 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
   const displayUrl = preview || currentUrl;
 
   return (
-    <div className="space-y-2">
-      <p className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/70">{label}</p>
+    <div>
+      <p className={cn(
+        'uppercase tracking-widest font-semibold text-muted-foreground/70',
+        compact ? 'text-[9px] mb-1' : 'text-[11px] mb-2'
+      )}>{label}</p>
+
       {displayUrl ? (
-        <div className="relative group rounded-xl overflow-hidden border border-border/60 bg-muted/20">
-          <img src={displayUrl} alt={label} className="w-full h-32 sm:h-36 object-cover" />
-          <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
+        <div className={cn(
+          'relative group rounded-lg overflow-hidden border border-border/50 bg-muted/20',
+        )}>
+          <img src={displayUrl} alt={label} className={cn('w-full object-cover', compact ? 'h-24' : 'h-32 sm:h-36')} />
+          <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-1.5">
             <Button
               size="sm"
               variant="secondary"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="h-9 text-xs font-medium shadow-sm"
+              className="h-7 text-[10px] font-medium shadow-sm px-2"
             >
-              <Camera className="h-3.5 w-3.5 mr-1.5" /> Vervangen
+              <Camera className="h-3 w-3 mr-1" /> Vervangen
             </Button>
             {onRemove && (
               <Button
@@ -46,9 +53,9 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
                 variant="destructive"
                 onClick={onRemove}
                 disabled={uploading}
-                className="h-9 w-9 shadow-sm"
+                className="h-7 w-7 shadow-sm"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
               </Button>
             )}
           </div>
@@ -59,20 +66,21 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className={cn(
-            'w-full h-28 sm:h-32 rounded-xl',
-            'border border-dashed border-border/60 bg-muted/10',
-            'flex flex-col items-center justify-center gap-2',
+            'w-full rounded-lg',
+            'border border-dashed border-border/50 bg-muted/10',
+            'flex flex-col items-center justify-center gap-1.5',
             'text-muted-foreground/40',
             'hover:border-primary/30 hover:text-primary/50 hover:bg-primary/3',
-            'transition-all duration-150 active:scale-[0.995]'
+            'transition-all duration-150 active:scale-[0.995]',
+            compact ? 'h-20' : 'h-28 sm:h-32'
           )}
         >
           {uploading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className={cn('animate-spin', compact ? 'h-4 w-4' : 'h-5 w-5')} />
           ) : (
-            <ImageIcon className="h-5 w-5" />
+            <ImageIcon className={cn(compact ? 'h-4 w-4' : 'h-5 w-5')} />
           )}
-          <span className="text-[11px] font-medium">
+          <span className={cn('font-medium', compact ? 'text-[9px]' : 'text-[11px]')}>
             {uploading ? 'Uploaden…' : 'Tik om foto te maken'}
           </span>
         </button>

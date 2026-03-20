@@ -12,6 +12,7 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { GroundingIcon, GroundingLoader } from '@/components/measurement/GroundingIcon';
 
 import { WizardStepIndicator } from '@/components/measurement/wizard/WizardStepIndicator';
@@ -35,9 +36,9 @@ export default function MeasurementWorkspace() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const isMobile = useIsMobile();
   const tenantId = profile?.tenant_id || '';
 
-  // Data queries
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: session, isLoading: sessionLoading } = useMeasurementSession(id);
   const createSession = useCreateMeasurementSession();
@@ -51,12 +52,10 @@ export default function MeasurementWorkspace() {
   const { data: technicians = [] } = useTechnicians();
   const { data: equipment = [] } = useEquipmentList();
 
-  // Active electrode
   const [activeElectrodeId, setActiveElectrodeId] = useState<string | null>(null);
   const activeElectrode = electrodes.find((e: any) => e.id === activeElectrodeId);
   const { data: pens = [] } = usePens(activeElectrodeId || undefined);
 
-  // Active pen (for photos step)
   const [activePenId, setActivePenId] = useState<string | null>(null);
   const activePen = pens.find((p: any) => p.id === activePenId);
 
@@ -67,7 +66,6 @@ export default function MeasurementWorkspace() {
   const updateMeasurement = useUpdateDepthMeasurement();
   const deleteMeasurement = useDeleteDepthMeasurement();
 
-  // Wizard state
   const [step, setStep] = useState(0);
   const [showSketch, setShowSketch] = useState(false);
   const [measurementDate, setMeasurementDate] = useState('');
@@ -79,7 +77,6 @@ export default function MeasurementWorkspace() {
   const [uploading, setUploading] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
-  // Prefill from existing data
   useEffect(() => {
     if (session) {
       setMeasurementDate(session.measurement_date || '');
@@ -87,9 +84,7 @@ export default function MeasurementWorkspace() {
       setSelectedTechnician(session.technician_id || '');
       setSelectedEquipment(session.equipment_id || '');
       setNotes(session.measurement_notes || '');
-      if (electrodes.length > 0) {
-        setStep(1); // go straight to measurements
-      }
+      if (electrodes.length > 0) setStep(1);
     } else if (project) {
       setMeasurementDate(project.planned_date || new Date().toISOString().split('T')[0]);
       setSelectedClient(project.client_id || '');
@@ -98,21 +93,18 @@ export default function MeasurementWorkspace() {
     }
   }, [session?.id, project?.id]);
 
-  // Sync active electrode
   useEffect(() => {
     if (electrodes.length > 0 && !electrodes.find((e: any) => e.id === activeElectrodeId)) {
       setActiveElectrodeId(electrodes[electrodes.length - 1].id);
     }
   }, [electrodes]);
 
-  // Sync active pen to latest pen
   useEffect(() => {
     if (pens.length > 0 && !pens.find((p: any) => p.id === activePenId)) {
       setActivePenId(pens[pens.length - 1].id);
     }
   }, [pens]);
 
-  // Auto-create predefined depth rows for new pens
   const initializeDepthRows = useCallback((penId: string, pen: any) => {
     if (depthsInitRef.current.has(penId)) return;
     depthsInitRef.current.add(penId);
@@ -125,8 +117,6 @@ export default function MeasurementWorkspace() {
       });
     });
   }, [tenantId, createMeasurement]);
-
-  // === Step handlers ===
 
   const handleSaveSetup = async () => {
     const payload = {
@@ -143,7 +133,6 @@ export default function MeasurementWorkspace() {
       sessionData = await createSession.mutateAsync({ ...payload, tenant_id: tenantId, project_id: id });
     }
 
-    // Auto-create first electrode + first pen + depth rows
     if (electrodes.length === 0 && sessionData) {
       const newElectrode = await createElectrode.mutateAsync({
         tenant_id: tenantId, project_id: id,
@@ -151,7 +140,6 @@ export default function MeasurementWorkspace() {
         electrode_code: 'Elektrode 1', sort_order: 0,
       });
       setActiveElectrodeId(newElectrode.id);
-
       const newPen = await createPen.mutateAsync({
         tenant_id: tenantId, project_id: id!,
         measurement_session_id: sessionData.id,
@@ -161,7 +149,6 @@ export default function MeasurementWorkspace() {
       setActivePenId(newPen.id);
       initializeDepthRows(newPen.id, newPen);
     }
-
     setStep(1);
   };
 
@@ -175,8 +162,6 @@ export default function MeasurementWorkspace() {
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
-
-    // Scroll to new pen after a tick
     setTimeout(() => {
       const el = document.getElementById(`pen-section-${newPen.id}`);
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -191,7 +176,6 @@ export default function MeasurementWorkspace() {
       electrode_code: `Elektrode ${electrodes.length + 1}`, sort_order: electrodes.length,
     });
     setActiveElectrodeId(newElectrode.id);
-
     const newPen = await createPen.mutateAsync({
       tenant_id: tenantId, project_id: id!,
       measurement_session_id: session.id,
@@ -200,8 +184,7 @@ export default function MeasurementWorkspace() {
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
-
-    setStep(1); // back to measurements for new electrode
+    setStep(1);
   };
 
   const handlePhotoUpload = async (type: 'display_photo_url' | 'overview_photo_url', file: File) => {
@@ -219,7 +202,6 @@ export default function MeasurementWorkspace() {
     updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance });
   }, [updateElectrode]);
 
-  // Loading
   if (projectLoading || sessionLoading) return (
     <div className="flex justify-center py-20"><GroundingLoader /></div>
   );
@@ -230,50 +212,59 @@ export default function MeasurementWorkspace() {
   );
 
   const techName = technicians.find((t: any) => t.id === selectedTechnician)?.full_name;
-
-  // Determine actual step index for display (sketch is a sub-view, not a step)
   const displayStep = showSketch ? 3 : step;
 
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto px-1 sm:px-4">
-      {/* ─── Project context header ─── */}
-      <div className="flex items-center gap-3 mb-4 pt-1">
-        <Button
-          variant="ghost"
-          size="icon"
+    <div className={`animate-fade-in max-w-2xl mx-auto ${isMobile ? 'px-2' : 'px-1 sm:px-4'}`}>
+      {/* ─── Compact header ─── */}
+      <div className={`flex items-center gap-2 ${isMobile ? 'mb-1.5 pt-0.5' : 'mb-4 pt-1'}`}>
+        <button
           onClick={() => navigate(`/projects/${id}`)}
-          className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+          className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 rounded-lg active:scale-95 transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-[15px] font-semibold text-foreground truncate flex items-center gap-2 tracking-tight">
-            <GroundingIcon size={15} className="text-primary shrink-0" />
+          <h1 className={`font-semibold text-foreground truncate flex items-center gap-1.5 tracking-tight ${isMobile ? 'text-[13px]' : 'text-[15px]'}`}>
+            <GroundingIcon size={13} className="text-primary shrink-0" />
             {project.project_name}
           </h1>
-          <div className="flex items-center gap-3 mt-0.5">
-            <span className="text-[11px] text-muted-foreground font-mono tracking-wide">{project.project_number}</span>
-            {measurementDate && (
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3 opacity-50" />{measurementDate}
-              </span>
-            )}
-            {techName && (
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                <User className="h-3 w-3 opacity-50" />{techName}
-              </span>
-            )}
-          </div>
+          {!isMobile && (
+            <div className="flex items-center gap-3 mt-0.5">
+              <span className="text-[11px] text-muted-foreground font-mono tracking-wide">{project.project_number}</span>
+              {measurementDate && (
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3 opacity-50" />{measurementDate}
+                </span>
+              )}
+              {techName && (
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <User className="h-3 w-3 opacity-50" />{techName}
+                </span>
+              )}
+            </div>
+          )}
         </div>
+        {/* Mobile: compact context chips */}
+        {isMobile && activeElectrode && step > 0 && (
+          <span className="text-[10px] font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-md shrink-0">
+            {activeElectrode.electrode_code}
+          </span>
+        )}
       </div>
 
       {/* ─── Step indicator ─── */}
-      <div className="mb-5 -mx-1 sm:mx-0">
-        <WizardStepIndicator steps={WIZARD_STEPS} currentStep={displayStep} onStepClick={(i) => { setShowSketch(false); setStep(i); }} />
+      <div className={`${isMobile ? 'mb-2 -mx-0.5' : 'mb-5 -mx-1 sm:mx-0'}`}>
+        <WizardStepIndicator
+          steps={WIZARD_STEPS}
+          currentStep={displayStep}
+          onStepClick={(i) => { setShowSketch(false); setStep(i); }}
+          compact={isMobile}
+        />
       </div>
 
       {/* ─── Step content ─── */}
-      <div className="min-h-[50vh] wizard-step-enter" key={showSketch ? 'sketch' : step}>
+      <div className={`wizard-step-enter ${isMobile ? 'min-h-[40vh]' : 'min-h-[50vh]'}`} key={showSketch ? 'sketch' : step}>
         {step === 0 && !showSketch && (
           <SetupStep
             measurementDate={measurementDate} setMeasurementDate={setMeasurementDate}
@@ -282,6 +273,7 @@ export default function MeasurementWorkspace() {
             selectedEquipment={selectedEquipment} setSelectedEquipment={setSelectedEquipment}
             notes={notes} setNotes={setNotes}
             clients={clients} technicians={technicians} equipment={equipment}
+            compact={isMobile}
           />
         )}
 
@@ -295,6 +287,7 @@ export default function MeasurementWorkspace() {
             recalcRa={recalcRa}
             depthsInitRef={depthsInitRef}
             initializeDepthRows={initializeDepthRows}
+            compact={isMobile}
           />
         )}
 
@@ -308,6 +301,7 @@ export default function MeasurementWorkspace() {
             onRemoveOverview={() => updatePen.mutate({ id: activePen.id, overview_photo_url: null })}
             uploading={uploading}
             penCode={activePen.pen_code}
+            compact={isMobile}
           />
         )}
 
@@ -317,6 +311,7 @@ export default function MeasurementWorkspace() {
             onGoToSketch={() => setShowSketch(true)}
             onSave={() => navigate(`/projects/${id}`)}
             nextElectrodeNumber={electrodes.length + 1}
+            compact={isMobile}
           />
         )}
 
@@ -330,15 +325,10 @@ export default function MeasurementWorkspace() {
         <StickyActionBar
           showPrev={step > 0}
           onPrev={() => setStep(Math.max(0, step - 1))}
-          onNext={
-            step === 0 ? handleSaveSetup :
-            () => setStep(step + 1)
-          }
-          nextLabel={
-            step === 0 ? (session ? 'Opslaan & Verder' : 'Sessie Aanmaken') :
-            'Volgende'
-          }
+          onNext={step === 0 ? handleSaveSetup : () => setStep(step + 1)}
+          nextLabel={step === 0 ? (session ? 'Opslaan & Verder' : 'Sessie Aanmaken') : 'Volgende'}
           nextLoading={createSession.isPending || updateSession.isPending || createElectrode.isPending || createPen.isPending}
+          compact={isMobile}
         />
       )}
 
@@ -346,11 +336,9 @@ export default function MeasurementWorkspace() {
         <StickyActionBar
           showPrev
           onPrev={() => setShowSketch(false)}
-          onNext={() => {
-            setShowSketch(false);
-            navigate(`/projects/${id}`);
-          }}
+          onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
           nextLabel="Opslaan"
+          compact={isMobile}
         />
       )}
     </div>

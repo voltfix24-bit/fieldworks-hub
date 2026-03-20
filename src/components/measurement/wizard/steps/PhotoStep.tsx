@@ -1,4 +1,3 @@
-import { WizardStepHeader } from '../WizardStepHeader';
 import { PhotoUploader } from '../../PhotoUploader';
 
 interface PhotoStepProps {
@@ -10,28 +9,35 @@ interface PhotoStepProps {
   onRemoveOverview: () => void;
   uploading: boolean;
   penCode: string;
+  compact?: boolean;
 }
 
 export function PhotoStep({
   displayPhotoUrl, overviewPhotoUrl,
   onUploadDisplay, onUploadOverview,
   onRemoveDisplay, onRemoveOverview,
-  uploading, penCode,
+  uploading, penCode, compact,
 }: PhotoStepProps) {
   return (
     <div>
-      <WizardStepHeader
-        title={`Foto's — ${penCode}`}
-        subtitle="Upload een detail- en overzichtsfoto voor deze pen"
-      />
+      {/* Compact title instead of WizardStepHeader */}
+      <div className={compact ? 'mb-2' : 'mb-4'}>
+        <h2 className={`font-semibold text-foreground tracking-tight ${compact ? 'text-[13px]' : 'text-[15px]'}`}>
+          Foto's — {penCode}
+        </h2>
+        <p className={`text-muted-foreground mt-0.5 ${compact ? 'text-[11px]' : 'text-[13px]'}`}>
+          Detail- en overzichtsfoto
+        </p>
+      </div>
 
-      <div className="space-y-5">
+      <div className={compact ? 'grid grid-cols-2 gap-2' : 'space-y-5'}>
         <PhotoUploader
           label="Detailfoto"
           currentUrl={displayPhotoUrl}
           onUpload={onUploadDisplay}
           onRemove={onRemoveDisplay}
           uploading={uploading}
+          compact={compact}
         />
         <PhotoUploader
           label="Overzichtsfoto"
@@ -39,6 +45,7 @@ export function PhotoStep({
           onUpload={onUploadOverview}
           onRemove={onRemoveOverview}
           uploading={uploading}
+          compact={compact}
         />
       </div>
     </div>
