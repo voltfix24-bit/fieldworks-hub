@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, FileText, AlertCircle } from 'lucide-react';
+import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
 import { ReportHeader } from '@/components/report/ReportHeader';
