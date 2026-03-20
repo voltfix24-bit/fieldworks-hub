@@ -8,6 +8,14 @@ interface ReportElectrodeSectionProps {
   totalElectrodes: number;
 }
 
+/** Strip redundant prefix: if electrode_code is "Elektrode 1", just use "1" */
+function cleanCode(code: string, prefix: string): string {
+  const lower = code.toLowerCase().trim();
+  const p = prefix.toLowerCase();
+  if (lower.startsWith(p)) return code.trim().slice(prefix.length).trim();
+  return code.trim();
+}
+
 export function ReportElectrodeSection({ electrode, index, totalElectrodes }: ReportElectrodeSectionProps) {
   const activePens = electrode.pens.filter(
     pen => pen.measurements.some(m => m.resistance_value > 0)
@@ -16,6 +24,11 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
 
   const showElectrodeHeader = totalElectrodes > 1;
   const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
+
+  // Clean electrode display name — avoid "Elektrode Elektrode 1"
+  const electrodeDisplay = electrode.electrode_code
+    ? cleanCode(electrode.electrode_code, 'Elektrode')
+    : String(index + 1);
 
   // Build unified depth list across all pens
   const depthSet = new Set<number>();
@@ -36,83 +49,79 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
     valueLookup.set(pen.id, map);
   });
 
-  // Collect all photos
+  // Collect photos with clean captions — avoid "Pen Pen 1"
   const photos: { url: string; label: string }[] = [];
   activePens.forEach(pen => {
-    const suffix = activePens.length > 1 ? ` Pen ${pen.pen_code}` : '';
+    const penDisplay = cleanCode(pen.pen_code, 'Pen');
+    const suffix = activePens.length > 1 ? ` — Pen ${penDisplay}` : '';
     if (pen.display_photo_url) photos.push({ url: pen.display_photo_url, label: `Detailfoto${suffix}` });
     if (pen.overview_photo_url) photos.push({ url: pen.overview_photo_url, label: `Overzichtsfoto${suffix}` });
   });
 
   return (
-    <div className="report-electrode mb-10 page-break-inside-avoid">
+    <div className="report-electrode mb-8">
+      {/* Elektrode header */}
       {showElectrodeHeader && (
-        <div className="mb-4 pb-2 border-b border-foreground/15">
-          <h3 className="text-sm font-bold text-foreground">
-            Elektrode {electrode.electrode_code || index + 1}
+        <div className="mb-3 pb-1.5 border-b border-foreground/12">
+          <h3 className="text-[13px] font-bold text-foreground tracking-tight">
+            Elektrode {electrodeDisplay}
             {electrode.label && (
-              <span className="font-normal text-muted-foreground ml-2">— {electrode.label}</span>
+              <span className="font-normal text-muted-foreground ml-2 text-[12px]">— {electrode.label}</span>
             )}
           </h3>
         </div>
       )}
 
-      {/* RA + RV */}
-      <div className="flex flex-wrap gap-x-8 gap-y-2 mb-5">
+      {/* RA + RV inline */}
+      <div className="flex flex-wrap gap-x-8 gap-y-1.5 mb-4">
         {electrode.ra_value != null && (
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mb-0.5">RA-waarde</p>
-            <p className="text-base font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.ra_value))} Ω</p>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">RA:</span>
+            <span className="text-[13px] font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.ra_value))} Ω</span>
           </div>
         )}
         {hasRv && (
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mb-0.5">RV-waarde</p>
-            <p className="text-base font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.rv_value))} Ω</p>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">RV:</span>
+            <span className="text-[13px] font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.rv_value))} Ω</span>
           </div>
         )}
         {electrode.target_value != null && (
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mb-0.5">Doelwaarde</p>
-            <p className="text-base font-medium text-foreground tabular-nums">≤ {formatNlNumber(Number(electrode.target_value))} Ω</p>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Doel:</span>
+            <span className="text-[13px] font-medium text-foreground tabular-nums">≤ {formatNlNumber(Number(electrode.target_value))} Ω</span>
           </div>
         )}
       </div>
 
       {electrode.notes && (
-        <p className="text-[11px] text-muted-foreground mb-4 italic leading-relaxed">{electrode.notes}</p>
+        <p className="text-[11px] text-muted-foreground mb-3 italic leading-relaxed">{electrode.notes}</p>
       )}
 
       {/* Combined measurement table */}
       {depths.length > 0 && (
-        <table className="w-full text-[12px] border-collapse mt-2 mb-4">
+        <table className="w-full text-[11px] border-collapse mb-3">
           <thead>
             <tr className="border-b-2 border-foreground/15">
-              <th className="text-left py-2 pr-4 font-semibold text-foreground">Diepte (m)</th>
-              {activePens.map(pen => (
-                <th key={pen.id} className="text-right py-2 px-2 font-semibold text-foreground whitespace-nowrap">
-                  {activePens.length > 1 ? `Pen ${pen.pen_code}` : 'Weerstand (Ω)'}
-                </th>
-              ))}
+              <th className="text-left py-1.5 pr-3 font-semibold text-foreground">Diepte (m)</th>
+              {activePens.map(pen => {
+                const penDisplay = cleanCode(pen.pen_code, 'Pen');
+                return (
+                  <th key={pen.id} className="text-right py-1.5 px-2 font-semibold text-foreground whitespace-nowrap">
+                    {activePens.length > 1 ? `Pen ${penDisplay} (Ω)` : 'Weerstand (Ω)'}
+                  </th>
+                );
+              })}
             </tr>
-            {/* Sub-header with Ω when multiple pens */}
-            {activePens.length > 1 && (
-              <tr className="border-b border-foreground/8">
-                <th className="py-1 pr-4" />
-                {activePens.map(pen => (
-                  <th key={pen.id} className="text-right py-1 px-2 text-[10px] font-normal text-muted-foreground">(Ω)</th>
-                ))}
-              </tr>
-            )}
           </thead>
           <tbody>
             {depths.map(depth => (
-              <tr key={depth} className="border-b border-foreground/8">
-                <td className="py-1.5 pr-4 tabular-nums text-foreground">{formatNlNumber(depth, 1)}</td>
+              <tr key={depth} className="border-b border-foreground/6">
+                <td className="py-1 pr-3 tabular-nums text-foreground">{formatNlNumber(depth, 1)}</td>
                 {activePens.map(pen => {
                   const val = valueLookup.get(pen.id)?.get(depth);
                   return (
-                    <td key={pen.id} className="py-1.5 px-2 text-right tabular-nums font-semibold text-foreground">
+                    <td key={pen.id} className="py-1 px-2 text-right tabular-nums font-semibold text-foreground">
                       {val != null ? formatNlNumber(val) : '—'}
                     </td>
                   );

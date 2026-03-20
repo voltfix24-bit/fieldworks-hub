@@ -12,45 +12,37 @@ export function ReportHeader({ projectName, projectNumber, measurementDate, loca
   const { tenant, branding } = useTenant();
 
   return (
-    <div className="report-header mb-12 print:mb-10">
+    <div className="report-header mb-8 print:mb-6">
       {/* Top identity bar */}
-      <div className="flex items-start justify-between pb-6 border-b-2" style={{ borderColor: 'hsl(var(--tenant-primary))' }}>
-        <div className="flex items-center gap-4">
+      <div className="flex items-start justify-between pb-4 border-b-2" style={{ borderColor: 'hsl(var(--tenant-primary))' }}>
+        <div className="flex items-center gap-3">
           {branding?.logo_url && (
-            <img
-              src={branding.logo_url}
-              alt=""
-              className="h-12 w-auto max-w-[180px] object-contain print:h-10"
-            />
+            <img src={branding.logo_url} alt="" className="h-10 w-auto max-w-[140px] object-contain print:h-8" />
           )}
-          <div>
-            <p className="text-sm font-semibold text-foreground tracking-tight leading-tight">
-              {tenant?.company_name}
-            </p>
-          </div>
+          <span className="text-[12px] font-semibold text-foreground tracking-tight">{tenant?.company_name}</span>
         </div>
       </div>
 
-      {/* Report title block */}
-      <div className="mt-8 print:mt-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-2" style={{ color: 'hsl(var(--tenant-primary))' }}>
+      {/* Report title */}
+      <div className="mt-6 print:mt-4">
+        <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-1.5" style={{ color: 'hsl(var(--tenant-primary))' }}>
           Aardingsmeting Rapport
         </p>
-        <h1 className="text-2xl font-bold text-foreground leading-tight tracking-tight print:text-xl">
+        <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight print:text-lg">
           {projectName}
         </h1>
-        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mt-2">
-          <span className="text-sm text-foreground font-mono font-medium">{projectNumber}</span>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mt-1.5 text-[11px]">
+          <span className="text-foreground font-mono font-medium">{projectNumber}</span>
           {location && (
             <>
               <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">{location}</span>
+              <span className="text-muted-foreground">{location}</span>
             </>
           )}
           {measurementDate && (
             <>
               <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">{formatNlDate(measurementDate, 'long')}</span>
+              <span className="text-muted-foreground">{formatNlDate(measurementDate, 'long')}</span>
             </>
           )}
         </div>

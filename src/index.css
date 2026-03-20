@@ -200,39 +200,44 @@
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    font-size: 11pt !important;
+    font-size: 10.5pt !important;
+    overflow: visible !important;
   }
 
-  /* Hide all app chrome */
+  /* Hide ALL app chrome aggressively */
   [data-sidebar],
   header,
   nav,
   .print\:hidden,
   .mobile-tab-bar,
   [role="banner"],
-  [role="navigation"] {
+  [role="navigation"],
+  .animate-fade-in > .print\\:hidden,
+  button,
+  [data-radix-popper-content-wrapper] {
     display: none !important;
   }
 
-  /* Reset layout containers */
+  /* Reset layout containers — eliminate min-height that causes empty pages */
   main,
   #root,
-  #root > div {
+  #root > div,
+  #root > div > div,
+  .animate-fade-in {
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
-    min-height: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
     background: white !important;
+    overflow: visible !important;
   }
 
-  /* A4 page setup */
+  /* A4 page setup — zero browser header/footer margins */
   @page {
     size: A4 portrait;
-    margin: 18mm 20mm 22mm 20mm;
+    margin: 15mm 18mm 18mm 18mm;
   }
-
-  /* Suppress browser-generated headers/footers (title, URL, date) */
-  @page { margin-top: 18mm; margin-bottom: 22mm; }
 
   /* Document container */
   .report-document {
@@ -244,14 +249,20 @@
     max-width: none !important;
     background: white !important;
     width: 100% !important;
+    overflow: visible !important;
   }
 
   /* Page break control */
-  .report-electrode,
   .report-info-section,
   .report-summary {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* Allow electrode sections to break if they're long (multi-pen tables) */
+  .report-electrode {
+    page-break-inside: auto;
+    break-inside: auto;
   }
 
   table {
@@ -270,18 +281,9 @@
     break-inside: avoid;
   }
 
-  /* Report footer as repeated element */
+  /* Footer stays at bottom of content, not fixed */
   .report-footer {
-    margin-top: 40pt;
-  }
-
-  /* Prevent empty last page */
-  .report-document::after {
-    content: '';
-    display: block;
-    height: 0;
-    clear: both;
-    page-break-after: avoid;
+    margin-top: 24pt;
   }
 }
 
