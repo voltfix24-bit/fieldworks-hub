@@ -117,8 +117,6 @@ export default function ProjectReport() {
               <ReportInfoSection title="Opdrachtgever" rows={[
                 { label: 'Bedrijf', value: client.company_name },
                 { label: 'Contactpersoon', value: client.contact_name },
-                { label: 'E-mail', value: client.email },
-                { label: 'Telefoon', value: client.phone },
               ]} />
             )}
           </div>
