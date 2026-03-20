@@ -23,9 +23,11 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
   if (activePens.length === 0) return null;
 
   const showElectrodeHeader = totalElectrodes > 1;
-  const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
 
-  // Clean electrode display name — avoid "Elektrode Elektrode 1"
+  // RA/RV logic: never show both — RV takes precedence when filled
+  const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
+  const hasRa = !hasRv && electrode.ra_value != null && electrode.ra_value > 0;
+
   const electrodeDisplay = electrode.electrode_code
     ? cleanCode(electrode.electrode_code, 'Elektrode')
     : String(index + 1);
@@ -49,13 +51,11 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
     valueLookup.set(pen.id, map);
   });
 
-  // Collect photos with clean captions — avoid "Pen Pen 1"
+  // Collect electrode-level photos (from all pens, but labelled at electrode level)
   const photos: { url: string; label: string }[] = [];
   activePens.forEach(pen => {
-    const penDisplay = cleanCode(pen.pen_code, 'Pen');
-    const suffix = activePens.length > 1 ? ` — Pen ${penDisplay}` : '';
-    if (pen.display_photo_url) photos.push({ url: pen.display_photo_url, label: `Detailfoto${suffix}` });
-    if (pen.overview_photo_url) photos.push({ url: pen.overview_photo_url, label: `Overzichtsfoto${suffix}` });
+    if (pen.display_photo_url) photos.push({ url: pen.display_photo_url, label: 'Detailfoto' });
+    if (pen.overview_photo_url) photos.push({ url: pen.overview_photo_url, label: 'Overzichtsfoto' });
   });
 
   return (
@@ -72,9 +72,9 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
         </div>
       )}
 
-      {/* RA + RV inline */}
+      {/* RA or RV (never both) */}
       <div className="flex flex-wrap gap-x-8 gap-y-1.5 mb-4">
-        {electrode.ra_value != null && (
+        {hasRa && (
           <div className="flex items-baseline gap-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">RA:</span>
             <span className="text-[13px] font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.ra_value))} Ω</span>
@@ -84,12 +84,6 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
           <div className="flex items-baseline gap-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">RV:</span>
             <span className="text-[13px] font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.rv_value))} Ω</span>
-          </div>
-        )}
-        {electrode.target_value != null && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Doel:</span>
-            <span className="text-[13px] font-medium text-foreground tabular-nums">≤ {formatNlNumber(Number(electrode.target_value))} Ω</span>
           </div>
         )}
       </div>
@@ -132,7 +126,7 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
         </table>
       )}
 
-      {/* Photos */}
+      {/* Electrode-level photos */}
       {photos.length > 0 && <ReportImageBlock images={photos} />}
     </div>
   );

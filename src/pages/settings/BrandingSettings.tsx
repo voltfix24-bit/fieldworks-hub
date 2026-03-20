@@ -43,6 +43,11 @@ export default function BrandingSettings() {
     setUploading(true);
     const ext = file.name.split('.').pop();
     const path = `${tenant.id}/logo_${Date.now()}.${ext}`;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'Bestand te groot', description: 'Maximaal 10MB toegestaan.', variant: 'destructive' });
+      setUploading(false);
+      return;
+    }
     const { error } = await supabase.storage.from('tenant-assets').upload(path, file, { upsert: true });
     if (error) {
       toast({ title: 'Upload mislukt', description: error.message, variant: 'destructive' });
@@ -109,7 +114,7 @@ export default function BrandingSettings() {
                     )}
                   </div>
                   <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG of SVG. Max 2MB.</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG of SVG. Max 10MB.</p>
                 </div>
               </div>
             </CardContent>

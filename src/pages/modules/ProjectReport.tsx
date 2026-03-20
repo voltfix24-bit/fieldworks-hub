@@ -117,8 +117,6 @@ export default function ProjectReport() {
               <ReportInfoSection title="Opdrachtgever" rows={[
                 { label: 'Bedrijf', value: client.company_name },
                 { label: 'Contactpersoon', value: client.contact_name },
-                { label: 'E-mail', value: client.email },
-                { label: 'Telefoon', value: client.phone },
               ]} />
             )}
           </div>
@@ -128,7 +126,6 @@ export default function ProjectReport() {
             {tech && (
               <ReportInfoSection title="Monteur" rows={[
                 { label: 'Naam', value: tech.full_name },
-                { label: 'Medewerkernr.', value: tech.employee_code },
               ]} />
             )}
             {equip && (
@@ -142,14 +139,7 @@ export default function ProjectReport() {
             )}
           </div>
 
-          {/* 4. Compact inline summary — not a separate section */}
-          {(stats.electrodeCount > 0 || stats.penCount > 0 || stats.measurementCount > 0) && (
-            <div className="mb-6 flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-muted-foreground page-break-inside-avoid">
-              {stats.electrodeCount > 0 && <span><strong className="text-foreground font-semibold">{stats.electrodeCount}</strong> elektrode{stats.electrodeCount !== 1 ? 's' : ''}</span>}
-              {stats.penCount > 0 && <span><strong className="text-foreground font-semibold">{stats.penCount}</strong> {stats.penCount === 1 ? 'pen' : 'pennen'}</span>}
-              {stats.measurementCount > 0 && <span><strong className="text-foreground font-semibold">{stats.measurementCount}</strong> metingen</span>}
-            </div>
-          )}
+          {/* Summary counts removed — not relevant for client-facing report */}
 
           {/* 5. Meetnotities — only if present */}
           {session?.measurement_notes && (
