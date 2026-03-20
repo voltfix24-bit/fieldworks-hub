@@ -1,6 +1,7 @@
 import { ReportElectrode } from '@/hooks/use-report-data';
 import { ReportMeasurementTable } from './ReportMeasurementTable';
 import { ReportImageBlock } from './ReportImageBlock';
+import { formatNlNumber } from '@/lib/nl-number';
 
 interface ReportElectrodeSectionProps {
   electrode: ReportElectrode;
@@ -18,9 +19,9 @@ export function ReportElectrodeSection({ electrode, index }: ReportElectrodeSect
             {electrode.label && <span className="font-normal text-muted-foreground"> — {electrode.label}</span>}
           </h3>
           <div className="flex flex-wrap items-center gap-3 mt-0.5">
-            {electrode.ra_value != null && <span className="text-xs font-medium tenant-accent-text">RA: {Number(electrode.ra_value).toFixed(2)} Ω</span>}
-            {electrode.rv_value != null && <span className="text-xs font-medium text-foreground">RV: {Number(electrode.rv_value).toFixed(2)} Ω</span>}
-            {electrode.target_value != null && <span className="text-xs text-muted-foreground">Doel: {Number(electrode.target_value).toFixed(2)} Ω</span>}
+            {electrode.ra_value != null && <span className="text-xs font-medium tenant-accent-text">RA: {formatNlNumber(Number(electrode.ra_value))} Ω</span>}
+            {electrode.rv_value != null && <span className="text-xs font-medium text-foreground">RV: {formatNlNumber(Number(electrode.rv_value))} Ω</span>}
+            {electrode.target_value != null && <span className="text-xs text-muted-foreground">Doel: {formatNlNumber(Number(electrode.target_value))} Ω</span>}
             {electrode.is_coupled && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 tenant-primary-text font-medium">Gekoppeld</span>}
             {electrode.target_met === true && <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Doel behaald ✓</span>}
             {electrode.target_met === false && electrode.target_value != null && <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-medium">Onder doel</span>}
@@ -37,9 +38,9 @@ export function ReportElectrodeSection({ electrode, index }: ReportElectrodeSect
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-xs font-semibold text-foreground">Pen {pen.pen_code}{pen.label && <span className="font-normal text-muted-foreground"> — {pen.label}</span>}</p>
-                {pen.pen_depth_meters != null && <p className="text-[10px] text-muted-foreground">Diepte: {Number(pen.pen_depth_meters).toFixed(1)} m</p>}
+                {pen.pen_depth_meters != null && <p className="text-[10px] text-muted-foreground">Diepte: {formatNlNumber(Number(pen.pen_depth_meters), 1)} m</p>}
               </div>
-              {lowestResistance != null && <span className="text-xs font-medium tenant-accent-text">Laagste: {lowestResistance.toFixed(2)} Ω</span>}
+              {lowestResistance != null && <span className="text-xs font-medium tenant-accent-text">Laagste: {formatNlNumber(lowestResistance)} Ω</span>}
             </div>
             {pen.notes && <p className="text-[10px] text-muted-foreground mb-2 italic">{pen.notes}</p>}
             <ReportMeasurementTable measurements={pen.measurements} lowestResistance={lowestResistance} />
