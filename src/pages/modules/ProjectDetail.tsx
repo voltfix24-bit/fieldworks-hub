@@ -10,6 +10,7 @@ import { useReportData } from '@/hooks/use-report-data';
 import { useToast } from '@/hooks/use-toast';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { formatNlDate } from '@/lib/nl-date';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
   Users, HardHat, Wrench, FileText, Ruler, ClipboardList,
@@ -80,7 +81,6 @@ export default function ProjectDetail() {
   if (isMobile) {
     return (
       <div className="animate-fade-in">
-        {/* Compact header */}
         <div className="mb-4">
           <button onClick={() => navigate('/projects')} className="flex items-center gap-1 text-xs text-muted-foreground mb-3 active:scale-97 transition-transform">
             <ArrowLeft className="h-3.5 w-3.5" /> Projecten
@@ -96,7 +96,6 @@ export default function ProjectDetail() {
           </div>
         </div>
 
-        {/* Primary actions — big, clear */}
         <div className="grid grid-cols-2 gap-2.5 mb-5">
           <button
             onClick={() => navigate(`/projects/${id}/measurements`)}
@@ -120,16 +119,14 @@ export default function ProjectDetail() {
           </button>
         </div>
 
-        {/* Quick info rows */}
         <div className="rounded-xl bg-card border border-border/40 divide-y divide-border/40 mb-5">
           <MobileInfoRow label="Locatie" value={[project.address_line_1, project.city].filter(Boolean).join(', ')} />
           <MobileInfoRow label="Klant" value={client?.company_name} />
           <MobileInfoRow label="Monteur" value={tech?.full_name} />
           <MobileInfoRow label="Apparaat" value={equip?.device_name} />
-          <MobileInfoRow label="Datum" value={project.planned_date} />
+          <MobileInfoRow label="Datum" value={formatNlDate(project.planned_date)} />
         </div>
 
-        {/* Measurement summary */}
         {hasSession && (
           <div className="rounded-xl bg-card border border-border/40 p-4 mb-5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2.5">Voortgang</p>
@@ -141,10 +138,8 @@ export default function ProjectDetail() {
           </div>
         )}
 
-        {/* Readiness */}
         <ReadinessChecklist items={readinessItems} />
 
-        {/* Secondary actions */}
         <div className="mt-5 flex flex-col gap-2">
           <Button variant="outline" size="sm" className="justify-start" onClick={() => navigate(`/projects/${id}/edit`)}>
             <Pencil className="mr-2 h-3.5 w-3.5" /> Bewerken
@@ -166,7 +161,7 @@ export default function ProjectDetail() {
     );
   }
 
-  // ── Desktop view (unchanged) ──
+  // ── Desktop view ──
   return (
     <div className="animate-fade-in">
       <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => navigate('/projects')}><ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Projecten</Button></div>
@@ -197,8 +192,8 @@ export default function ProjectDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <DetailCard title="Projectoverzicht" icon={<ClipboardList className="h-4 w-4 text-muted-foreground" />}>
-          <InfoRow label="Geplande Datum" value={project.planned_date} />
-          {project.completed_date && <InfoRow label="Afgerond" value={project.completed_date} />}
+          <InfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
+          {project.completed_date && <InfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
           <InfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city, project.country].filter(Boolean).join(', ') || null} />
         </DetailCard>
         <DetailCard title="Klant" icon={<Users className="h-4 w-4 text-muted-foreground" />}
@@ -223,12 +218,12 @@ export default function ProjectDetail() {
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <DetailCard title="Meetopstelling" icon={<Ruler className="h-4 w-4 text-muted-foreground" />}
-          action={<Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>{hasSession ? 'Werkruimte Openen' : 'Metingen Starten'}</Button>}>
-          {hasSession ? (<><InfoRow label="Datum" value={session?.measurement_date} /><InfoRow label="Elektrodes" value={String(electrodes.length)} /><InfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} /></>) : <p className="text-sm text-muted-foreground">Nog geen meetsessie.</p>}
+          action={<Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>{hasSession ? 'Werkruimte openen' : 'Metingen starten'}</Button>}>
+          {hasSession ? (<><InfoRow label="Datum" value={formatNlDate(session?.measurement_date)} /><InfoRow label="Elektrodes" value={String(electrodes.length)} /><InfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} /></>) : <p className="text-sm text-muted-foreground">Nog geen meetsessie.</p>}
         </DetailCard>
         <DetailCard title="Rapport" icon={<FileText className="h-4 w-4 text-muted-foreground" />}
           action={<div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}>Bekijk Rapport</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}>Bekijk rapport</Button>
             {isReportReady && <Button size="sm" onClick={() => { navigate(`/projects/${id}/report`); setTimeout(() => window.print(), 500); }}><Printer className="h-3.5 w-3.5" /></Button>}
           </div>}>
           {isReportReady ? (<><div className="flex items-center gap-2 mb-2"><CheckCircle2 className="h-4 w-4 text-green-600" /><span className="text-sm font-medium text-foreground">Rapport gereed</span></div><p className="text-xs text-muted-foreground">{reportData?.stats.electrodeCount} elektrodes · {reportData?.stats.measurementCount} metingen · {reportData?.stats.photosCount} foto's</p></>) : (
@@ -241,7 +236,6 @@ export default function ProjectDetail() {
   );
 }
 
-/** Compact mobile info row */
 function MobileInfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
@@ -251,7 +245,6 @@ function MobileInfoRow({ label, value }: { label: string; value?: string | null 
   );
 }
 
-/** Compact mobile stat */
 function MobileStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">

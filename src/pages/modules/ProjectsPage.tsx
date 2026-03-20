@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProjects } from '@/hooks/use-projects';
+import { formatNlDate } from '@/lib/nl-date';
 import { FolderKanban, Plus, Calendar, MapPin, User } from 'lucide-react';
 
 export default function ProjectsPage() {
@@ -33,14 +34,14 @@ export default function ProjectsPage() {
       <PageHeader
         title="Projecten"
         description="Beheer meet- en inspectieprojecten"
-        action={<Button onClick={() => navigate('/projects/new')}><Plus className="mr-2 h-4 w-4" /> Nieuw Project</Button>}
+        action={<Button onClick={() => navigate('/projects/new')}><Plus className="mr-2 h-4 w-4" /> Nieuw project</Button>}
       />
 
       {isLoading ? (
         <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
       ) : projects?.length === 0 ? (
         <EmptyState icon={FolderKanban} title="Nog geen projecten" description="Maak uw eerste project aan om veldwerk te organiseren."
-          action={<Button variant="outline" onClick={() => navigate('/projects/new')}><Plus className="mr-2 h-4 w-4" /> Project Aanmaken</Button>}
+          action={<Button variant="outline" onClick={() => navigate('/projects/new')}><Plus className="mr-2 h-4 w-4" /> Project aanmaken</Button>}
         />
       ) : (
         <>
@@ -50,7 +51,7 @@ export default function ProjectsPage() {
                 <SelectValue placeholder="Alle statussen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Statussen</SelectItem>
+                <SelectItem value="all">Alle statussen</SelectItem>
                 <SelectItem value="planned">Gepland</SelectItem>
                 <SelectItem value="completed">Afgerond</SelectItem>
               </SelectContent>
@@ -78,7 +79,7 @@ export default function ProjectsPage() {
                         <td className="px-4 py-3 text-sm font-mono text-muted-foreground">{p.project_number}</td>
                         <td className="px-4 py-3 text-sm font-medium text-foreground">{p.project_name}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{[p.city, p.country].filter(Boolean).join(', ') || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{p.planned_date || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{formatNlDate(p.planned_date)}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{p.clients?.company_name || '—'}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{p.technicians?.full_name || '—'}</td>
                         <td className="px-4 py-3"><StatusLabel status={p.status} /></td>
@@ -103,7 +104,7 @@ export default function ProjectsPage() {
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     {p.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.city}</span>}
-                    {p.planned_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{p.planned_date}</span>}
+                    {p.planned_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatNlDate(p.planned_date)}</span>}
                     {p.clients?.company_name && <span className="flex items-center gap-1"><User className="h-3 w-3" />{p.clients.company_name}</span>}
                   </div>
                 </CardContent>

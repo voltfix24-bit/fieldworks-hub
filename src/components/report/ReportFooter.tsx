@@ -10,8 +10,8 @@ export function ReportFooter() {
     branding?.footer_country,
   ].filter(Boolean).join(', ');
   const contactParts = [
-    branding?.footer_email && `Email: ${branding.footer_email}`,
-    branding?.footer_phone && `Tel: ${branding.footer_phone}`,
+    branding?.footer_email && `E-mail: ${branding.footer_email}`,
+    branding?.footer_phone && `Tel.: ${branding.footer_phone}`,
     branding?.footer_website && branding.footer_website,
   ].filter(Boolean);
 

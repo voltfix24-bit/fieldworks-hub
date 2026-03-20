@@ -1,4 +1,5 @@
 import { useTenant } from '@/contexts/TenantContext';
+import { formatNlDate } from '@/lib/nl-date';
 
 interface ReportHeaderProps {
   projectName: string;
@@ -24,7 +25,7 @@ export function ReportHeader({ projectName, projectNumber, status, measurementDa
           </div>
         </div>
         <div className="text-right">
-          <span className={`text-xs px-2 py-0.5 rounded font-medium ${status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+          <span className={`text-xs px-2 py-0.5 rounded font-medium ${status === 'completed' ? 'status-completed' : 'status-planned'}`}>
             {status === 'completed' ? 'Afgerond' : 'Gepland'}
           </span>
         </div>
@@ -34,7 +35,7 @@ export function ReportHeader({ projectName, projectNumber, status, measurementDa
         <h1 className="text-2xl font-bold text-foreground tracking-tight">{projectName}</h1>
         <p className="text-sm font-mono text-muted-foreground mt-1">{projectNumber}</p>
         {location && <p className="text-sm text-muted-foreground mt-1">{location}</p>}
-        {measurementDate && <p className="text-xs text-muted-foreground mt-2">Meetdatum: {measurementDate}</p>}
+        {measurementDate && <p className="text-xs text-muted-foreground mt-2">Meetdatum: {formatNlDate(measurementDate, 'long')}</p>}
       </div>
     </div>
   );
