@@ -99,13 +99,13 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
       {/* Inline RA summary */}
       {lowestIsValid && (
         <div className={cn(
-          'flex items-center gap-2 rounded-md bg-[hsl(var(--measure-lowest)/0.04)] border border-[hsl(var(--measure-lowest)/0.08)]',
+          'flex items-center gap-2 rounded-md bg-[hsl(var(--measure-lowest)/0.05)] border border-[hsl(var(--measure-lowest)/0.1)]',
           compact ? 'px-2.5 py-1.5 mt-1' : 'px-3 py-2 mt-1.5'
         )}>
-          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
-          <span className={cn('font-bold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[11px]' : 'text-[11px]')}>{formatNlNumber(lowestResistance!)} Ω</span>
-          <span className={cn('text-muted-foreground/50 font-medium', compact ? 'text-[9px]' : 'text-[10px]')}>laagst</span>
-          <span className={cn('ml-auto text-muted-foreground/40 tabular-nums font-medium', compact ? 'text-[9px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
+          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-3.5 w-3.5' : 'h-3.5 w-3.5')} />
+          <span className={cn('font-bold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[12px]' : 'text-[12px]')}>{formatNlNumber(lowestResistance!)} Ω</span>
+          <span className={cn('text-muted-foreground/60 font-semibold', compact ? 'text-[10px]' : 'text-[10px]')}>laagst</span>
+          <span className={cn('ml-auto text-muted-foreground/50 tabular-nums font-medium', compact ? 'text-[10px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
         </div>
       )}
 
