@@ -109,7 +109,7 @@ export default function BrandingSettings() {
                     )}
                   </div>
                   <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG of SVG. Max 2MB.</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG of SVG. Max 10MB.</p>
                 </div>
               </div>
             </CardContent>
