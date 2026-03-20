@@ -84,7 +84,7 @@ export default function EquipmentPage() {
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
                     {eq.serial_number && <span className="font-mono">SN: {eq.serial_number}</span>}
                     {eq.next_calibration_date && <span className={isCalibrationWarning(eq.next_calibration_date) ? 'text-destructive font-medium flex items-center gap-1' : ''}>
-                      {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}Volg. kal: {eq.next_calibration_date}
+                      {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}Volg. kal.: {formatNlDate(eq.next_calibration_date)}
                     </span>}
                   </div>
                 </CardContent>
