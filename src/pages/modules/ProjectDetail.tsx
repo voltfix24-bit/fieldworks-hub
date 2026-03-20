@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatNlDate } from '@/lib/nl-date';
+import { GroundingIcon } from '@/components/measurement/GroundingIcon';
+import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
   Users, HardHat, Wrench, FileText, Ruler, ClipboardList,
@@ -81,45 +83,63 @@ export default function ProjectDetail() {
   if (isMobile) {
     return (
       <div className="animate-fade-in">
-        <div className="mb-4">
-          <button onClick={() => navigate('/projects')} className="flex items-center gap-1 text-xs text-muted-foreground mb-3 active:scale-97 transition-transform">
+        {/* Header */}
+        <div className="mb-3">
+          <button onClick={() => navigate('/projects')} className="flex items-center gap-1 text-xs text-muted-foreground mb-2 active:scale-97 transition-transform">
             <ArrowLeft className="h-3.5 w-3.5" /> Projecten
           </button>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="text-lg font-semibold text-foreground leading-snug truncate">{project.project_name}</h1>
-              <p className="text-xs text-muted-foreground font-mono mt-0.5">{project.project_number}</p>
+              <h1 className="text-[16px] font-bold text-foreground leading-snug truncate">{project.project_name}</h1>
+              <p className="text-[11px] text-muted-foreground/60 font-mono mt-0.5">{project.project_number}</p>
             </div>
-            <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium shrink-0 mt-1 ${project.status === 'completed' ? 'status-completed' : 'status-planned'}`}>
+            <span className={cn(
+              'text-[10px] px-2 py-0.5 rounded-md font-semibold shrink-0 mt-0.5',
+              project.status === 'completed' ? 'status-completed' : 'status-planned'
+            )}>
               {project.status === 'completed' ? 'Afgerond' : 'Gepland'}
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5 mb-5">
+        {/* Primary actions — full width, stacked */}
+        <div className="space-y-2 mb-4">
           <button
             onClick={() => navigate(`/projects/${id}/measurements`)}
-            className="flex items-center justify-between rounded-xl bg-[hsl(var(--tenant-primary))] text-[hsl(var(--tenant-primary-foreground,0_0%_100%))] px-4 py-3.5 active:scale-[0.97] transition-all"
+            className="w-full flex items-center justify-between rounded-xl bg-[hsl(var(--tenant-primary))] text-white px-4 py-3 active:scale-[0.97] transition-all"
           >
             <div className="flex items-center gap-2.5">
-              <Play className="h-4 w-4" />
-              <span className="text-sm font-medium">{hasSession ? 'Metingen' : 'Meten starten'}</span>
+              <GroundingIcon size={18} />
+              <span className="text-[14px] font-bold">{hasSession ? 'Metingen' : 'Meten starten'}</span>
             </div>
             <ChevronRight className="h-4 w-4 opacity-60" />
           </button>
-          <button
-            onClick={() => navigate(`/projects/${id}/report`)}
-            className="flex items-center justify-between rounded-xl bg-muted/60 text-foreground px-4 py-3.5 active:scale-[0.97] transition-all"
-          >
-            <div className="flex items-center gap-2.5">
-              <FileText className="h-4 w-4" />
-              <span className="text-sm font-medium">Rapport</span>
-            </div>
-            <ChevronRight className="h-4 w-4 opacity-40" />
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => navigate(`/projects/${id}/report`)}
+              className="flex items-center justify-between rounded-xl border border-border/40 bg-card text-foreground px-3.5 py-2.5 active:scale-[0.97] transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[13px] font-medium">Rapport</span>
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
+            </button>
+            <button
+              onClick={() => navigate(`/projects/${id}/edit`)}
+              className="flex items-center justify-between rounded-xl border border-border/40 bg-card text-foreground px-3.5 py-2.5 active:scale-[0.97] transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <Pencil className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[13px] font-medium">Bewerken</span>
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
+            </button>
+          </div>
         </div>
 
-        <div className="rounded-xl bg-card border border-border/40 divide-y divide-border/40 mb-5">
+        {/* Project info */}
+        <div className="rounded-xl bg-card border border-border/30 divide-y divide-border/30 mb-3">
           <MobileInfoRow label="Locatie" value={[project.address_line_1, project.city].filter(Boolean).join(', ')} />
           <MobileInfoRow label="Klant" value={client?.company_name} />
           <MobileInfoRow label="Monteur" value={tech?.full_name} />
@@ -127,9 +147,10 @@ export default function ProjectDetail() {
           <MobileInfoRow label="Datum" value={formatNlDate(project.planned_date)} />
         </div>
 
+        {/* Progress stats */}
         {hasSession && (
-          <div className="rounded-xl bg-card border border-border/40 p-4 mb-5">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2.5">Voortgang</p>
+          <div className="rounded-xl bg-card border border-border/30 p-3.5 mb-3">
+            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Voortgang</p>
             <div className="grid grid-cols-3 gap-3">
               <MobileStat label="Elektrodes" value={electrodes.length} />
               <MobileStat label="Metingen" value={reportData?.stats.measurementCount || 0} />
@@ -140,22 +161,35 @@ export default function ProjectDetail() {
 
         <ReadinessChecklist items={readinessItems} />
 
-        <div className="mt-5 flex flex-col gap-2">
-          <Button variant="outline" size="sm" className="justify-start" onClick={() => navigate(`/projects/${id}/edit`)}>
-            <Pencil className="mr-2 h-3.5 w-3.5" /> Bewerken
-          </Button>
+        {/* Secondary actions */}
+        <div className="mt-4 space-y-1.5">
           {project.status === 'planned' ? (
-            <Button size="sm" className="justify-start" onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending || !isReportReady}>
-              <CheckCircle2 className="mr-2 h-3.5 w-3.5" /> Project afronden
-            </Button>
+            <button
+              onClick={() => handleStatusChange('completed')}
+              disabled={updateMut.isPending || !isReportReady}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-[hsl(var(--status-completed)/0.2)] bg-[hsl(var(--status-completed)/0.04)] text-[hsl(var(--status-completed))] active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-[13px] font-semibold">Project afronden</span>
+            </button>
           ) : (
-            <Button variant="outline" size="sm" className="justify-start" onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}>
-              <RotateCcw className="mr-2 h-3.5 w-3.5" /> Heropenen
-            </Button>
+            <button
+              onClick={() => handleStatusChange('planned')}
+              disabled={updateMut.isPending}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-border/30 bg-card text-foreground active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              <RotateCcw className="h-4 w-4 text-muted-foreground" />
+              <span className="text-[13px] font-medium">Heropenen</span>
+            </button>
           )}
-          <Button variant="ghost" size="sm" className="justify-start text-destructive hover:text-destructive" onClick={handleDelete} disabled={deleteMut.isPending}>
-            <Trash2 className="mr-2 h-3.5 w-3.5" /> Verwijderen
-          </Button>
+          <button
+            onClick={handleDelete}
+            disabled={deleteMut.isPending}
+            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-destructive/70 active:scale-[0.98] transition-all disabled:opacity-40"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span className="text-[12px] font-medium">Verwijderen</span>
+          </button>
         </div>
       </div>
     );
@@ -226,8 +260,8 @@ export default function ProjectDetail() {
             <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}>Bekijk rapport</Button>
             {isReportReady && <Button size="sm" onClick={() => { navigate(`/projects/${id}/report`); setTimeout(() => window.print(), 500); }}><Printer className="h-3.5 w-3.5" /></Button>}
           </div>}>
-          {isReportReady ? (<><div className="flex items-center gap-2 mb-2"><CheckCircle2 className="h-4 w-4 text-green-600" /><span className="text-sm font-medium text-foreground">Rapport gereed</span></div><p className="text-xs text-muted-foreground">{reportData?.stats.electrodeCount} elektrodes · {reportData?.stats.measurementCount} metingen · {reportData?.stats.photosCount} foto's</p></>) : (
-            <div className="flex items-center gap-2"><AlertCircle className="h-4 w-4 text-orange-500" /><span className="text-sm text-muted-foreground">Voltooi eerst de metingen</span></div>
+          {isReportReady ? (<><div className="flex items-center gap-2 mb-2"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))]" /><span className="text-sm font-medium text-foreground">Rapport gereed</span></div><p className="text-xs text-muted-foreground">{reportData?.stats.electrodeCount} elektrodes · {reportData?.stats.measurementCount} metingen · {reportData?.stats.photosCount} foto's</p></>) : (
+            <div className="flex items-center gap-2"><AlertCircle className="h-4 w-4 text-amber-500" /><span className="text-sm text-muted-foreground">Voltooi eerst de metingen</span></div>
           )}
         </DetailCard>
         <ReadinessChecklist items={readinessItems} />
@@ -238,9 +272,9 @@ export default function ProjectDetail() {
 
 function MobileInfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="flex items-center justify-between px-4 py-2.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm text-foreground font-medium truncate ml-4 text-right">{value || '—'}</span>
+    <div className="flex items-center justify-between px-3.5 py-2">
+      <span className="text-[11px] text-muted-foreground/60 font-medium">{label}</span>
+      <span className="text-[12px] text-foreground font-medium truncate ml-4 text-right">{value || '—'}</span>
     </div>
   );
 }
@@ -248,8 +282,8 @@ function MobileInfoRow({ label, value }: { label: string; value?: string | null 
 function MobileStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
-      <p className="text-lg font-semibold text-foreground tabular-nums">{value}</p>
-      <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
+      <p className="text-lg font-bold text-foreground tabular-nums">{value}</p>
+      <p className="text-[10px] text-muted-foreground/60 font-medium mt-0.5">{label}</p>
     </div>
   );
 }
