@@ -13,6 +13,8 @@ import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments'
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { GroundingIcon, GroundingLoader } from '@/components/measurement/GroundingIcon';
+import { getDepthProgressionWarnings } from '@/components/measurement/DepthMeasurementTable';
+import { useDepthMeasurements } from '@/hooks/use-depth-measurements';
 import { formatNlDate } from '@/lib/nl-date';
 import { cn } from '@/lib/utils';
 
