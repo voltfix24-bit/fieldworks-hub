@@ -59,7 +59,7 @@ export default function EquipmentForm() {
   return (
     <div className="animate-fade-in max-w-2xl">
       <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => navigate('/equipment')}><ArrowLeft className="mr-2 h-4 w-4" /> Terug</Button></div>
-      <PageHeader title={isEdit ? 'Apparaat Bewerken' : 'Nieuw Apparaat'} />
+      <PageHeader title={isEdit ? 'Apparaat bewerken' : 'Nieuw apparaat'} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection title="Apparaatinformatie">
           <div className="space-y-2"><Label>Apparaatnaam *</Label><Input value={form.device_name} onChange={e => set('device_name', e.target.value)} required /></div>
