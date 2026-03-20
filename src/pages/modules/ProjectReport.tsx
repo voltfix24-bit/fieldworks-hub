@@ -6,7 +6,7 @@ import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
 import { ReportHeader } from '@/components/report/ReportHeader';
 import { ReportInfoSection } from '@/components/report/ReportInfoSection';
-import { ReportSummaryStats } from '@/components/report/ReportSummaryStats';
+
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
