@@ -111,7 +111,7 @@ export default function ProjectsPage() {
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] text-muted-foreground/60 font-mono">{p.project_number}</span>
                     {p.city && <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
-                    {p.planned_date && <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDate(p.planned_date, 'compact')}</span>}
+                    {p.planned_date && <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDateCompact(p.planned_date)}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
