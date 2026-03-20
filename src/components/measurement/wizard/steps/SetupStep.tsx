@@ -29,21 +29,27 @@ export function SetupStep({
   notes, setNotes,
   clients, technicians, equipment, compact,
 }: SetupStepProps) {
-  const fieldH = compact ? 'h-9' : 'h-11';
-  const fieldText = compact ? 'text-[12px]' : 'text-[13px]';
+  const fieldH = compact ? 'h-8' : 'h-11';
+  const fieldText = compact ? 'text-[11px]' : 'text-[13px]';
 
   return (
     <div>
-      <div className={compact ? 'mb-2' : 'mb-4'}>
-        <h2 className={`font-semibold text-foreground tracking-tight ${compact ? 'text-[13px]' : 'text-[15px]'}`}>
+      <div className={compact ? 'mb-1.5' : 'mb-4'}>
+        <h2 className={cn(
+          'font-semibold text-foreground tracking-tight',
+          compact ? 'text-[12px]' : 'text-[15px]'
+        )}>
           Meetopstelling
         </h2>
-        <p className={`text-muted-foreground mt-0.5 ${compact ? 'text-[11px]' : 'text-[13px]'}`}>
+        <p className={cn(
+          'text-muted-foreground/60 mt-0.5',
+          compact ? 'text-[10px]' : 'text-[13px]'
+        )}>
           Basisgegevens voor deze meetsessie
         </p>
       </div>
 
-      <div className={compact ? 'space-y-3' : 'space-y-5'}>
+      <div className={compact ? 'space-y-2.5' : 'space-y-5'}>
         <FieldGroup label="Meetdatum" compact={compact}>
           <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className={cn(fieldH, fieldText)} />
         </FieldGroup>
@@ -82,7 +88,7 @@ export function SetupStep({
           <Textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            className={cn(fieldText, compact ? 'min-h-[56px]' : 'min-h-[80px]')}
+            className={cn(fieldText, compact ? 'min-h-[48px]' : 'min-h-[80px]')}
             placeholder="Meetnotities…"
           />
         </FieldGroup>
@@ -93,13 +99,13 @@ export function SetupStep({
 
 function FieldGroup({ label, optional, children, compact }: { label: string; optional?: boolean; children: React.ReactNode; compact?: boolean }) {
   return (
-    <div className={compact ? 'space-y-1' : 'space-y-1.5'}>
+    <div className={compact ? 'space-y-0.5' : 'space-y-1.5'}>
       <Label className={cn(
-        'font-semibold text-muted-foreground uppercase tracking-wide',
-        compact ? 'text-[10px]' : 'text-[12px]'
+        'font-semibold text-muted-foreground/60 uppercase tracking-wide',
+        compact ? 'text-[9px]' : 'text-[12px]'
       )}>
         {label}
-        {optional && <span className="font-normal normal-case tracking-normal ml-1.5 text-muted-foreground/50">(optioneel)</span>}
+        {optional && <span className="font-normal normal-case tracking-normal ml-1 text-muted-foreground/40">(optioneel)</span>}
       </Label>
       {children}
     </div>

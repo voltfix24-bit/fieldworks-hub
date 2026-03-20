@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Trash2, ArrowDown, Gauge } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,6 +20,8 @@ interface DepthMeasurementTableProps {
   compact?: boolean;
 }
 
+const PRESET_DEPTHS = new Set([3, 6, 9, 12, 15, 18, 21, 24, 27, 30]);
+
 export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete, disabled, compact }: DepthMeasurementTableProps) {
   const lowestResistance = measurements.length > 0
     ? Math.min(...measurements.filter(m => m.resistance_value > 0).map(m => m.resistance_value))
@@ -36,26 +37,8 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
 
   return (
     <div className="space-y-0">
-      {/* Column header */}
-      <div className={cn(
-        'grid gap-1 px-1.5',
-        compact
-          ? 'grid-cols-[44px_1fr_28px] pb-1'
-          : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 pb-1.5'
-      )}>
-        <span className={cn(
-          'uppercase tracking-widest font-semibold text-muted-foreground/50',
-          compact ? 'text-[8px]' : 'text-[9px]'
-        )}>Diepte</span>
-        <span className={cn(
-          'uppercase tracking-widest font-semibold text-muted-foreground/50',
-          compact ? 'text-[8px]' : 'text-[9px]'
-        )}>Weerstand</span>
-        <span />
-      </div>
-
       {/* Measurement rows */}
-      <div className="rounded-lg overflow-hidden border border-border/40 bg-card">
+      <div className="rounded-lg overflow-hidden border border-border/30">
         {measurements.map((m, idx) => (
           <DepthRowComponent
             key={m.id}
@@ -66,6 +49,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
             disabled={disabled}
             isEven={idx % 2 === 0}
             compact={compact}
+            isPreset={PRESET_DEPTHS.has(m.depth_meters)}
           />
         ))}
       </div>
@@ -75,29 +59,29 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
         onClick={() => onAdd(nextDepth, 0)}
         disabled={disabled}
         className={cn(
-          'w-full flex items-center justify-center gap-1.5 mt-1.5',
-          'rounded-md border border-dashed border-border/40',
-          'font-medium text-muted-foreground/60',
+          'w-full flex items-center justify-center gap-1',
+          'rounded-md border border-dashed border-border/30',
+          'font-medium text-muted-foreground/50',
           'hover:border-primary/30 hover:text-primary hover:bg-primary/3',
           'transition-all duration-150 active:scale-[0.997]',
           'disabled:opacity-40 disabled:cursor-not-allowed',
-          compact ? 'py-1.5 text-[10px] min-h-[30px]' : 'py-2.5 text-[12px] min-h-[40px]'
+          compact ? 'py-1 text-[9px] mt-0.5 min-h-[26px]' : 'py-2.5 text-[12px] mt-1.5 min-h-[40px]'
         )}
       >
-        <ArrowDown className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
-        Dieper slaan — {nextDepth}m
+        <ArrowDown className={cn(compact ? 'h-2 w-2' : 'h-3 w-3')} />
+        Dieper — {nextDepth}m
       </button>
 
       {/* Inline RA summary */}
       {lowestIsValid && (
         <div className={cn(
-          'flex items-center gap-2 mt-1.5 rounded-md bg-[hsl(var(--measure-lowest)/0.05)] border border-[hsl(var(--measure-lowest)/0.1)]',
-          compact ? 'px-2 py-1' : 'px-3 py-2'
+          'flex items-center gap-2 rounded-md bg-[hsl(var(--measure-lowest)/0.04)] border border-[hsl(var(--measure-lowest)/0.08)]',
+          compact ? 'px-2 py-1 mt-1' : 'px-3 py-2 mt-1.5'
         )}>
-          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5')} />
           <span className={cn('font-semibold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[10px]' : 'text-[11px]')}>{lowestResistance!.toFixed(2)} Ω</span>
-          <span className={cn('text-muted-foreground/50', compact ? 'text-[8px]' : 'text-[10px]')}>laagst</span>
-          <span className={cn('ml-auto text-muted-foreground/40 tabular-nums', compact ? 'text-[8px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
+          <span className={cn('text-muted-foreground/40', compact ? 'text-[8px]' : 'text-[10px]')}>laagst</span>
+          <span className={cn('ml-auto text-muted-foreground/35 tabular-nums', compact ? 'text-[8px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
         </div>
       )}
 
@@ -113,7 +97,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
@@ -121,9 +105,12 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   disabled?: boolean;
   isEven?: boolean;
   compact?: boolean;
+  isPreset?: boolean;
 }) {
   const [depth, setDepth] = useState(String(row.depth_meters));
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value) : '');
+  const [isFocused, setIsFocused] = useState(false);
+  const resistanceRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDepth(String(row.depth_meters));
@@ -131,6 +118,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   }, [row.depth_meters, row.resistance_value]);
 
   const handleBlur = useCallback(() => {
+    setIsFocused(false);
     const d = parseFloat(depth);
     const r = parseFloat(resistance) || 0;
     if (!isNaN(d) && row.id && (d !== row.depth_meters || r !== row.resistance_value)) {
@@ -142,71 +130,73 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
 
   return (
     <div className={cn(
-      'grid items-center transition-colors duration-100',
+      'grid items-center transition-colors duration-75',
       compact
-        ? 'grid-cols-[44px_1fr_28px] gap-0.5 px-1'
+        ? 'grid-cols-[38px_1fr_24px] gap-0 px-0.5'
         : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-1.5',
-      isEven ? 'bg-card' : 'bg-[hsl(var(--measure-surface))]',
-      isLowest && 'bg-[hsl(var(--measure-lowest)/0.06)]',
+      isEven ? 'bg-card' : 'bg-muted/20',
+      isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
+      isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.12)]',
     )}>
-      <div className={cn('relative', compact ? 'py-0.5' : 'py-1')}>
-        <Input
-          type="number"
-          inputMode="decimal"
-          step="0.1"
-          value={depth}
-          onChange={e => setDepth(e.target.value)}
-          onBlur={handleBlur}
-          className={cn(
-            'text-center border-0 bg-transparent shadow-none',
-            'focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:bg-card',
-            compact ? 'h-7 text-[11px] pr-4' : 'h-9 text-[12px] pr-5',
-            isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]'
-          )}
-          disabled={disabled}
-        />
+      {/* Depth — read-only feel for presets */}
+      <div className="relative">
         <span className={cn(
-          'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-medium',
-          compact ? 'text-[8px]' : 'text-[9px]'
+          'block text-center tabular-nums font-medium leading-none',
+          compact ? 'text-[10px] py-1.5' : 'text-[12px] py-2.5',
+          isLowest ? 'text-[hsl(var(--measure-lowest))] font-semibold' : 'text-muted-foreground/60'
+        )}>
+          {row.depth_meters}
+        </span>
+        <span className={cn(
+          'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/30 pointer-events-none font-medium',
+          compact ? 'text-[7px]' : 'text-[9px]'
         )}>m</span>
       </div>
 
-      <div className={cn('relative', compact ? 'py-0.5' : 'py-1')}>
+      {/* Resistance — the main input */}
+      <div className="relative">
         <Input
+          ref={resistanceRef}
           type="number"
           inputMode="decimal"
           step="0.01"
           value={resistance}
           onChange={e => setResistance(e.target.value)}
+          onFocus={() => setIsFocused(true)}
           onBlur={handleBlur}
           placeholder="—"
           className={cn(
-            'border-0 bg-transparent shadow-none',
-            'focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:bg-card',
-            compact ? 'h-7 text-[11px] pr-4' : 'h-9 text-[12px] pr-5',
+            'border-0 bg-transparent shadow-none rounded-none',
+            'focus-visible:ring-0 focus-visible:bg-transparent',
+            compact ? 'h-6 text-[11px] pr-3' : 'h-9 text-[12px] pr-5',
             isLowest && 'font-semibold text-[hsl(var(--measure-lowest))]',
-            hasValue ? 'text-foreground' : 'text-muted-foreground/30'
+            hasValue ? 'text-foreground font-medium' : 'text-muted-foreground/25'
           )}
           disabled={disabled}
         />
         <span className={cn(
-          'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-medium',
-          compact ? 'text-[8px]' : 'text-[9px]'
+          'absolute right-0.5 top-1/2 -translate-y-1/2 text-muted-foreground/30 pointer-events-none font-medium',
+          compact ? 'text-[7px]' : 'text-[9px]'
         )}>Ω</span>
       </div>
 
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={() => row.id && onDelete(row.id)}
-        disabled={disabled}
-        className={cn(
-          'text-muted-foreground/15 hover:text-destructive hover:bg-destructive/8 transition-colors',
-          compact ? 'h-6 w-6' : 'h-8 w-8'
+      {/* Delete — only for non-preset (manually added) rows */}
+      <div className="flex justify-center">
+        {!isPreset ? (
+          <button
+            onClick={() => row.id && onDelete(row.id)}
+            disabled={disabled}
+            className={cn(
+              'text-muted-foreground/15 hover:text-destructive transition-colors rounded',
+              compact ? 'h-5 w-5 flex items-center justify-center' : 'h-8 w-8 flex items-center justify-center'
+            )}
+          >
+            <Trash2 className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
+          </button>
+        ) : (
+          <span className={cn(compact ? 'w-5' : 'w-8')} />
         )}
-      >
-        <Trash2 className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
-      </Button>
+      </div>
     </div>
   );
 }

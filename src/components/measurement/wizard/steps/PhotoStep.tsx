@@ -1,4 +1,5 @@
 import { PhotoUploader } from '../../PhotoUploader';
+import { cn } from '@/lib/utils';
 
 interface PhotoStepProps {
   displayPhotoUrl: string | null;
@@ -20,17 +21,22 @@ export function PhotoStep({
 }: PhotoStepProps) {
   return (
     <div>
-      {/* Compact title instead of WizardStepHeader */}
-      <div className={compact ? 'mb-2' : 'mb-4'}>
-        <h2 className={`font-semibold text-foreground tracking-tight ${compact ? 'text-[13px]' : 'text-[15px]'}`}>
+      <div className={compact ? 'mb-1.5' : 'mb-4'}>
+        <h2 className={cn(
+          'font-semibold text-foreground tracking-tight',
+          compact ? 'text-[12px]' : 'text-[15px]'
+        )}>
           Foto's — {penCode}
         </h2>
-        <p className={`text-muted-foreground mt-0.5 ${compact ? 'text-[11px]' : 'text-[13px]'}`}>
+        <p className={cn(
+          'text-muted-foreground/60 mt-0.5',
+          compact ? 'text-[10px]' : 'text-[13px]'
+        )}>
           Detail- en overzichtsfoto
         </p>
       </div>
 
-      <div className={compact ? 'grid grid-cols-2 gap-2' : 'space-y-5'}>
+      <div className={compact ? 'grid grid-cols-2 gap-1.5' : 'space-y-5'}>
         <PhotoUploader
           label="Detailfoto"
           currentUrl={displayPhotoUrl}

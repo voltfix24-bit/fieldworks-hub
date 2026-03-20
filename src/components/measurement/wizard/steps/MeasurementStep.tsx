@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { Input } from '@/components/ui/input';
 import { GroundingIcon } from '../../GroundingIcon';
@@ -36,38 +36,41 @@ export function MeasurementStep({
   }, [pens.length]);
 
   return (
-    <div className={cn('space-y-2', compact ? 'pb-16' : 'pb-24 space-y-4')}>
-      {/* ─── RA bar — compact inline ─── */}
+    <div className={cn(compact ? 'space-y-1.5 pb-2' : 'space-y-4 pb-24')}>
+      {/* ─── RA insight bar ─── */}
       <div className={cn(
-        'flex items-center gap-2.5 rounded-lg border border-border/40 bg-card overflow-hidden',
-        compact ? 'px-2.5 py-1.5' : 'px-3.5 py-2.5'
+        'flex items-center gap-2 rounded-md border overflow-hidden',
+        compact ? 'px-2 py-1.5' : 'px-3.5 py-2.5',
+        electrode.ra_value != null
+          ? 'border-[hsl(var(--tenant-primary,var(--primary))/0.15)] bg-[hsl(var(--tenant-primary,var(--primary))/0.03)]'
+          : 'border-border/30 bg-card'
       )}>
-        <div className="flex-1 min-w-0 flex items-center gap-2">
-          <span className={cn(
-            'uppercase tracking-widest text-muted-foreground/50 font-semibold shrink-0',
-            compact ? 'text-[8px]' : 'text-[10px]'
-          )}>RA</span>
-          <span className={cn(
-            'font-bold tabular-nums leading-none',
-            compact ? 'text-[14px]' : 'text-[17px]',
-            electrode.ra_value != null ? 'text-primary' : 'text-muted-foreground/25'
-          )}>
-            {electrode.ra_value != null ? `${Number(electrode.ra_value).toFixed(2)} Ω` : '—'}
-          </span>
-          {electrode.ra_value != null && (
-            <span className="text-[9px] text-muted-foreground/50">laagst</span>
-          )}
-        </div>
+        <GroundingIcon size={compact ? 10 : 13} className="text-[hsl(var(--tenant-primary,var(--primary))/0.5)] shrink-0" />
+        <span className={cn(
+          'uppercase tracking-widest font-semibold shrink-0',
+          compact ? 'text-[7px]' : 'text-[10px]',
+          'text-muted-foreground/40'
+        )}>RA</span>
+        <span className={cn(
+          'font-bold tabular-nums leading-none',
+          compact ? 'text-[13px]' : 'text-[17px]',
+          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/20'
+        )}>
+          {electrode.ra_value != null ? `${Number(electrode.ra_value).toFixed(2)} Ω` : '—'}
+        </span>
+        {electrode.ra_value != null && (
+          <span className="text-[8px] text-muted-foreground/40">laagst</span>
+        )}
         {hasTarget && (
-          <div className={cn(
-            'shrink-0 px-2 py-0.5 rounded-md tabular-nums font-semibold',
-            compact ? 'text-[11px]' : 'text-[13px]',
+          <span className={cn(
+            'ml-auto shrink-0 px-1.5 py-0.5 rounded tabular-nums font-semibold',
+            compact ? 'text-[9px]' : 'text-[12px]',
             targetMet
               ? 'bg-[hsl(var(--status-completed)/0.08)] text-[hsl(var(--status-completed))]'
-              : 'bg-muted/30 text-muted-foreground'
+              : 'bg-muted/30 text-muted-foreground/60'
           )}>
             ≤ {Number(electrode.target_value).toFixed(2)} Ω
-          </div>
+          </span>
         )}
       </div>
 
@@ -102,24 +105,24 @@ export function MeasurementStep({
 
             {isLast && showRv && (
               <div className={cn(
-                'mt-2 rounded-lg border border-border/40 bg-muted/5 flex items-center gap-2.5 transition-all duration-200',
-                compact ? 'px-2.5 py-2' : 'px-3.5 py-3'
+                'mt-1 rounded-md border border-border/30 bg-muted/5 flex items-center gap-2 transition-all duration-200',
+                compact ? 'px-2 py-1.5' : 'px-3.5 py-3'
               )}>
-                <GroundingIcon size={12} className="text-primary/60 shrink-0" />
-                <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-semibold shrink-0">RV</span>
+                <GroundingIcon size={10} className="text-muted-foreground/40 shrink-0" />
+                <span className="text-[8px] uppercase tracking-widest text-muted-foreground/40 font-semibold shrink-0">RV</span>
                 <Input
                   type="number"
                   inputMode="decimal"
                   step="0.01"
                   value={electrode.rv_value ?? ''}
                   onChange={e => onUpdateElectrode({ rv_value: e.target.value ? parseFloat(e.target.value) : null })}
-                  placeholder="0.00 Ω"
+                  placeholder="0.00"
                   className={cn(
-                    'font-semibold tabular-nums max-w-[120px] border-0 bg-transparent shadow-none',
-                    compact ? 'h-7 text-[12px]' : 'h-9 text-[13px]'
+                    'font-semibold tabular-nums max-w-[100px] border-0 bg-transparent shadow-none focus-visible:ring-0',
+                    compact ? 'h-6 text-[11px]' : 'h-9 text-[13px]'
                   )}
                 />
-                <span className="text-[9px] text-muted-foreground/40 ml-auto hidden sm:inline">gekoppeld</span>
+                <span className="text-[8px] text-muted-foreground/30">Ω</span>
               </div>
             )}
           </div>
@@ -130,15 +133,15 @@ export function MeasurementStep({
       <button
         onClick={onAddPen}
         className={cn(
-          'w-full flex items-center justify-center gap-1.5',
-          'rounded-lg border border-dashed border-primary/20',
-          'text-[12px] font-semibold text-primary/70',
-          'hover:bg-primary/4 hover:border-primary/35 hover:text-primary',
+          'w-full flex items-center justify-center gap-1',
+          'rounded-md border border-dashed border-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
+          'text-[11px] font-semibold text-[hsl(var(--tenant-primary,var(--primary))/0.6)]',
+          'hover:bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] hover:text-[hsl(var(--tenant-primary,var(--primary)))]',
           'transition-all duration-150 active:scale-[0.997]',
-          compact ? 'py-2.5 min-h-[38px]' : 'py-3.5 min-h-[48px]'
+          compact ? 'py-2 min-h-[32px]' : 'py-3.5 min-h-[48px]'
         )}
       >
-        <Plus className="h-3.5 w-3.5" />
+        <Plus className="h-3 w-3" />
         Pen toevoegen
       </button>
     </div>
@@ -165,18 +168,18 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
     <button
       onClick={onExpand}
       className={cn(
-        'w-full flex items-center gap-2.5 rounded-lg border border-border/30',
-        'bg-muted/5 hover:bg-muted/15 transition-all duration-150',
+        'w-full flex items-center gap-2 rounded-md border border-border/20',
+        'bg-muted/8 hover:bg-muted/20 transition-all duration-150',
         'text-left active:scale-[0.998]',
-        compact ? 'px-2.5 py-2' : 'px-3.5 py-3'
+        compact ? 'px-2 py-1.5' : 'px-3.5 py-3'
       )}
     >
-      <ChevronRight className="h-3 w-3 text-muted-foreground/35 shrink-0" />
-      <span className="text-[11px] font-semibold text-foreground/80 min-w-0 truncate">{pen.pen_code}</span>
-      <div className="flex items-center gap-2 shrink-0 ml-auto">
-        <span className="text-[10px] text-muted-foreground/45 tabular-nums">{filledCount}/{measurements.length}</span>
+      <ChevronRight className="h-2.5 w-2.5 text-muted-foreground/30 shrink-0" />
+      <span className={cn('font-semibold text-foreground/70 min-w-0 truncate', compact ? 'text-[10px]' : 'text-[11px]')}>{pen.pen_code}</span>
+      <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+        <span className="text-[9px] text-muted-foreground/35 tabular-nums">{filledCount}/{measurements.length}</span>
         {lowest != null && (
-          <span className="text-[10px] font-semibold text-primary/70 tabular-nums">{lowest.toFixed(2)} Ω</span>
+          <span className="text-[9px] font-semibold text-[hsl(var(--tenant-primary,var(--primary))/0.6)] tabular-nums">{lowest.toFixed(2)} Ω</span>
         )}
       </div>
     </button>
@@ -224,12 +227,12 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
   };
 
   return (
-    <div id={`pen-section-${pen.id}`} className="space-y-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+    <div id={`pen-section-${pen.id}`} className="space-y-0.5 animate-in fade-in duration-150">
       {/* Pen header — minimal */}
-      <div className="flex items-center gap-2 px-0.5 py-1">
-        <ChevronDown className="h-3 w-3 text-primary/40 shrink-0" />
-        <span className="text-[11px] font-semibold text-foreground">{pen.pen_code}</span>
-        {pen.label && <span className="text-[10px] text-muted-foreground/45">· {pen.label}</span>}
+      <div className={cn('flex items-center gap-1.5', compact ? 'px-0.5 py-0.5' : 'px-0.5 py-1')}>
+        <ChevronDown className="h-2.5 w-2.5 text-[hsl(var(--tenant-primary,var(--primary))/0.35)] shrink-0" />
+        <span className={cn('font-semibold text-foreground', compact ? 'text-[10px]' : 'text-[11px]')}>{pen.pen_code}</span>
+        {pen.label && <span className="text-[9px] text-muted-foreground/40">· {pen.label}</span>}
       </div>
 
       <DepthMeasurementTable
