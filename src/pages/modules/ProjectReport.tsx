@@ -108,8 +108,8 @@ export default function ProjectReport() {
               { label: 'Merk', value: equip.brand },
               { label: 'Model', value: equip.model },
               { label: 'Serienummer', value: equip.serial_number },
-              { label: 'Kalibratie', value: equip.calibration_date },
-              { label: 'Volgende Kalibratie', value: equip.next_calibration_date },
+              { label: 'Kalibratie', value: formatNlDate(equip.calibration_date) },
+              { label: 'Volgende kalibratie', value: formatNlDate(equip.next_calibration_date) },
             ]} />}
           </div>
 
