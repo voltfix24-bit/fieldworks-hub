@@ -34,7 +34,7 @@ export default function UserProfile() {
       <PageHeader title="Gebruikersprofiel" description="Beheer uw persoonlijke gegevens" />
 
       <Card className="mb-6">
-        <CardHeader><CardTitle className="text-base">Persoonlijke Gegevens</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Persoonlijke gegevens</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="full-name">Volledige Naam</Label>
