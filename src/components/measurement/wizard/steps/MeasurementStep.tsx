@@ -32,6 +32,11 @@ export function MeasurementStep({
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
+  const warningCountsRef = useCallback(() => {
+    // Using a ref pattern via closure
+    const map = new Map<string, number>();
+    return map;
+  }, []);
 
   useEffect(() => {
     if (pens.length > 0) {
