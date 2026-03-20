@@ -52,7 +52,7 @@ export default function TechnicianForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection title="Monteurgegevens">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Volledige Naam *</Label><Input value={form.full_name} onChange={e => set('full_name', e.target.value)} required /></div>
+            <div className="space-y-2"><Label>Volledige naam *</Label><Input value={form.full_name} onChange={e => set('full_name', e.target.value)} required /></div>
             <div className="space-y-2"><Label>Medewerkernummer</Label><Input value={form.employee_code} onChange={e => set('employee_code', e.target.value)} placeholder="bijv. TV-005" /></div>
             <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={form.email} onChange={e => set('email', e.target.value)} /></div>
             <div className="space-y-2"><Label>Telefoon</Label><Input value={form.phone} onChange={e => set('phone', e.target.value)} /></div>
