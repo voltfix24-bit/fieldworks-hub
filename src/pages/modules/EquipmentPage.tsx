@@ -58,7 +58,7 @@ export default function EquipmentPage() {
                   </div></td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{[eq.brand, eq.model].filter(Boolean).join(' ') || '—'}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground font-mono">{eq.serial_number || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{eq.calibration_date || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{formatNlDate(eq.calibration_date)}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={isCalibrationWarning(eq.next_calibration_date) ? 'text-destructive font-medium flex items-center gap-1' : 'text-muted-foreground'}>
                       {isCalibrationWarning(eq.next_calibration_date) && <AlertTriangle className="h-3 w-3" />}
