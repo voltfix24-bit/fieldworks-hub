@@ -75,21 +75,21 @@ export function MeasurementStep({
           ? 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
           : 'border-border/30 bg-card'
       )}>
-        <GroundingIcon size={compact ? 13 : 14} className="text-[hsl(var(--tenant-primary,var(--primary))/0.6)] shrink-0" />
+        <GroundingIcon size={compact ? 14 : 15} className="text-[hsl(var(--tenant-primary,var(--primary))/0.7)] shrink-0" />
         <span className={cn(
           'uppercase tracking-widest font-bold shrink-0',
-          compact ? 'text-[9px]' : 'text-[10px]',
-          'text-muted-foreground/50'
+          compact ? 'text-[10px]' : 'text-[10px]',
+          'text-muted-foreground/60'
         )}>RA</span>
         <span className={cn(
           'font-bold tabular-nums leading-none',
-          compact ? 'text-[15px]' : 'text-[17px]',
-          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/20'
+          compact ? 'text-[16px]' : 'text-[17px]',
+          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/25'
         )}>
           {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
         </span>
         {electrode.ra_value != null && (
-          <span className="text-[10px] text-muted-foreground/50 font-medium">laagst</span>
+          <span className="text-[10px] text-muted-foreground/60 font-semibold">laagst</span>
         )}
         {hasTarget && (
           <span className={cn(
@@ -136,13 +136,13 @@ export function MeasurementStep({
 
             {isLast && showRv && (
               <div className={cn(
-                'mt-1.5 rounded-lg border border-border/30 bg-muted/5 flex items-center gap-2.5 transition-all duration-200',
+                'mt-1.5 rounded-lg border border-border/30 bg-muted/8 flex items-center gap-2.5 transition-all duration-200',
                 compact ? 'px-3 py-2' : 'px-3.5 py-3'
               )}>
-                <GroundingIcon size={12} className="text-muted-foreground/50 shrink-0" />
+                <GroundingIcon size={13} className="text-muted-foreground/60 shrink-0" />
                 <div className="flex flex-col gap-0 shrink-0">
-                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-bold leading-none">RV</span>
-                  <span className="text-[8px] text-muted-foreground/35 font-medium leading-tight">gekoppeld</span>
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold leading-none">RV</span>
+                  <span className="text-[8px] text-muted-foreground/45 font-medium leading-tight">gekoppeld</span>
                 </div>
                 <input
                   type="text"
@@ -152,12 +152,12 @@ export function MeasurementStep({
                   onBlur={handleRvBlur}
                   placeholder="0,00"
                   className={cn(
-                    'bg-transparent outline-none border-0 font-bold tabular-nums max-w-[100px]',
-                    compact ? 'h-7 text-[13px]' : 'h-9 text-[14px]',
-                    'placeholder:text-muted-foreground/25'
+                    'bg-transparent outline-none border-0 font-bold tabular-nums max-w-[100px] text-foreground',
+                    compact ? 'h-7 text-[14px]' : 'h-9 text-[15px]',
+                    'placeholder:text-muted-foreground/30'
                   )}
                 />
-                <span className="text-[9px] text-muted-foreground/35 font-semibold">Ω</span>
+                <span className="text-[10px] text-muted-foreground/45 font-semibold">Ω</span>
               </div>
             )}
           </div>
@@ -206,15 +206,15 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
         'w-full flex items-center gap-2.5 rounded-lg border border-border/25',
         'bg-muted/8 hover:bg-muted/20 transition-all duration-150',
         'text-left active:scale-[0.998]',
-        compact ? 'px-3 py-2' : 'px-3.5 py-3'
+        compact ? 'px-3 py-2.5' : 'px-3.5 py-3'
       )}
     >
-      <ChevronRight className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-      <span className={cn('font-bold text-foreground/70 min-w-0 truncate', compact ? 'text-[11px]' : 'text-[12px]')}>{pen.pen_code}</span>
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+      <span className={cn('font-bold text-foreground/80 min-w-0 truncate', compact ? 'text-[12px]' : 'text-[13px]')}>{pen.pen_code}</span>
       <div className="flex items-center gap-2 shrink-0 ml-auto">
-        <span className="text-[10px] text-muted-foreground/40 tabular-nums font-medium">{filledCount}/{measurements.length}</span>
+        <span className="text-[10px] text-muted-foreground/50 tabular-nums font-medium">{filledCount}/{measurements.length}</span>
         {lowest != null && (
-          <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.7)] tabular-nums">{formatNlNumber(lowest)} Ω</span>
+          <span className="text-[11px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.8)] tabular-nums">{formatNlNumber(lowest)} Ω</span>
         )}
       </div>
     </button>
@@ -270,10 +270,13 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
 
   return (
     <div id={`pen-section-${pen.id}`} className="space-y-0.5 animate-in fade-in duration-150">
-      <div className={cn('flex items-center gap-2', compact ? 'px-1 py-1' : 'px-0.5 py-1')}>
-        <ChevronDown className="h-3 w-3 text-[hsl(var(--tenant-primary,var(--primary))/0.4)] shrink-0" />
-        <span className={cn('font-bold text-foreground', compact ? 'text-[12px]' : 'text-[13px]')}>{pen.pen_code}</span>
-        {pen.label && <span className="text-[10px] text-muted-foreground/50 font-medium">· {pen.label}</span>}
+      <div className={cn(
+        'flex items-center gap-2 border-b border-[hsl(var(--tenant-primary,var(--primary))/0.1)]',
+        compact ? 'px-1 py-1.5 mb-0.5' : 'px-0.5 py-1.5 mb-1'
+      )}>
+        <ChevronDown className="h-3.5 w-3.5 text-[hsl(var(--tenant-primary,var(--primary))/0.5)] shrink-0" />
+        <span className={cn('font-bold text-foreground', compact ? 'text-[13px]' : 'text-[14px]')}>{pen.pen_code}</span>
+        {pen.label && <span className="text-[10px] text-muted-foreground/60 font-medium">· {pen.label}</span>}
       </div>
 
       <DepthMeasurementTable

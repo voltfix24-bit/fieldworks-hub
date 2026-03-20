@@ -252,7 +252,7 @@ export default function MeasurementWorkspace() {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
         {/* ─── Compact mobile header ─── */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/20 bg-background shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/30 bg-background shrink-0">
           <button
             onClick={() => navigate(`/projects/${id}`)}
             className="h-8 w-8 -ml-1 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md active:scale-95 transition-all"
@@ -260,13 +260,13 @@ export default function MeasurementWorkspace() {
             <ArrowLeft className="h-4.5 w-4.5" />
           </button>
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <GroundingIcon size={13} className="text-[hsl(var(--tenant-primary,var(--primary)))] shrink-0" />
-            <span className="text-[13px] font-bold text-foreground truncate leading-none">
+            <GroundingIcon size={14} className="text-[hsl(var(--tenant-primary,var(--primary)))] shrink-0" />
+            <span className="text-[13px] font-bold text-foreground truncate leading-none tracking-tight">
               {project.project_name}
             </span>
           </div>
           {activeElectrode && !showSketch && (
-            <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] px-2 py-1 rounded-md shrink-0 leading-none">
+            <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))] bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] px-2 py-1 rounded-md shrink-0 leading-none tracking-tight">
               {activeElectrode.electrode_code}
               {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
             </span>
@@ -286,7 +286,7 @@ export default function MeasurementWorkspace() {
         )}
 
         {/* ─── Scrollable content ─── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-3 pt-2 pb-16" key={showSketch ? 'sketch' : step}>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 pt-1.5 pb-2" key={showSketch ? 'sketch' : step}>
           <div className="wizard-step-enter">
 
             {/* Project context block — shown above measurements */}
@@ -353,39 +353,43 @@ export default function MeasurementWorkspace() {
           </div>
         </div>
 
-        {/* ─── Sticky bottom actions ─── */}
+        {/* ─── Sticky bottom CTA ─── */}
         {step < 2 && !showSketch && (
-          <StickyActionBar
-            showPrev={step > 0}
-            onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
-            onNext={() => {
-              if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
-                return;
-              }
-              setProgressionWarningDismissed(false);
-              setStep(step + 1);
-            }}
-            nextLabel="Volgende"
-            nextLoading={false}
-            compact
-            warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
-              ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
-              : undefined}
-            onConfirmWarning={() => {
-              setProgressionWarningDismissed(true);
-              setStep(step + 1);
-            }}
-          />
+          <div className="shrink-0 border-t border-border/30 bg-background">
+            <StickyActionBar
+              showPrev={step > 0}
+              onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
+              onNext={() => {
+                if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
+                  return;
+                }
+                setProgressionWarningDismissed(false);
+                setStep(step + 1);
+              }}
+              nextLabel="Volgende"
+              nextLoading={false}
+              compact
+              warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
+                ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
+                : undefined}
+              onConfirmWarning={() => {
+                setProgressionWarningDismissed(true);
+                setStep(step + 1);
+              }}
+            />
+          </div>
         )}
 
         {showSketch && (
-          <StickyActionBar
-            showPrev
-            onPrev={() => setShowSketch(false)}
-            onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
-            nextLabel="Opslaan"
-            compact
-          />
+          <div className="shrink-0 border-t border-border/30 bg-background">
+            <StickyActionBar
+              showPrev
+              onPrev={() => setShowSketch(false)}
+              onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
+              nextLabel="Opslaan"
+              compact
+            />
+          </div>
         )}
       </div>
     );
@@ -530,32 +534,33 @@ function MobileContextBlock({
   ].filter(Boolean);
 
   return (
-    <div className="mb-2 rounded-lg border border-border/20 bg-muted/5 overflow-hidden">
+    <div className="mb-1.5 rounded-lg border border-border/25 bg-muted/5 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-2 active:bg-muted/10 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-1.5 active:bg-muted/10 transition-colors"
       >
         <div className="min-w-0 flex-1">
-          <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Meetgegevens</span>
-          <p className="text-[11px] text-muted-foreground/70 truncate leading-snug mt-0.5 font-medium">
-            {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Geen gegevens ingesteld'}
+          <p className={cn(
+            'text-[11px] truncate leading-snug font-medium',
+            summaryItems.length > 0 ? 'text-foreground/60' : 'text-muted-foreground/50'
+          )}>
+            {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Meetgegevens instellen'}
           </p>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground/50 shrink-0 ml-2">
-          <span className="text-[9px] font-semibold">Aanpassen</span>
-          {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        <div className="flex items-center gap-1 shrink-0 ml-2">
+          <Pencil className="h-2.5 w-2.5 text-muted-foreground/40" />
         </div>
       </button>
 
       {open && (
-        <div className="px-3 pb-3 pt-1.5 space-y-2.5 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Datum</Label>
+        <div className="px-3 pb-2.5 pt-1.5 space-y-2 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-0.5">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Datum</Label>
               <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-8 text-[11px]" />
             </div>
-            <div className="space-y-1">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Apparaat</Label>
+            <div className="space-y-0.5">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Apparaat</Label>
               <Select value={selectedEquipment || 'none'} onValueChange={v => setSelectedEquipment(v === 'none' ? '' : v)}>
                 <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
@@ -565,9 +570,9 @@ function MobileContextBlock({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Opdrachtgever</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-0.5">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Opdrachtgever</Label>
               <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
                 <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
@@ -576,8 +581,8 @@ function MobileContextBlock({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Monteur</Label>
+            <div className="space-y-0.5">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Monteur</Label>
               <Select value={selectedTechnician || 'none'} onValueChange={v => setSelectedTechnician(v === 'none' ? '' : v)}>
                 <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>

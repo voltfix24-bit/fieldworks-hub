@@ -99,13 +99,13 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
       {/* Inline RA summary */}
       {lowestIsValid && (
         <div className={cn(
-          'flex items-center gap-2 rounded-md bg-[hsl(var(--measure-lowest)/0.04)] border border-[hsl(var(--measure-lowest)/0.08)]',
+          'flex items-center gap-2 rounded-md bg-[hsl(var(--measure-lowest)/0.05)] border border-[hsl(var(--measure-lowest)/0.1)]',
           compact ? 'px-2.5 py-1.5 mt-1' : 'px-3 py-2 mt-1.5'
         )}>
-          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
-          <span className={cn('font-bold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[11px]' : 'text-[11px]')}>{formatNlNumber(lowestResistance!)} Ω</span>
-          <span className={cn('text-muted-foreground/50 font-medium', compact ? 'text-[9px]' : 'text-[10px]')}>laagst</span>
-          <span className={cn('ml-auto text-muted-foreground/40 tabular-nums font-medium', compact ? 'text-[9px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
+          <Gauge className={cn('text-[hsl(var(--measure-lowest))] shrink-0', compact ? 'h-3.5 w-3.5' : 'h-3.5 w-3.5')} />
+          <span className={cn('font-bold text-[hsl(var(--measure-lowest))] tabular-nums', compact ? 'text-[12px]' : 'text-[12px]')}>{formatNlNumber(lowestResistance!)} Ω</span>
+          <span className={cn('text-muted-foreground/60 font-semibold', compact ? 'text-[10px]' : 'text-[10px]')}>laagst</span>
+          <span className={cn('ml-auto text-muted-foreground/50 tabular-nums font-medium', compact ? 'text-[10px]' : 'text-[10px]')}>{filledCount}/{measurements.length}</span>
         </div>
       )}
 
@@ -184,14 +184,14 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         <div className="relative">
           <span className={cn(
             'block text-center tabular-nums font-semibold leading-none',
-            compact ? 'text-[11px] py-2' : 'text-[13px] py-2.5',
-            isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/70' : 'text-muted-foreground/40'
+            compact ? 'text-[12px] py-2' : 'text-[13px] py-2.5',
+            isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/80' : 'text-muted-foreground/45'
           )}>
             {row.depth_meters}
           </span>
           <span className={cn(
-            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/35 pointer-events-none font-semibold',
-            compact ? 'text-[8px]' : 'text-[9px]'
+            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
+            compact ? 'text-[9px]' : 'text-[9px]'
           )}>m</span>
         </div>
 
@@ -208,17 +208,17 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0',
-              compact ? 'h-7 text-[12px] pr-4 px-1' : 'h-9 text-[13px] pr-5 px-2',
+              compact ? 'h-8 text-[13px] pr-4 px-1' : 'h-9 text-[14px] pr-5 px-2',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
-              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/25',
-              'placeholder:text-muted-foreground/20'
+              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
+              'placeholder:text-muted-foreground/25'
             )}
             disabled={disabled}
           />
           <span className={cn(
-            'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/35 pointer-events-none font-semibold',
-            compact ? 'text-[8px]' : 'text-[9px]'
+            'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
+            compact ? 'text-[9px]' : 'text-[9px]'
           )}>Ω</span>
         </div>
 
