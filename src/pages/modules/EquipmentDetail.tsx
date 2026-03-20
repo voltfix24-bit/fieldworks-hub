@@ -49,9 +49,9 @@ export default function EquipmentDetail() {
           <InfoRow label="Serienummer" value={eq.serial_number} />
         </DetailCard>
         <DetailCard title="Kalibratie">
-          <InfoRow label="Laatste Kalibratie" value={eq.calibration_date} />
+          <InfoRow label="Laatste kalibratie" value={formatNlDate(eq.calibration_date)} />
           <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-border">
-            <span className="text-sm font-medium text-muted-foreground sm:w-40 shrink-0">Volgende Kalibratie</span>
+            <span className="text-sm font-medium text-muted-foreground sm:w-40 shrink-0">Volgende kalibratie</span>
             <span className={`text-sm flex items-center gap-1 ${calWarning ? 'text-destructive font-medium' : 'text-foreground'}`}>
               {calWarning && <AlertTriangle className="h-4 w-4" />}
               {eq.next_calibration_date || '—'}
