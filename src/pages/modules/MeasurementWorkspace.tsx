@@ -359,9 +359,7 @@ export default function MeasurementWorkspace() {
             showPrev={step > 0}
             onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
             onNext={() => {
-              // On step 0 (measurements), check for progression warnings
-              if (step === 0 && allWarningIds.size > 0 && !progressionWarningDismissed) {
-                // Don't advance, show warning in sticky bar
+              if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
                 return;
               }
               setProgressionWarningDismissed(false);
@@ -370,8 +368,8 @@ export default function MeasurementWorkspace() {
             nextLabel="Volgende"
             nextLoading={false}
             compact
-            warningMessage={step === 0 && allWarningIds.size > 0 && !progressionWarningDismissed
-              ? `${allWarningIds.size} ${allWarningIds.size === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
+            warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
+              ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
               : undefined}
             onConfirmWarning={() => {
               setProgressionWarningDismissed(true);
