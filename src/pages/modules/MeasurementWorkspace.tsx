@@ -552,31 +552,31 @@ function MobileContextBlock({
     <div className="mb-2 rounded-lg border border-border/20 bg-muted/5 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-2.5 py-1.5 active:bg-muted/10 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 active:bg-muted/10 transition-colors"
       >
         <div className="min-w-0 flex-1">
-          <span className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/40">Meetgegevens</span>
-          <p className="text-[10px] text-muted-foreground/70 truncate leading-snug mt-0.5">
+          <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Meetgegevens</span>
+          <p className="text-[11px] text-muted-foreground/70 truncate leading-snug mt-0.5 font-medium">
             {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Geen gegevens ingesteld'}
           </p>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground/40 shrink-0 ml-2">
-          <span className="text-[8px] font-medium">Aanpassen</span>
-          {open ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
+        <div className="flex items-center gap-1 text-muted-foreground/50 shrink-0 ml-2">
+          <span className="text-[9px] font-semibold">Aanpassen</span>
+          {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </div>
       </button>
 
       {open && (
-        <div className="px-2.5 pb-2.5 pt-1 space-y-2 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Datum</Label>
-              <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-7 text-[10px]" />
+        <div className="px-3 pb-3 pt-1.5 space-y-2.5 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Datum</Label>
+              <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-8 text-[11px]" />
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Apparaat</Label>
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Apparaat</Label>
               <Select value={selectedEquipment || 'none'} onValueChange={v => setSelectedEquipment(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   {equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}</SelectItem>)}
@@ -584,21 +584,21 @@ function MobileContextBlock({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Opdrachtgever</Label>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Opdrachtgever</Label>
               <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[8px] uppercase tracking-widest font-semibold text-muted-foreground/50">Monteur</Label>
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">Monteur</Label>
               <Select value={selectedTechnician || 'none'} onValueChange={v => setSelectedTechnician(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   {technicians.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
@@ -609,7 +609,7 @@ function MobileContextBlock({
           <button
             onClick={onSave}
             disabled={saving}
-            className="w-full h-7 rounded-md bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[10px] font-semibold active:scale-[0.97] transition-all disabled:opacity-50"
+            className="w-full h-8 rounded-md bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[11px] font-bold active:scale-[0.97] transition-all disabled:opacity-50"
           >
             {saving ? 'Opslaan…' : 'Opslaan'}
           </button>
