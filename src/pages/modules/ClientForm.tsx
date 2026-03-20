@@ -67,7 +67,7 @@ export default function ClientForm() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Klanten
         </Button>
       </div>
-      <PageHeader title={isEdit ? 'Klant Bewerken' : 'Nieuwe Klant'} />
+      <PageHeader title={isEdit ? 'Klant bewerken' : 'Nieuwe klant'} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection title="Bedrijfsgegevens">
           <div className="space-y-2">
