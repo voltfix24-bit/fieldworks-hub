@@ -10,6 +10,7 @@ import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
+import { RapportDownloadButton } from '@/components/report/RapportDownloadButton';
 
 export default function ProjectReport() {
   const { id } = useParams();
