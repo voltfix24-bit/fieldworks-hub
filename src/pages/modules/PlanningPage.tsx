@@ -6,7 +6,7 @@ import { useProjects } from '@/hooks/use-projects';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Calendar as CalendarIcon, MapPin, FolderOpen, ChevronRight,
-  List, ChevronLeft, LayoutGrid,
+  List, ChevronLeft, LayoutGrid, Users,
 } from 'lucide-react';
 import {
   format, parseISO, isToday, isThisWeek,
