@@ -87,6 +87,16 @@ export function SetupStep({
           </Select>
         </FieldGroup>
 
+        <FieldGroup label="Toetswaarde (Ω)" compact={compact}>
+          <Input
+            inputMode="decimal"
+            value={targetValue}
+            onChange={e => onTargetValueChange(e.target.value)}
+            placeholder="3.00"
+            className={cn(fieldH, fieldText)}
+          />
+        </FieldGroup>
+
         <FieldGroup label="Notities" optional compact={compact}>
           <Textarea
             value={notes}
