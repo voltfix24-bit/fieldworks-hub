@@ -89,8 +89,7 @@ export default function PlanningPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="Planning" description="Geplande projecten en meetafspraken">
-        {/* View toggle */}
+      <PageHeader title="Planning" description="Geplande projecten en meetafspraken" action={
         <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
           <button
             onClick={() => setView('list')}
@@ -117,7 +116,7 @@ export default function PlanningPage() {
             Kalender
           </button>
         </div>
-      </PageHeader>
+      } />
 
       {/* ── LIST VIEW ── */}
       {view === 'list' && (
