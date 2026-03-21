@@ -1,5 +1,21 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { encode as base64Encode } from "https://deno.land/std@0.208.0/encoding/base64.ts";
 
+/** Fetch a photo URL and return as base64 string, or null on failure */
+async function urlToBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`Foto fetch mislukt (${response.status}): ${url}`);
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return base64Encode(new Uint8Array(arrayBuffer));
+  } catch (err) {
+    console.warn(`Foto fetch error voor ${url}:`, err);
+    return null;
+  }
+}
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
