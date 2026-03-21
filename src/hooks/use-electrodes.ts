@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+
+type Electrode = Tables<'electrodes'>;
+type ElectrodeInsert = TablesInsert<'electrodes'>;
+type ElectrodeUpdate = TablesUpdate<'electrodes'> & { id: string };
 
 export function useElectrodes(sessionId: string | undefined) {
   return useQuery({
@@ -11,7 +16,7 @@ export function useElectrodes(sessionId: string | undefined) {
         .eq('measurement_session_id', sessionId!)
         .order('sort_order');
       if (error) throw error;
-      return data;
+      return data as Electrode[];
     },
     enabled: !!sessionId,
   });
@@ -20,10 +25,10 @@ export function useElectrodes(sessionId: string | undefined) {
 export function useCreateElectrode() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (electrode: any) => {
+    mutationFn: async (electrode: ElectrodeInsert) => {
       const { data, error } = await supabase.from('electrodes').insert(electrode).select().single();
       if (error) throw error;
-      return data;
+      return data as Electrode;
     },
     onSuccess: (data) => qc.invalidateQueries({ queryKey: ['electrodes', data.measurement_session_id] }),
   });
@@ -32,10 +37,10 @@ export function useCreateElectrode() {
 export function useUpdateElectrode() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
+    mutationFn: async ({ id, ...updates }: ElectrodeUpdate) => {
       const { data, error } = await supabase.from('electrodes').update(updates).eq('id', id).select().single();
       if (error) throw error;
-      return data;
+      return data as Electrode;
     },
     onSuccess: (data) => qc.invalidateQueries({ queryKey: ['electrodes', data.measurement_session_id] }),
   });
