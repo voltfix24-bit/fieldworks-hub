@@ -1058,3 +1058,443 @@
   cursor: not-allowed;
   pointer-events: all;
 }
+
+/* ═══════════════════════════════════════
+   iOS 26 — Project Detail (mobile)
+   ═══════════════════════════════════════ */
+.ios-detail-page {
+  padding: 16px 20px 0;
+}
+.ios-detail-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: hsl(var(--tenant-primary));
+  transition: opacity 0.12s;
+}
+.ios-detail-back:active { opacity: 0.5; }
+.ios-detail-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.ios-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.ios-detail-code {
+  font-size: 14px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+.ios-detail-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ios-detail-status-pill.planned {
+  background: hsl(var(--status-planned) / 0.1);
+  color: hsl(var(--status-planned));
+}
+.ios-detail-status-pill.planned .ios-detail-status-dot {
+  background: hsl(var(--status-planned));
+}
+.ios-detail-status-pill.completed {
+  background: hsl(var(--status-completed) / 0.1);
+  color: hsl(var(--status-completed));
+}
+.ios-detail-status-pill.completed .ios-detail-status-dot {
+  background: hsl(var(--status-completed));
+}
+.ios-detail-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.ios-detail-scroll {
+  padding: 0 0 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Hero card */
+.ios-detail-hero {
+  border-radius: 18px;
+  background: linear-gradient(135deg, hsl(var(--tenant-primary) / 0.85) 0%, hsl(var(--tenant-primary)) 55%, hsl(var(--tenant-primary) / 1.1) 100%);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  box-shadow: 0 8px 24px hsl(var(--tenant-primary) / 0.3), 0 2px 6px hsl(var(--tenant-primary) / 0.2);
+  transition: transform 0.14s, box-shadow 0.14s;
+  position: relative;
+  overflow: hidden;
+}
+.ios-detail-hero::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  background: hsl(0 0% 100% / 0.08);
+  border-radius: 50%;
+}
+.ios-detail-hero:active {
+  transform: scale(0.975);
+  box-shadow: 0 4px 12px hsl(var(--tenant-primary) / 0.25);
+}
+.ios-detail-hero-icon {
+  width: 44px;
+  height: 44px;
+  background: hsl(0 0% 100% / 0.18);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid hsl(0 0% 100% / 0.2);
+}
+.ios-detail-hero-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.ios-detail-hero-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: hsl(var(--primary-foreground));
+  letter-spacing: -0.3px;
+}
+.ios-detail-hero-sub {
+  font-size: 13px;
+  color: hsl(0 0% 100% / 0.75);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+/* Action buttons */
+.ios-detail-actions {
+  display: flex;
+  gap: 10px;
+}
+.ios-detail-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: hsl(var(--card));
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+  transition: background 0.1s, transform 0.1s;
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+.ios-detail-action-btn:active {
+  background: hsl(var(--foreground) / 0.04);
+  transform: scale(0.97);
+}
+
+/* Section label */
+.ios-detail-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  padding: 6px 4px 0;
+}
+
+/* Card */
+.ios-detail-card {
+  background: hsl(var(--card));
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+
+/* Info rows */
+.ios-detail-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  min-height: 50px;
+  gap: 12px;
+}
+.ios-detail-info-label {
+  font-size: 15px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+  flex-shrink: 0;
+}
+.ios-detail-info-value {
+  font-size: 15px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  text-align: right;
+}
+.ios-detail-info-value.has-value {
+  color: hsl(var(--foreground));
+}
+.ios-detail-divider {
+  height: 0.5px;
+  background: hsl(var(--background));
+  margin: 0 16px;
+}
+
+/* Stats row */
+.ios-detail-stats {
+  display: flex;
+  gap: 10px;
+}
+.ios-detail-stat {
+  flex: 1;
+  background: hsl(var(--card));
+  border-radius: 14px;
+  padding: 14px 12px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ios-detail-stat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+.ios-detail-stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.4px;
+  line-height: 1;
+}
+.ios-detail-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  margin-top: 2px;
+}
+
+/* Gereedheid header */
+.ios-detail-gereedheid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+.ios-detail-gereedheid-badge {
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ios-detail-gereedheid-badge.ready {
+  background: hsl(var(--status-completed) / 0.12);
+  color: hsl(var(--status-completed));
+}
+.ios-detail-gereedheid-badge.pending {
+  background: hsl(var(--status-planned) / 0.1);
+  color: hsl(var(--muted-foreground));
+}
+
+/* Check rows */
+.ios-detail-check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  min-height: 46px;
+}
+.ios-detail-check-label {
+  font-size: 15px;
+  color: hsl(var(--foreground));
+  font-weight: 400;
+}
+.ios-detail-check-label.optional {
+  color: hsl(var(--muted-foreground) / 0.6);
+}
+.ios-detail-optional-badge {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground) / 0.6);
+  font-weight: 400;
+  background: hsl(var(--foreground) / 0.05);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: auto;
+}
+
+/* CTA buttons */
+.ios-detail-cta-complete {
+  width: 100%;
+  min-height: 54px;
+  background: linear-gradient(135deg, hsl(152 60% 48%), hsl(var(--status-completed)));
+  border: none;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  color: hsl(var(--primary-foreground));
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px hsl(var(--status-completed) / 0.32);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.ios-detail-cta-complete:active {
+  transform: scale(0.975);
+  box-shadow: 0 3px 10px hsl(var(--status-completed) / 0.25);
+}
+.ios-detail-cta-complete:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.ios-detail-cta-reopen {
+  width: 100%;
+  min-height: 50px;
+  background: hsl(var(--card));
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+  transition: transform 0.1s;
+}
+.ios-detail-cta-reopen:active { transform: scale(0.97); }
+.ios-detail-cta-reopen:disabled { opacity: 0.35; }
+
+/* Danger */
+.ios-detail-danger-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  cursor: pointer;
+  gap: 8px;
+  transition: background 0.1s;
+  background: none;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--destructive));
+}
+.ios-detail-danger-row:active { background: hsl(var(--destructive) / 0.04); }
+
+/* Delete confirm overlay */
+.ios-detail-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: hsl(var(--foreground) / 0.32);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.ios-detail-confirm-sheet {
+  width: 100%;
+  max-width: 430px;
+  background: hsl(var(--background) / 0.96);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-radius: 24px 24px 0 0;
+  border-top: 0.5px solid hsl(0 0% 100% / 0.7);
+  box-shadow: 0 -8px 40px hsl(var(--foreground) / 0.14);
+  padding: 0 20px 40px;
+}
+.ios-detail-confirm-handle {
+  width: 36px;
+  height: 5px;
+  background: hsl(var(--foreground) / 0.15);
+  border-radius: 3px;
+  margin: 12px auto 20px;
+}
+.ios-detail-confirm-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+.ios-detail-confirm-sub {
+  font-size: 14px;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 20px;
+}
+.ios-detail-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ios-detail-confirm-delete {
+  width: 100%;
+  min-height: 52px;
+  background: hsl(var(--destructive));
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+  color: hsl(var(--destructive-foreground));
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 16px hsl(var(--destructive) / 0.3);
+  transition: transform 0.12s;
+}
+.ios-detail-confirm-delete:active { transform: scale(0.97); }
+.ios-detail-confirm-cancel {
+  width: 100%;
+  min-height: 52px;
+  background: hsl(var(--card));
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.12s;
+}
+.ios-detail-confirm-cancel:active { transform: scale(0.97); }
