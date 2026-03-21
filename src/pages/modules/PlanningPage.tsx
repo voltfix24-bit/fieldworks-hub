@@ -230,6 +230,41 @@ export default function PlanningPage() {
             </div>
           </div>
         )}
+
+        {view === 'monteurs' && (
+          <div className="ios-planning-content">
+            {projectenPerMonteur.length === 0 ? (
+              <div className="ios-planning-empty">
+                <span className="ios-planning-empty-icon">👷</span>
+                <p>Geen geplande projecten</p>
+              </div>
+            ) : (
+              projectenPerMonteur.map(({ tech, projecten }) => (
+                <div key={tech?.full_name || 'unknown'} className="mb-4">
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="w-8 h-8 rounded-full bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center">
+                      <span className="text-[12px] font-bold text-[hsl(var(--tenant-primary))]">
+                        {tech?.full_name?.[0] || '?'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-foreground">{tech?.full_name || 'Onbekend'}</p>
+                      <p className="text-[11px] text-muted-foreground/40">{projecten.length} project{projecten.length !== 1 ? 'en' : ''} gepland</p>
+                    </div>
+                  </div>
+                  <div className="ios-dash-card">
+                    {projecten.slice(0, 5).map((p, i) => (
+                      <div key={p.id}>
+                        <PlanningProjectRow project={p} onClick={() => navigate(`/projects/${p.id}`)} />
+                        {i < Math.min(projecten.length, 5) - 1 && <div className="ios-dash-row-divider" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     );
   }
