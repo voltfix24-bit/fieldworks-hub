@@ -362,9 +362,9 @@ export default function ProjectReport() {
                     </div>
                     {/* Print view: show signature image if available */}
                     <div className="hidden print:block">
-                      {handtekening ? (
+                      {actieveHandtekening ? (
                         <img
-                          src={`data:image/png;base64,${handtekening}`}
+                          src={`data:image/png;base64,${actieveHandtekening}`}
                           alt="Handtekening"
                           className="w-40 h-16 object-contain"
                         />
