@@ -157,20 +157,34 @@ export function MobileTabBar() {
 }
 
 function CenterAction({ isActive, onTap }: { isActive: boolean; onTap: () => void }) {
+  const [pulse, setPulse] = useState(false);
+
+  const handleTap = () => {
+    setPulse(true);
+    // Trigger haptic feedback if available
+    if (navigator.vibrate) navigator.vibrate(8);
+    onTap();
+    setTimeout(() => setPulse(false), 400);
+  };
+
   return (
     <div className="flex flex-col items-center -mt-3 px-1">
       <button
-        onClick={onTap}
+        onClick={handleTap}
         className={cn(
-          'w-[46px] h-[46px] rounded-[16px]',
+          'relative w-[46px] h-[46px] rounded-[16px]',
           'flex items-center justify-center',
           'bg-[hsl(var(--tenant-primary))] text-[hsl(var(--tenant-primary-foreground,0_0%_100%))]',
           'shadow-[0_3px_12px_-2px_hsl(var(--tenant-primary)/0.35)]',
           'transition-all duration-150',
-          'active:scale-[0.93]',
+          'active:scale-[0.90]',
           isActive && 'ring-2 ring-[hsl(var(--tenant-primary)/0.3)] ring-offset-2 ring-offset-card'
         )}
       >
+        {/* Ripple pulse */}
+        {pulse && (
+          <span className="absolute inset-0 rounded-[16px] animate-[ping_0.4s_ease-out_forwards] bg-[hsl(var(--tenant-primary)/0.25)]" />
+        )}
         <GroundingIcon size={20} />
       </button>
       <span className={cn(
