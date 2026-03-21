@@ -298,6 +298,12 @@ export default function PlanningPage() {
           )}>
             <LayoutGrid className="h-3.5 w-3.5" /> Kalender
           </button>
+          <button onClick={() => setView('monteurs')} className={cn(
+            'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all',
+            view === 'monteurs' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground/60'
+          )}>
+            <Users className="h-3.5 w-3.5" /> Monteurs
+          </button>
         </div>
       } />
 
