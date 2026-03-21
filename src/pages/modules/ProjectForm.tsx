@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,8 +11,19 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+
+/* ------------------------------------------------------------------ */
+/*  Auto project number helper                                         */
+/* ------------------------------------------------------------------ */
+function generateProjectNumber(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const seq = String(Math.floor(Math.random() * 900) + 100);
+  return `P-${y}-${seq}`;
+}
 
 export default function ProjectForm() {
   const { id } = useParams();
@@ -33,6 +44,8 @@ export default function ProjectForm() {
   const activeEquip = equipment?.filter(e => e.is_active) ?? [];
   const defaultTech = activeTechs.find(t => t.is_default);
 
+  const autoNumber = useMemo(() => generateProjectNumber(), []);
+
   const [form, setForm] = useState({
     project_number: '', project_name: '', site_name: '',
     address_line_1: '', postal_code: '', city: '',
@@ -43,18 +56,19 @@ export default function ProjectForm() {
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
 
-  // Apply defaults for new projects
+  // Apply smart defaults for new projects
   useEffect(() => {
     if (!isEdit && !defaultsApplied) {
-      const updates: Partial<typeof form> = {};
+      const updates: Partial<typeof form> = {
+        project_number: autoNumber,
+        planned_date: format(new Date(), 'yyyy-MM-dd'),
+      };
       if (defaultEquipment) updates.equipment_id = defaultEquipment.id;
       if (defaultTech) updates.technician_id = defaultTech.id;
-      if (Object.keys(updates).length > 0) {
-        setForm(prev => ({ ...prev, ...updates }));
-        setDefaultsApplied(true);
-      }
+      setForm(prev => ({ ...prev, ...updates }));
+      setDefaultsApplied(true);
     }
-  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied]);
+  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber]);
 
   // Populate form for editing
   useEffect(() => {
@@ -67,7 +81,6 @@ export default function ProjectForm() {
         client_id: existing.client_id || '', technician_id: existing.technician_id || '',
         equipment_id: existing.equipment_id || '', notes: existing.notes || '',
       });
-      // Show extra section if there's existing data in optional fields
       if (existing.site_name || existing.notes) setShowExtra(true);
     }
   }, [existing]);
@@ -109,204 +122,220 @@ export default function ProjectForm() {
   };
 
   const saving = createMut.isPending || updateMut.isPending;
+  const canSubmit = form.project_number.trim() && form.project_name.trim();
 
   return (
-    <div className="animate-fade-in max-w-lg mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+    <div className="animate-fade-in max-w-lg mx-auto pb-28">
+      {/* ─── Compact header ─── */}
+      <div className="flex items-center gap-3 mb-5">
         <button
+          type="button"
           onClick={() => navigate(-1)}
-          className="h-9 w-9 rounded-xl bg-muted/40 hover:bg-muted/70 flex items-center justify-center transition-colors shrink-0"
+          className="h-8 w-8 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors shrink-0"
+          aria-label="Terug"
         >
           <ArrowLeft className="h-4 w-4 text-muted-foreground" />
         </button>
-        <div>
-          <h1 className="text-[17px] font-bold text-foreground tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold text-foreground tracking-tight leading-tight">
             {isEdit ? 'Project bewerken' : 'Nieuw project'}
           </h1>
-          <p className="text-[12px] text-muted-foreground mt-0.5">
-            {isEdit ? 'Pas de projectgegevens aan' : 'Vul de basisgegevens in om te starten'}
+          <p className="text-xs text-muted-foreground">
+            {isEdit ? 'Pas de gegevens aan' : 'Vul de basis in om te starten'}
           </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* ─── Essential fields ─── */}
-        <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-          <div className="p-4 space-y-4">
-            {/* Project number + name */}
-            <div className="grid grid-cols-[120px_1fr] gap-3">
-              <Field label="Nummer" required>
-                <Input
-                  value={form.project_number}
-                  onChange={e => set('project_number', e.target.value)}
-                  required
-                  placeholder="TV-2026-005"
-                  className="h-10 text-[13px] font-mono"
-                />
-              </Field>
-              <Field label="Projectnaam" required>
-                <Input
-                  value={form.project_name}
-                  onChange={e => set('project_name', e.target.value)}
-                  required
-                  placeholder="Naam van het project"
-                  className="h-10 text-[13px]"
-                />
-              </Field>
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        {/* ─── Project ─── */}
+        <SectionLabel>Project</SectionLabel>
+        <div className="rounded-xl bg-card border border-border/40 overflow-hidden divide-y divide-border/30">
+          <InlineField label="Nummer">
+            <Input
+              value={form.project_number}
+              onChange={e => set('project_number', e.target.value)}
+              required
+              placeholder="P-2026-001"
+              className="border-0 bg-transparent h-9 text-sm font-mono text-right px-0 focus-visible:ring-0 shadow-none"
+            />
+          </InlineField>
+          <InlineField label="Naam">
+            <Input
+              value={form.project_name}
+              onChange={e => set('project_name', e.target.value)}
+              required
+              placeholder="Naam van het project"
+              className="border-0 bg-transparent h-9 text-sm text-right px-0 focus-visible:ring-0 shadow-none"
+            />
+          </InlineField>
+        </div>
 
-            {/* Location: address + postal + city in one row group */}
-            <Field label="Locatie">
+        {/* ─── Locatie ─── */}
+        <SectionLabel>Locatie</SectionLabel>
+        <div className="rounded-xl bg-card border border-border/40 overflow-hidden divide-y divide-border/30">
+          <InlineField label="Adres">
+            <Input
+              value={form.address_line_1}
+              onChange={e => set('address_line_1', e.target.value)}
+              placeholder="Straat en huisnummer"
+              className="border-0 bg-transparent h-9 text-sm text-right px-0 focus-visible:ring-0 shadow-none"
+            />
+          </InlineField>
+          <InlineField label="Postcode">
+            <Input
+              value={form.postal_code}
+              onChange={e => set('postal_code', e.target.value)}
+              placeholder="1234 AB"
+              className="border-0 bg-transparent h-9 text-sm text-right px-0 focus-visible:ring-0 shadow-none"
+            />
+          </InlineField>
+          <InlineField label="Plaats">
+            <Input
+              value={form.city}
+              onChange={e => set('city', e.target.value)}
+              placeholder="Stad"
+              className="border-0 bg-transparent h-9 text-sm text-right px-0 focus-visible:ring-0 shadow-none"
+            />
+          </InlineField>
+        </div>
+
+        {/* ─── Uitvoering ─── */}
+        <SectionLabel>Uitvoering</SectionLabel>
+        <div className="rounded-xl bg-card border border-border/40 overflow-hidden divide-y divide-border/30">
+          <InlineField label="Datum">
+            <Input
+              type="date"
+              value={form.planned_date}
+              onChange={e => set('planned_date', e.target.value)}
+              className="border-0 bg-transparent h-9 text-sm text-right px-0 focus-visible:ring-0 shadow-none w-auto"
+            />
+          </InlineField>
+          <InlineField label="Opdrachtgever">
+            <Select value={form.client_id || 'none'} onValueChange={v => set('client_id', v === 'none' ? '' : v)}>
+              <SelectTrigger className="border-0 bg-transparent h-9 text-sm shadow-none focus:ring-0 w-auto ml-auto justify-end gap-1.5 px-0">
+                <SelectValue placeholder="Geen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Geen</SelectItem>
+                {activeClients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </InlineField>
+          <InlineField label="Monteur">
+            <Select value={form.technician_id || 'none'} onValueChange={v => set('technician_id', v === 'none' ? '' : v)}>
+              <SelectTrigger className="border-0 bg-transparent h-9 text-sm shadow-none focus:ring-0 w-auto ml-auto justify-end gap-1.5 px-0">
+                <SelectValue placeholder="Geen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Geen</SelectItem>
+                {activeTechs.map(t => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.full_name}{t.is_default ? ' ★' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </InlineField>
+          <InlineField label="Apparaat">
+            <Select value={form.equipment_id || 'none'} onValueChange={v => set('equipment_id', v === 'none' ? '' : v)}>
+              <SelectTrigger className="border-0 bg-transparent h-9 text-sm shadow-none focus:ring-0 w-auto ml-auto justify-end gap-1.5 px-0">
+                <SelectValue placeholder="Geen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Geen</SelectItem>
+                {activeEquip.map(e => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.device_name}{e.is_default ? ' ★' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </InlineField>
+        </div>
+
+        {/* ─── Extra (collapsed) ─── */}
+        <button
+          type="button"
+          onClick={() => setShowExtra(!showExtra)}
+          className="w-full flex items-center justify-between py-2 px-1 text-left group"
+        >
+          <span className="text-xs text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
+            Extra gegevens
+          </span>
+          <ChevronDown className={cn(
+            'h-3.5 w-3.5 text-muted-foreground/30 transition-transform duration-200',
+            showExtra && 'rotate-180'
+          )} />
+        </button>
+        {showExtra && (
+          <div className="rounded-xl bg-card border border-border/40 overflow-hidden divide-y divide-border/30 animate-in fade-in slide-in-from-top-1 duration-200">
+            <InlineField label="Locatienaam" stacked>
               <Input
-                value={form.address_line_1}
-                onChange={e => set('address_line_1', e.target.value)}
-                placeholder="Straat en huisnummer"
-                className="h-10 text-[13px] rounded-b-none border-b-0"
+                value={form.site_name}
+                onChange={e => set('site_name', e.target.value)}
+                placeholder="Gebouw of terrein"
+                className="border-0 bg-transparent h-9 text-sm px-0 focus-visible:ring-0 shadow-none"
               />
-              <div className="grid grid-cols-[100px_1fr] ">
-                <Input
-                  value={form.postal_code}
-                  onChange={e => set('postal_code', e.target.value)}
-                  placeholder="Postcode"
-                  className="h-10 text-[13px] rounded-t-none rounded-br-none border-r-0"
-                />
-                <Input
-                  value={form.city}
-                  onChange={e => set('city', e.target.value)}
-                  placeholder="Plaats"
-                  className="h-10 text-[13px] rounded-t-none rounded-bl-none"
-                />
-              </div>
-            </Field>
-
-            {/* Date */}
-            <Field label="Datum">
-              <Input
-                type="date"
-                value={form.planned_date}
-                onChange={e => set('planned_date', e.target.value)}
-                className="h-10 text-[13px]"
+            </InlineField>
+            <div className="px-4 py-3">
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Notities</Label>
+              <Textarea
+                value={form.notes}
+                onChange={e => set('notes', e.target.value)}
+                placeholder="Eventuele opmerkingen…"
+                className="border-0 bg-transparent text-sm min-h-[60px] resize-none p-0 focus-visible:ring-0 shadow-none"
               />
-            </Field>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-border/40" />
-
-          {/* Assignments */}
-          <div className="p-4 space-y-4">
-            <Field label="Opdrachtgever">
-              <Select value={form.client_id || 'none'} onValueChange={v => set('client_id', v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-10 text-[13px]"><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— Geen —</SelectItem>
-                  {activeClients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Monteur">
-                <Select value={form.technician_id || 'none'} onValueChange={v => set('technician_id', v === 'none' ? '' : v)}>
-                  <SelectTrigger className="h-10 text-[13px]"><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">— Geen —</SelectItem>
-                    {activeTechs.map(t => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.full_name}{t.is_default ? ' ★' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-
-              <Field label="Apparatuur">
-                <Select value={form.equipment_id || 'none'} onValueChange={v => set('equipment_id', v === 'none' ? '' : v)}>
-                  <SelectTrigger className="h-10 text-[13px]"><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">— Geen —</SelectItem>
-                    {activeEquip.map(e => (
-                      <SelectItem key={e.id} value={e.id}>
-                        {e.device_name}{e.is_default ? ' ★' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
             </div>
           </div>
-        </div>
-
-        {/* ─── Collapsible extra section ─── */}
-        <div className="rounded-2xl border border-border/30 bg-card/50 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowExtra(!showExtra)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/10 transition-colors"
-          >
-            <span className="text-[12px] font-medium text-muted-foreground">
-              Extra gegevens
-            </span>
-            <ChevronDown className={cn(
-              'h-3.5 w-3.5 text-muted-foreground/40 transition-transform duration-200',
-              showExtra && 'rotate-180'
-            )} />
-          </button>
-          {showExtra && (
-            <div className="px-4 pb-4 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
-              <Field label="Locatienaam">
-                <Input
-                  value={form.site_name}
-                  onChange={e => set('site_name', e.target.value)}
-                  placeholder="Gebouw of terrein"
-                  className="h-10 text-[13px]"
-                />
-              </Field>
-              <Field label="Notities">
-                <Textarea
-                  value={form.notes}
-                  onChange={e => set('notes', e.target.value)}
-                  placeholder="Eventuele opmerkingen..."
-                  className="text-[13px] min-h-[72px] resize-none"
-                />
-              </Field>
-            </div>
-          )}
-        </div>
-
-        {/* ─── Actions ─── */}
-        <div className="flex gap-2.5 pt-1">
-          <Button
-            type="submit"
-            disabled={saving}
-            className="flex-1 h-11 text-[13px] font-semibold"
-          >
-            {saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Project aanmaken'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate(-1)}
-            className="h-11 px-5 text-[13px]"
-          >
-            Annuleren
-          </Button>
-        </div>
+        )}
       </form>
+
+      {/* ─── Sticky CTA ─── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-t border-border/30 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pt-3">
+        <Button
+          onClick={handleSubmit}
+          disabled={saving || !canSubmit}
+          className="w-full h-12 text-[15px] font-semibold rounded-xl"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Opslaan…
+            </>
+          ) : isEdit ? 'Opslaan' : 'Project aanmaken'}
+        </Button>
+      </div>
     </div>
   );
 }
 
-/** Compact field wrapper */
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+/* ------------------------------------------------------------------ */
+/*  Apple-style inline row field                                       */
+/* ------------------------------------------------------------------ */
+function InlineField({ label, children, stacked }: { label: string; children: React.ReactNode; stacked?: boolean }) {
+  if (stacked) {
+    return (
+      <div className="px-4 py-3 space-y-1">
+        <Label className="text-xs text-muted-foreground">{label}</Label>
+        {children}
+      </div>
+    );
+  }
   return (
-    <div className="space-y-1.5">
-      <Label className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
-        {label}
-        {required && <span className="text-destructive/60 ml-0.5">*</span>}
-      </Label>
-      {children}
+    <div className="flex items-center justify-between px-4 min-h-[44px]">
+      <Label className="text-sm text-foreground shrink-0 pr-4">{label}</Label>
+      <div className="flex-1 flex justify-end min-w-0">{children}</div>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Section label                                                      */
+/* ------------------------------------------------------------------ */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider px-1 pt-2">
+      {children}
+    </p>
   );
 }
