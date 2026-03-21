@@ -679,17 +679,52 @@ export type Database = {
       tenant_branding: {
         Row: {
           accent_color: string
+          border_radius: string
+          btw_number: string | null
+          compact_logo_url: string | null
           created_at: string
+          dark_logo_url: string | null
+          export_date_format: string
+          export_filename_pattern: string
+          export_print_profile: string
           footer_address: string | null
           footer_city: string | null
           footer_company_name: string | null
           footer_country: string | null
           footer_email: string | null
           footer_phone: string | null
+          footer_postal_code: string | null
           footer_website: string | null
           id: string
+          interface_density: string
+          kvk_number: string | null
+          light_logo_url: string | null
           logo_url: string | null
+          official_company_name: string | null
           primary_color: string
+          report_captions: boolean
+          report_decimals: string
+          report_density: string
+          report_disclaimer: string | null
+          report_empty_cell: string
+          report_fields: Json
+          report_footer_color: string | null
+          report_footer_every_page: boolean
+          report_header_color: string | null
+          report_header_every_page: boolean
+          report_logo_size: string
+          report_page_numbers: boolean
+          report_pens_side_by_side: boolean
+          report_photo_grouping: string
+          report_sections: Json
+          report_show_logo: boolean
+          report_sign_block: boolean
+          report_sign_date: boolean
+          report_sign_executor: boolean
+          report_sign_reviewer: boolean
+          report_subtitle: string | null
+          report_table_style: string
+          report_title: string
           secondary_color: string
           support_email: string | null
           support_phone: string | null
@@ -699,17 +734,52 @@ export type Database = {
         }
         Insert: {
           accent_color?: string
+          border_radius?: string
+          btw_number?: string | null
+          compact_logo_url?: string | null
           created_at?: string
+          dark_logo_url?: string | null
+          export_date_format?: string
+          export_filename_pattern?: string
+          export_print_profile?: string
           footer_address?: string | null
           footer_city?: string | null
           footer_company_name?: string | null
           footer_country?: string | null
           footer_email?: string | null
           footer_phone?: string | null
+          footer_postal_code?: string | null
           footer_website?: string | null
           id?: string
+          interface_density?: string
+          kvk_number?: string | null
+          light_logo_url?: string | null
           logo_url?: string | null
+          official_company_name?: string | null
           primary_color?: string
+          report_captions?: boolean
+          report_decimals?: string
+          report_density?: string
+          report_disclaimer?: string | null
+          report_empty_cell?: string
+          report_fields?: Json
+          report_footer_color?: string | null
+          report_footer_every_page?: boolean
+          report_header_color?: string | null
+          report_header_every_page?: boolean
+          report_logo_size?: string
+          report_page_numbers?: boolean
+          report_pens_side_by_side?: boolean
+          report_photo_grouping?: string
+          report_sections?: Json
+          report_show_logo?: boolean
+          report_sign_block?: boolean
+          report_sign_date?: boolean
+          report_sign_executor?: boolean
+          report_sign_reviewer?: boolean
+          report_subtitle?: string | null
+          report_table_style?: string
+          report_title?: string
           secondary_color?: string
           support_email?: string | null
           support_phone?: string | null
@@ -719,17 +789,52 @@ export type Database = {
         }
         Update: {
           accent_color?: string
+          border_radius?: string
+          btw_number?: string | null
+          compact_logo_url?: string | null
           created_at?: string
+          dark_logo_url?: string | null
+          export_date_format?: string
+          export_filename_pattern?: string
+          export_print_profile?: string
           footer_address?: string | null
           footer_city?: string | null
           footer_company_name?: string | null
           footer_country?: string | null
           footer_email?: string | null
           footer_phone?: string | null
+          footer_postal_code?: string | null
           footer_website?: string | null
           id?: string
+          interface_density?: string
+          kvk_number?: string | null
+          light_logo_url?: string | null
           logo_url?: string | null
+          official_company_name?: string | null
           primary_color?: string
+          report_captions?: boolean
+          report_decimals?: string
+          report_density?: string
+          report_disclaimer?: string | null
+          report_empty_cell?: string
+          report_fields?: Json
+          report_footer_color?: string | null
+          report_footer_every_page?: boolean
+          report_header_color?: string | null
+          report_header_every_page?: boolean
+          report_logo_size?: string
+          report_page_numbers?: boolean
+          report_pens_side_by_side?: boolean
+          report_photo_grouping?: string
+          report_sections?: Json
+          report_show_logo?: boolean
+          report_sign_block?: boolean
+          report_sign_date?: boolean
+          report_sign_executor?: boolean
+          report_sign_reviewer?: boolean
+          report_subtitle?: string | null
+          report_table_style?: string
+          report_title?: string
           secondary_color?: string
           support_email?: string | null
           support_phone?: string | null

@@ -6,6 +6,8 @@ interface ReportElectrodeSectionProps {
   electrode: ReportElectrode;
   index: number;
   totalElectrodes: number;
+  showPhotos?: boolean;
+  emptyCellChar?: string;
 }
 
 /** Strip redundant prefix: if electrode_code is "Elektrode 1", just use "1" */
@@ -16,7 +18,7 @@ function cleanCode(code: string, prefix: string): string {
   return code.trim();
 }
 
-export function ReportElectrodeSection({ electrode, index, totalElectrodes }: ReportElectrodeSectionProps) {
+export function ReportElectrodeSection({ electrode, index, totalElectrodes, showPhotos = true, emptyCellChar = '—' }: ReportElectrodeSectionProps) {
   const activePens = electrode.pens.filter(
     pen => pen.measurements.some(m => m.resistance_value > 0)
   );
@@ -116,7 +118,7 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
                   const val = valueLookup.get(pen.id)?.get(depth);
                   return (
                     <td key={pen.id} className="py-1 px-2 text-right tabular-nums font-semibold text-foreground">
-                      {val != null ? formatNlNumber(val) : '—'}
+                      {val != null ? formatNlNumber(val) : emptyCellChar}
                     </td>
                   );
                 })}
@@ -127,7 +129,7 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes }: Re
       )}
 
       {/* Electrode-level photos */}
-      {photos.length > 0 && <ReportImageBlock images={photos} />}
+      {showPhotos && photos.length > 0 && <ReportImageBlock images={photos} />}
     </div>
   );
 }
