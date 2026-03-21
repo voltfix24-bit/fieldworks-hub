@@ -20,7 +20,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create Supabase client with user's auth
     const authHeader = req.headers.get("Authorization") ?? "";
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -28,7 +27,6 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Fetch all data in parallel
     const [projectRes, sessionRes, electrodesRes, pensRes, depthsRes, brandingRes] =
       await Promise.all([
         supabase
@@ -43,21 +41,9 @@ Deno.serve(async (req) => {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
-        supabase
-          .from("electrodes")
-          .select("*")
-          .eq("project_id", project_id)
-          .order("sort_order"),
-        supabase
-          .from("pens")
-          .select("*")
-          .eq("project_id", project_id)
-          .order("sort_order"),
-        supabase
-          .from("depth_measurements")
-          .select("*")
-          .eq("project_id", project_id)
-          .order("sort_order"),
+        supabase.from("electrodes").select("*").eq("project_id", project_id).order("sort_order"),
+        supabase.from("pens").select("*").eq("project_id", project_id).order("sort_order"),
+        supabase.from("depth_measurements").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("tenant_branding").select("*").limit(1).maybeSingle(),
       ]);
 
@@ -75,12 +61,10 @@ Deno.serve(async (req) => {
     const tech = project.technicians as Record<string, unknown> | null;
     const equip = project.equipment as Record<string, unknown> | null;
 
-    // Build address
     const adres = [project.address_line_1, project.postal_code, project.city]
       .filter(Boolean)
       .join(", ");
 
-    // Format date
     const meetdatum = session?.measurement_date
       ? new Date(session.measurement_date).toLocaleDateString("nl-NL", {
           day: "2-digit",
@@ -89,17 +73,15 @@ Deno.serve(async (req) => {
         })
       : new Date().toLocaleDateString("nl-NL");
 
-    // Build elektrodes data
+    // Build elektrodes with per-electrode RA/RV logic
     const elektrodes = electrodes.map((el, idx) => {
       const elPens = pens.filter((p) => p.electrode_id === el.id);
       const elDepths = depths.filter((d) => d.electrode_id === el.id);
 
-      // Group measurements by pen
       const penLabels = elPens.map(
         (p) => `${p.pen_code || `Pen ${p.sort_order + 1}`} (Ω)`
       );
 
-      // Get unique depths, build measurement rows
       const depthSet = new Set<number>();
       for (const d of elDepths) {
         depthSet.add(Number(d.depth_meters));
@@ -110,14 +92,16 @@ Deno.serve(async (req) => {
         const waarden = elPens.map((pen) => {
           const m = elDepths.find(
             (d) =>
-              d.pen_id === pen.id && Number(d.depth_meters) === depth && Number(d.resistance_value) > 0
+              d.pen_id === pen.id &&
+              Number(d.depth_meters) === depth &&
+              Number(d.resistance_value) > 0
           );
           return m ? Number(m.resistance_value) : null;
         });
         return { diepte: depth, waarden };
       });
 
-      // Calculate RA/RV
+      // Calculate min value (RA or RV depending on pen setup)
       const allValues = elDepths
         .map((d) => Number(d.resistance_value))
         .filter((v) => v > 0);
@@ -125,20 +109,29 @@ Deno.serve(async (req) => {
       const targetValue = el.target_value ? Number(el.target_value) : 3.0;
       const rvOk = minValue !== null && minValue <= targetValue;
 
+      // Per-electrode RA/RV: 1 pen → RA, 2+ coupled pens → RV
+      const aantalPennen = elPens.length;
+      const gekoppeld = el.is_coupled ?? (aantalPennen >= 2);
+      const isRv = aantalPennen >= 2 && gekoppeld;
+      const eindwaarde = minValue !== null
+        ? `${minValue.toFixed(2).replace(".", ",")} Ω`
+        : "— Ω";
+
       return {
         nummer: idx + 1,
-        rv: minValue !== null ? `${minValue.toFixed(2).replace(".", ",")} Ω` : "— Ω",
+        // Set ra OR rv, never both
+        ...(isRv
+          ? { rv: eindwaarde }
+          : { ra: eindwaarde }),
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
+        pennen_gekoppeld: gekoppeld,
         metingen,
-        // Photo URLs (not base64 for now — external API will need to handle URLs or skip)
       };
     });
 
-    // Build the rapport payload
     const rapportData = {
-      // Company info from branding
       company_name: branding?.footer_company_name || branding?.official_company_name || "Aardpen-slaan.nl",
       company_address: [branding?.footer_address, branding?.footer_postal_code, branding?.footer_city]
         .filter(Boolean)
@@ -149,30 +142,23 @@ Deno.serve(async (req) => {
       certificaten: "",
       brand_color_hex: branding?.primary_color || "#F06A3F",
 
-      // Document
       doc_nummer: `RPT-${new Date().getFullYear()}-${(project.project_number || "00000").replace(/\D/g, "").padStart(5, "0")}`,
       doc_revisie: "A — Definitief",
 
-      // Project
       project_nr: project.project_number,
       project_naam: project.project_name,
       project_adres: adres,
       meetdatum,
 
-      // Toetswaarde
       toetswaarde: electrodes[0]?.target_value
         ? `${Number(electrodes[0].target_value).toFixed(2).replace(".", ",")} Ω`
         : "3,00 Ω",
-      gebruik_rv: electrodes.some((e) => e.is_coupled),
 
-      // Client
       opdrachtgever_bedrijf: (client?.company_name as string) || "—",
       opdrachtgever_contact: (client?.contact_name as string) || undefined,
 
-      // Technician
       monteur: (tech?.full_name as string) || "—",
 
-      // Equipment
       apparaat_naam: equip
         ? [equip.brand, equip.device_name].filter(Boolean).join(" ")
         : "—",
@@ -185,7 +171,6 @@ Deno.serve(async (req) => {
         ? new Date(equip.next_calibration_date as string).toLocaleDateString("nl-NL")
         : undefined,
 
-      // Elektrodes
       elektrodes,
     };
 
@@ -193,7 +178,6 @@ Deno.serve(async (req) => {
     const rapportApiUrl = Deno.env.get("RAPPORT_API_URL");
 
     if (rapportApiUrl) {
-      // Forward to external Python API
       const apiResponse = await fetch(`${rapportApiUrl}/rapport/preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -206,8 +190,6 @@ Deno.serve(async (req) => {
       }
 
       const result = await apiResponse.json();
-
-      // Build filename
       const projectClean = project.project_name.replace(/\s+/g, "_").slice(0, 30);
       const datumClean = meetdatum.replace(/-/g, "").replace(/\s/g, "").slice(0, 8);
 
@@ -216,19 +198,12 @@ Deno.serve(async (req) => {
           pdf_base64: result.pdf_base64,
           bestandsnaam: `Aardingsrapport_${projectClean}_${datumClean}.pdf`,
         }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
-      // No external API — return prepared data for client-side PDF generation
       return new Response(
-        JSON.stringify({
-          prepared_data: rapportData,
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ prepared_data: rapportData }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
   } catch (err) {
