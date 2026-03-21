@@ -1,6 +1,7 @@
-import { Paperclip, Save } from 'lucide-react';
+import { Paperclip, Save, PenTool } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
+import HandtekeningPad from '../../HandtekeningPad';
 
 interface NextActionStepProps {
   onAddElectrode: () => void;
@@ -8,9 +9,10 @@ interface NextActionStepProps {
   onSave: () => void;
   nextElectrodeNumber: number;
   compact?: boolean;
+  onHandtekeningChange?: (base64: string | null) => void;
 }
 
-export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact }: NextActionStepProps) {
+export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange }: NextActionStepProps) {
   return (
     <div>
       <div className={compact ? 'mb-3' : 'mb-5'}>
@@ -51,6 +53,30 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           onClick={onSave}
           compact={compact}
           muted
+        />
+      </div>
+
+      {/* Handtekening sectie */}
+      <div className={cn('mt-6', compact ? 'mt-5' : 'mt-8')}>
+        <div className="flex items-center gap-2 mb-3">
+          <PenTool className="h-4 w-4 text-muted-foreground/50" />
+          <h3 className={cn(
+            'font-semibold text-foreground tracking-tight',
+            compact ? 'text-[14px]' : 'text-[15px]'
+          )}>
+            Handtekening monteur
+          </h3>
+        </div>
+        <p className={cn(
+          'text-muted-foreground/40 mb-3',
+          compact ? 'text-[11px]' : 'text-[12px]'
+        )}>
+          Optioneel — wordt opgenomen in het rapport
+        </p>
+        <HandtekeningPad
+          onChange={onHandtekeningChange}
+          breedte={compact ? 400 : 500}
+          hoogte={compact ? 140 : 180}
         />
       </div>
     </div>
