@@ -87,6 +87,7 @@ export default function MeasurementWorkspace() {
 
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
+  const [autoInitError, setAutoInitError] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
