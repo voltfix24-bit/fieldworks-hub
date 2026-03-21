@@ -89,8 +89,8 @@ Deno.serve(async (req) => {
         })
       : new Date().toLocaleDateString("nl-NL");
 
-    // Build elektrodes with per-electrode RA/RV logic
-    const elektrodes = electrodes.map((el, idx) => {
+    // Build elektrodes with per-electrode RA/RV logic + photo base64 conversion
+    const elektrodes = await Promise.all(electrodes.map(async (el, idx) => {
       const elPens = pens.filter((p) => p.electrode_id === el.id);
       const elDepths = depths.filter((d) => d.electrode_id === el.id);
 
@@ -133,25 +133,28 @@ Deno.serve(async (req) => {
         ? `${minValue.toFixed(2).replace(".", ",")} Ω`
         : "— Ω";
 
-      // Collect photo URLs from pens (first available per type)
+      // Convert photo URLs to base64 (parallel)
       const fotoDisplayUrl = elPens.find((p) => p.display_photo_url)?.display_photo_url || null;
       const fotoOverzichtUrl = elPens.find((p) => p.overview_photo_url)?.overview_photo_url || null;
 
+      const [fotoDisplayB64, fotoOverzichtB64] = await Promise.all([
+        fotoDisplayUrl ? urlToBase64(fotoDisplayUrl) : Promise.resolve(null),
+        fotoOverzichtUrl ? urlToBase64(fotoOverzichtUrl) : Promise.resolve(null),
+      ]);
+
       return {
         nummer: idx + 1,
-        // API expects `rv` field always — use eindwaarde for both RA and RV
         rv: eindwaarde,
-        // Also pass ra for client-side fallback
         ...(isRv ? {} : { ra: eindwaarde }),
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
         pennen_gekoppeld: gekoppeld,
         metingen,
-        foto_display_url: fotoDisplayUrl,
-        foto_overzicht_url: fotoOverzichtUrl,
+        foto_display_b64: fotoDisplayB64,
+        foto_overzicht_b64: fotoOverzichtB64,
       };
-    });
+    }));
 
     const rapportData = {
       company_name: branding?.footer_company_name || branding?.official_company_name || "Aardpen-slaan.nl",
