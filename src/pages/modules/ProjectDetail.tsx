@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/use-projects';
@@ -28,6 +29,7 @@ export default function ProjectDetail() {
   const { data: electrodes = [] } = useElectrodes(session?.id);
   const { data: attachments = [] } = useAttachments(id);
   const { data: reportData } = useReportData(id);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading) return <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground/40 text-center py-16">Project niet gevonden</p>;
@@ -68,7 +70,6 @@ export default function ProjectDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Weet u zeker dat u dit project wilt verwijderen?')) return;
     try {
       await deleteMut.mutateAsync(project.id);
       toast({ title: 'Project verwijderd' });
@@ -76,101 +77,196 @@ export default function ProjectDetail() {
     } catch (err: any) { toast({ title: 'Fout', description: err.message, variant: 'destructive' }); }
   };
 
+  const metReadyCount = readinessItems.filter(i => !i.optional && i.met).length;
+  const metRequiredTotal = readinessItems.filter(i => !i.optional).length;
+  const allRequiredMet = metReadyCount === metRequiredTotal;
+
   // ── Mobile ──
   if (isMobile) {
     return (
-      <div className="animate-fade-in space-y-4">
-        {/* Header */}
-        <div>
-          <button onClick={() => navigate('/projects')} className="flex items-center gap-1 text-[13px] text-muted-foreground/50 mb-3 active:opacity-60 transition-opacity">
-            <ArrowLeft className="h-4 w-4" /> Projecten
-          </button>
-          <h1 className="text-[22px] font-bold text-foreground tracking-tight leading-snug">{project.project_name}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[12px] text-muted-foreground/35 font-mono">{project.project_number}</span>
-            <StatusIndicator status={project.status} />
-          </div>
-        </div>
-
-        {/* Primary CTA */}
-        <button
-          onClick={() => navigate(`/projects/${id}/measurements`)}
-          className="w-full flex items-center justify-between rounded-2xl bg-[hsl(var(--tenant-primary))] text-white px-5 py-4 active:scale-[0.97] transition-all shadow-[0_2px_16px_-4px_hsl(var(--tenant-primary)/0.3)]"
-        >
-          <div className="flex items-center gap-3">
-            <GroundingIcon size={20} />
-            <div>
-              <span className="text-[15px] font-bold block leading-snug">{hasSession ? 'Metingen' : 'Meten starten'}</span>
-              {hasSession && hasMeasurements && (
-                <span className="text-[11px] opacity-70">{electrodes.length} elektrodes · {reportData?.stats.measurementCount} metingen</span>
-              )}
-            </div>
-          </div>
-          <ChevronRight className="h-5 w-5 opacity-40" />
-        </button>
-
-        {/* Secondary actions */}
-        <div className="flex gap-2">
-          <SecondaryAction icon={FileText} label="Rapport" onClick={() => navigate(`/projects/${id}/report`)} />
-          <SecondaryAction icon={Pencil} label="Bewerken" onClick={() => navigate(`/projects/${id}/edit`)} />
-        </div>
-
-        {/* Project info */}
-        <section>
-          <SectionLabel>Projectgegevens</SectionLabel>
-          <div className="ios-group overflow-hidden divide-y divide-border/15">
-            <InfoLine label="Locatie" value={[project.address_line_1, project.city].filter(Boolean).join(', ')} />
-            <InfoLine label="Klant" value={client?.company_name} />
-            <InfoLine label="Monteur" value={tech?.full_name} />
-            <InfoLine label="Apparaat" value={equip?.device_name} />
-            <InfoLine label="Datum" value={formatNlDate(project.planned_date)} />
-          </div>
-        </section>
-
-        {/* Progress */}
-        {hasSession && (
-          <section>
-            <SectionLabel>Voortgang</SectionLabel>
-            <div className="flex items-center gap-8 px-1">
-              <ProgressStat label="Elektrodes" value={electrodes.length} />
-              <ProgressStat label="Metingen" value={reportData?.stats.measurementCount || 0} />
-              <ProgressStat label="Foto's" value={reportData?.stats.photosCount || 0} />
-            </div>
-          </section>
-        )}
-
-        <ReadinessChecklist items={readinessItems} />
-
-        {/* Status actions */}
-        <div className="space-y-2 pt-2">
-          {project.status === 'planned' ? (
-            <button
-              onClick={() => handleStatusChange('completed')}
-              disabled={updateMut.isPending || !isReportReady}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[hsl(var(--status-completed)/0.06)] text-[hsl(var(--status-completed))] active:scale-[0.98] transition-all disabled:opacity-30"
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="text-[14px] font-semibold">Project afronden</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => handleStatusChange('planned')}
-              disabled={updateMut.isPending}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-foreground/[0.03] text-foreground active:scale-[0.98] transition-all disabled:opacity-30"
-            >
-              <RotateCcw className="h-4 w-4 text-muted-foreground" />
-              <span className="text-[14px] font-medium">Heropenen</span>
-            </button>
-          )}
+      <>
+        <div className="ios-detail-page animate-fade-in">
+          {/* Back row */}
           <button
-            onClick={handleDelete}
-            disabled={deleteMut.isPending}
-            className="w-full text-center py-2 text-[12px] text-destructive/40 font-medium active:opacity-60 transition-opacity disabled:opacity-20"
+            onClick={() => navigate('/projects')}
+            className="ios-detail-back"
           >
-            Verwijderen
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span>Projecten</span>
           </button>
+
+          {/* Title */}
+          <h1 className="ios-detail-title">{project.project_name}</h1>
+          <div className="ios-detail-meta">
+            <span className="ios-detail-code">{project.project_number}</span>
+            <span className={cn('ios-detail-status-pill', project.status === 'completed' ? 'completed' : 'planned')}>
+              <span className="ios-detail-status-dot" />
+              {project.status === 'completed' ? 'Afgerond' : 'Gepland'}
+            </span>
+          </div>
+
+          <div className="ios-detail-scroll">
+            {/* Metingen hero card */}
+            <button
+              className="ios-detail-hero"
+              onClick={() => navigate(`/projects/${id}/measurements`)}
+            >
+              <div className="ios-detail-hero-icon">
+                <GroundingIcon size={22} />
+              </div>
+              <div className="ios-detail-hero-text">
+                <span className="ios-detail-hero-title">{hasSession ? 'Metingen' : 'Meten starten'}</span>
+                {hasSession && hasMeasurements && (
+                  <span className="ios-detail-hero-sub">{electrodes.length} elektrodes · {reportData?.stats.measurementCount} metingen</span>
+                )}
+              </div>
+              <ChevronRight className="h-5 w-5 text-white/40" />
+            </button>
+
+            {/* Action buttons */}
+            <div className="ios-detail-actions">
+              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/report`)}>
+                <FileText className="h-[18px] w-[18px] text-muted-foreground" />
+                Rapport
+              </button>
+              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/edit`)}>
+                <Pencil className="h-[18px] w-[18px] text-muted-foreground" />
+                Bewerken
+              </button>
+            </div>
+
+            {/* Projectgegevens */}
+            <p className="ios-detail-section-label">Projectgegevens</p>
+            <div className="ios-detail-card">
+              {[
+                { label: 'Locatie', value: [project.address_line_1, project.city].filter(Boolean).join(', ') },
+                { label: 'Klant', value: client?.company_name },
+                { label: 'Monteur', value: tech?.full_name },
+                { label: 'Apparaat', value: equip?.device_name },
+                { label: 'Datum', value: formatNlDate(project.planned_date) },
+              ].map((row, i, arr) => (
+                <div key={row.label}>
+                  <div className="ios-detail-info-row">
+                    <span className="ios-detail-info-label">{row.label}</span>
+                    <span className={cn('ios-detail-info-value', row.value && 'has-value')}>{row.value || '—'}</span>
+                  </div>
+                  {i < arr.length - 1 && <div className="ios-detail-divider" />}
+                </div>
+              ))}
+            </div>
+
+            {/* Voortgang */}
+            {hasSession && (
+              <>
+                <p className="ios-detail-section-label">Voortgang</p>
+                <div className="ios-detail-stats">
+                  <div className="ios-detail-stat">
+                    <span className="ios-detail-stat-dot" style={{ background: 'hsl(var(--tenant-primary))' }} />
+                    <span className="ios-detail-stat-value">{electrodes.length}</span>
+                    <span className="ios-detail-stat-label">Elektrodes</span>
+                  </div>
+                  <div className="ios-detail-stat">
+                    <span className="ios-detail-stat-dot" style={{ background: 'hsl(210, 100%, 50%)' }} />
+                    <span className="ios-detail-stat-value">{reportData?.stats.measurementCount || 0}</span>
+                    <span className="ios-detail-stat-label">Metingen</span>
+                  </div>
+                  <div className="ios-detail-stat">
+                    <span className="ios-detail-stat-dot" style={{ background: 'hsl(var(--muted-foreground))' }} />
+                    <span className="ios-detail-stat-value">{reportData?.stats.photosCount || 0}</span>
+                    <span className="ios-detail-stat-label">Foto's</span>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Gereedheid */}
+            <div className="ios-detail-card">
+              <div className="ios-detail-gereedheid-header">
+                <span className="ios-detail-section-label" style={{ padding: 0, margin: 0 }}>Gereedheid</span>
+                <span className={cn('ios-detail-gereedheid-badge', allRequiredMet ? 'ready' : 'pending')}>
+                  {allRequiredMet ? '✓ Gereed' : `${metReadyCount}/${metRequiredTotal}`}
+                </span>
+              </div>
+              <div className="ios-detail-divider" />
+              {readinessItems.map((item, i) => (
+                <div key={item.label}>
+                  <div className="ios-detail-check-row">
+                    {item.met ? (
+                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <circle cx="11" cy="11" r="11" fill="hsl(152, 60%, 42%)" fillOpacity="0.14"/>
+                        <path d="M7 11.2L9.8 14L15 8.5" stroke="hsl(152, 60%, 42%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <circle cx="11" cy="11" r="10.5" stroke="hsl(var(--border))" strokeOpacity="0.6"/>
+                      </svg>
+                    )}
+                    <span className={cn('ios-detail-check-label', item.optional && !item.met && 'optional')}>
+                      {item.label}
+                    </span>
+                    {item.optional && <span className="ios-detail-optional-badge">optioneel</span>}
+                  </div>
+                  {i < readinessItems.length - 1 && <div className="ios-detail-divider" />}
+                </div>
+              ))}
+            </div>
+
+            {/* Project afronden CTA */}
+            {project.status === 'planned' ? (
+              <button
+                className="ios-detail-cta-complete"
+                onClick={() => handleStatusChange('completed')}
+                disabled={updateMut.isPending || !isReportReady}
+              >
+                <CheckCircle2 className="h-5 w-5" />
+                Project afronden
+              </button>
+            ) : (
+              <button
+                className="ios-detail-cta-reopen"
+                onClick={() => handleStatusChange('planned')}
+                disabled={updateMut.isPending}
+              >
+                <RotateCcw className="h-4 w-4" />
+                Heropenen
+              </button>
+            )}
+
+            {/* Danger zone */}
+            <div className="ios-detail-card">
+              <button className="ios-detail-danger-row" onClick={() => setShowDeleteConfirm(true)}>
+                <Trash2 className="h-4 w-4" />
+                Project verwijderen
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Delete confirmation overlay */}
+        {showDeleteConfirm && (
+          <div className="ios-detail-confirm-backdrop" onClick={() => setShowDeleteConfirm(false)}>
+            <div className="ios-detail-confirm-sheet" onClick={e => e.stopPropagation()}>
+              <div className="ios-detail-confirm-handle" />
+              <h3 className="ios-detail-confirm-title">Project verwijderen?</h3>
+              <p className="ios-detail-confirm-sub">Dit kan niet ongedaan worden gemaakt.</p>
+              <div className="ios-detail-confirm-actions">
+                <button
+                  className="ios-detail-confirm-delete"
+                  onClick={() => { setShowDeleteConfirm(false); handleDelete(); }}
+                >
+                  Verwijderen
+                </button>
+                <button
+                  className="ios-detail-confirm-cancel"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Annuleren
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -252,8 +348,21 @@ export default function ProjectDetail() {
         ) : (
           <Button variant="outline" className="rounded-xl" onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}><RotateCcw className="mr-2 h-4 w-4" /> Heropenen</Button>
         )}
-        <Button variant="ghost" className="text-destructive/50 rounded-xl" onClick={handleDelete} disabled={deleteMut.isPending}><Trash2 className="mr-2 h-4 w-4" /> Verwijderen</Button>
+        <Button variant="ghost" className="text-destructive/50 rounded-xl" onClick={() => setShowDeleteConfirm(true)} disabled={deleteMut.isPending}><Trash2 className="mr-2 h-4 w-4" /> Verwijderen</Button>
       </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-card rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-2">Project verwijderen?</h3>
+            <p className="text-sm text-muted-foreground mb-6">Dit kan niet ongedaan worden gemaakt.</p>
+            <div className="flex gap-2">
+              <Button variant="destructive" className="flex-1 rounded-xl" onClick={() => { setShowDeleteConfirm(false); handleDelete(); }}>Verwijderen</Button>
+              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowDeleteConfirm(false)}>Annuleren</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -270,42 +379,6 @@ function StatusIndicator({ status }: { status: string }) {
       <span className="text-[11px] text-muted-foreground/45 font-medium">
         {status === 'completed' ? 'Afgerond' : 'Gepland'}
       </span>
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-muted-foreground/35 mb-2">{children}</p>
-  );
-}
-
-function SecondaryAction({ icon: Icon, label, onClick }: { icon: React.ElementType; label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex-1 flex items-center justify-center gap-2 rounded-2xl ios-group py-3 active:scale-[0.97] transition-all"
-    >
-      <Icon className="h-4 w-4 text-muted-foreground/50" />
-      <span className="text-[13px] font-medium text-foreground">{label}</span>
-    </button>
-  );
-}
-
-function InfoLine({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-2.5 ios-row">
-      <span className="text-[12px] text-muted-foreground/45">{label}</span>
-      <span className="text-[13px] text-foreground font-medium truncate ml-4 text-right">{value || '—'}</span>
-    </div>
-  );
-}
-
-function ProgressStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="text-[20px] font-bold text-foreground tabular-nums">{value}</span>
-      <span className="text-[11px] text-muted-foreground/40">{label}</span>
     </div>
   );
 }
