@@ -160,6 +160,9 @@ export function useRapportGenerator() {
         throw new Error("Geen rapportdata ontvangen");
       }
 
+      // Fetch photo URLs and convert to base64 for PDF embedding
+      await laadFotosVoorElektrodes(rapportData.elektrodes);
+
       const doc = generateRapportPdf(rapportData);
       const projectClean = rapportData.project_naam.replace(/\s+/g, "_").slice(0, 30);
       const datumClean = rapportData.meetdatum.replace(/-/g, "").replace(/\s/g, "").slice(0, 8);
