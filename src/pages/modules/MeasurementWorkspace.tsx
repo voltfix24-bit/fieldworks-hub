@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
@@ -13,6 +13,7 @@ import { useEquipmentList } from '@/hooks/use-equipment';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOnlineStatus } from '@/hooks/use-online-status';
 import { GroundingIcon, GroundingLoader } from '@/components/measurement/GroundingIcon';
 import { formatNlDate } from '@/lib/nl-date';
 import { cn } from '@/lib/utils';
