@@ -24,6 +24,11 @@ export default function ProjectReport() {
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
+  const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
+  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening();
+  const { toast } = useToast();
+  const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
+  const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>('nieuw');
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
