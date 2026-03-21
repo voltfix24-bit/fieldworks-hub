@@ -519,8 +519,9 @@ export default function MeasurementWorkspace() {
         <StickyActionBar
           showPrev={step >= 0}
           onPrev={() => setStep(step - 1)}
-          onNext={step === -1 ? handleSaveContext : () => setStep(step + 1)}
+          onNext={step === -1 ? handleSaveContext : () => { if (step === 0 && rvMissing) return; setStep(step + 1); }}
           nextLabel={step === -1 ? 'Opslaan & verder' : 'Volgende'}
+          nextDisabled={step === 0 && rvMissing}
           nextLoading={updateSession.isPending || createSession.isPending}
         />
       )}
