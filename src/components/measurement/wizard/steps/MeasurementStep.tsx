@@ -78,42 +78,81 @@ export function MeasurementStep({
 
   return (
     <div className={cn(compact ? 'space-y-2 pb-2' : 'space-y-4 pb-24')}>
-      {/* ─── RA insight bar ─── */}
-      <div className={cn(
-        'flex items-center gap-2.5 rounded-lg border overflow-hidden',
-        compact ? 'px-3 py-2' : 'px-3.5 py-2.5',
-        electrode.ra_value != null
-          ? 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
-          : 'border-border/30 bg-card'
-      )}>
-        <GroundingIcon size={compact ? 14 : 15} className="text-[hsl(var(--tenant-primary,var(--primary))/0.7)] shrink-0" />
-        <span className={cn(
-          'uppercase tracking-widest font-bold shrink-0',
-          compact ? 'text-[10px]' : 'text-[10px]',
-          'text-muted-foreground/60'
-        )}>RA</span>
-        <span className={cn(
-          'font-bold tabular-nums leading-none',
-          compact ? 'text-[16px]' : 'text-[17px]',
-          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/25'
+      {/* ─── Status bar: RA or RV ─── */}
+      {!showRv ? (
+        <div className={cn(
+          'flex items-center gap-2.5 rounded-lg border overflow-hidden',
+          compact ? 'px-3 py-2' : 'px-3.5 py-2.5',
+          electrode.ra_value != null
+            ? hasTarget
+              ? targetMet
+                ? 'border-[hsl(var(--status-completed)/0.3)] bg-[hsl(var(--status-completed)/0.04)]'
+                : 'border-destructive/20 bg-destructive/[0.04]'
+              : 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
+            : 'border-border/30 bg-card'
         )}>
-          {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
-        </span>
-        {electrode.ra_value != null && (
-          <span className="text-[10px] text-muted-foreground/60 font-semibold">laagst</span>
-        )}
-        {hasTarget && (
+          <GroundingIcon size={compact ? 14 : 15} className="text-[hsl(var(--tenant-primary,var(--primary))/0.7)] shrink-0" />
+          <span className="uppercase tracking-widest font-bold shrink-0 text-[10px] text-muted-foreground/60">RA</span>
           <span className={cn(
-            'ml-auto shrink-0 px-2 py-0.5 rounded-md tabular-nums font-bold',
-            compact ? 'text-[10px]' : 'text-[12px]',
-            targetMet
-              ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
-              : 'bg-muted/30 text-muted-foreground/60'
+            'font-bold tabular-nums leading-none',
+            compact ? 'text-[16px]' : 'text-[17px]',
+            electrode.ra_value != null
+              ? hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--tenant-primary,var(--primary)))]'
+              : 'text-muted-foreground/25'
           )}>
-            ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
           </span>
-        )}
-      </div>
+          {electrode.ra_value != null && (
+            <span className="text-[10px] text-muted-foreground/60 font-semibold">laagst</span>
+          )}
+          {hasTarget && (
+            <span className={cn(
+              'ml-auto shrink-0 px-2 py-0.5 rounded-md tabular-nums font-bold',
+              compact ? 'text-[10px]' : 'text-[12px]',
+              targetMet
+                ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                : 'bg-muted/30 text-muted-foreground/60'
+            )}>
+              ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className={cn(
+          'flex items-center gap-2.5 rounded-lg border overflow-hidden',
+          compact ? 'px-3 py-2' : 'px-3.5 py-2.5',
+          rvMissing
+            ? 'border-amber-400/30 bg-amber-500/[0.04]'
+            : hasTarget
+              ? targetMet
+                ? 'border-[hsl(var(--status-completed)/0.3)] bg-[hsl(var(--status-completed)/0.04)]'
+                : 'border-destructive/20 bg-destructive/[0.04]'
+              : 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
+        )}>
+          <GroundingIcon size={compact ? 14 : 15} className={cn('shrink-0', rvMissing ? 'text-amber-500/70' : 'text-[hsl(var(--tenant-primary,var(--primary))/0.7)]')} />
+          <span className={cn('uppercase tracking-widest font-bold shrink-0 text-[10px]', rvMissing ? 'text-amber-600/60' : 'text-muted-foreground/60')}>RV</span>
+          <span className={cn(
+            'font-bold tabular-nums leading-none',
+            compact ? 'text-[16px]' : 'text-[17px]',
+            rvMissing
+              ? 'text-amber-600/70'
+              : hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--tenant-primary,var(--primary)))]'
+          )}>
+            {rvMissing ? 'Vul waarde in' : `${formatNlNumber(Number(electrode.rv_value))} Ω`}
+          </span>
+          {hasTarget && !rvMissing && (
+            <span className={cn(
+              'ml-auto shrink-0 px-2 py-0.5 rounded-md tabular-nums font-bold',
+              compact ? 'text-[10px]' : 'text-[12px]',
+              targetMet
+                ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                : 'bg-muted/30 text-muted-foreground/60'
+            )}>
+              ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            </span>
+          )}
+        </div>
+      )
 
       {/* ─── Per-pen measurement sections ─── */}
       {pens.map((pen: any, idx: number) => {
