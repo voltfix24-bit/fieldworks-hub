@@ -43,6 +43,7 @@ export default function MeasurementWorkspace() {
   const { profile } = useAuth();
   const isMobile = useIsMobile();
   const tenantId = profile?.tenant_id || '';
+  const { isOnline } = useOnlineStatus();
 
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: session, isLoading: sessionLoading } = useMeasurementSession(id);
