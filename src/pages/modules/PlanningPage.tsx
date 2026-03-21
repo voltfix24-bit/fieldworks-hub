@@ -22,6 +22,7 @@ type ViewMode = 'list' | 'calendar' | 'monteurs';
 export default function PlanningPage() {
   const navigate = useNavigate();
   const { data: projects = [] } = useProjects();
+  const { data: technicians = [] } = useTechnicians();
   const isMobile = useIsMobile();
   const [view, setView] = useState<ViewMode>('list');
   const [calMonth, setCalMonth] = useState(new Date());
