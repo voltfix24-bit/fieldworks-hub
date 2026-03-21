@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, forwardRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ interface PhotoUploaderProps {
   compact?: boolean;
 }
 
-export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading, compact }: PhotoUploaderProps) {
+export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading, compact }, ref) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<HTMLInputElement>(null);
@@ -28,7 +28,7 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
   const displayUrl = preview || currentUrl;
 
   return (
-    <div>
+    <div ref={ref}>
       <p className={cn(
         'uppercase tracking-widest font-semibold text-muted-foreground/70',
         compact ? 'text-[9px] mb-1' : 'text-[11px] mb-2'
@@ -97,4 +97,4 @@ export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading
       <input ref={filesRef} type="file" accept="image/*,.pdf,.heic,.webp" onChange={handleFile} className="hidden" />
     </div>
   );
-}
+});

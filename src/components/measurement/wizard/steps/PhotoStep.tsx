@@ -10,6 +10,7 @@ interface PhotoStepProps {
   onRemoveOverview: () => void;
   uploading: boolean;
   penCode: string;
+  electrodeCode?: string;
   compact?: boolean;
 }
 
@@ -17,7 +18,7 @@ export function PhotoStep({
   displayPhotoUrl, overviewPhotoUrl,
   onUploadDisplay, onUploadOverview,
   onRemoveDisplay, onRemoveOverview,
-  uploading, penCode, compact,
+  uploading, penCode, electrodeCode, compact,
 }: PhotoStepProps) {
   return (
     <div>
@@ -26,7 +27,7 @@ export function PhotoStep({
           'font-bold text-foreground tracking-tight',
           compact ? 'text-[14px]' : 'text-[15px]'
         )}>
-          Foto's — {penCode}
+          Foto's — {electrodeCode ? `${electrodeCode} · ${penCode}` : penCode}
         </h2>
         <p className={cn(
           'text-muted-foreground/70 mt-0.5 font-medium',

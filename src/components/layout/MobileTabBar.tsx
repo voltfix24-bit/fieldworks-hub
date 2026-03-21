@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, CalendarDays, FolderOpen, MoreHorizontal, Plus, RotateCcw, Search } from 'lucide-react';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 const TAB_ITEMS = [
   { key: 'start', label: 'Start', icon: Home, path: '/dashboard' },
@@ -23,6 +24,24 @@ export function MobileTabBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
+  const [lastProjectName, setLastProjectName] = useState<string | null>(null);
+
+  // Fetch most recent project with a measurement session
+  useEffect(() => {
+    supabase
+      .from('project_measurement_sessions')
+      .select('project_id, projects!inner(id, project_name)')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setLastProjectId(data.project_id);
+          setLastProjectName((data as any).projects?.project_name || null);
+        }
+      });
+  }, [location.pathname]);
 
   if (!isMobile) return null;
   if (HIDDEN_ROUTE_PATTERNS.some(p => p.test(location.pathname))) return null;
@@ -57,12 +76,14 @@ export function MobileTabBar() {
                 label="Bestaand project openen"
                 onClick={() => { setSheetOpen(false); navigate('/projects'); }}
               />
-              <ActionSheetItem
-                icon={RotateCcw}
-                label="Laatste meting hervatten"
-                sublabel="Open het meest recente project"
-                onClick={() => { setSheetOpen(false); navigate('/projects'); }}
-              />
+              {lastProjectId ? (
+                <ActionSheetItem
+                  icon={RotateCcw}
+                  label="Laatste meting hervatten"
+                  sublabel={lastProjectName || undefined}
+                  onClick={() => { setSheetOpen(false); navigate(`/projects/${lastProjectId}/measurements`); }}
+                />
+              ) : null}
             </div>
           </div>
         </div>

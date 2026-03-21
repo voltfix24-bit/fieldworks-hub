@@ -4,6 +4,7 @@ import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
 import { MobileTabBar } from './MobileTabBar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTenant } from '@/contexts/TenantContext';
 
 /** Routes where the full-screen measurement flow is active */
 const FULLSCREEN_PATTERNS = [
@@ -40,11 +41,14 @@ export function AppLayout() {
   );
 }
 
-/** Slim mobile top bar */
+/** Slim mobile top bar with tenant name */
 function MobileContextBar() {
+  const { tenant } = useTenant();
   return (
     <div className="h-11 flex items-center px-4 border-b border-border/50 bg-background shrink-0">
-      <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase" />
+      <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+        {tenant?.company_name || ''}
+      </span>
     </div>
   );
 }
