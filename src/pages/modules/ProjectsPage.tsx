@@ -28,7 +28,7 @@ export default function ProjectsPage() {
 
   const StatusLabel = ({ status }: { status: string }) => (
     <span className={cn(
-      'text-[10px] px-1.5 py-0.5 rounded font-semibold',
+      'text-[9px] px-1.5 py-0.5 rounded-md font-semibold',
       status === 'completed' ? 'status-completed' : 'status-planned'
     )}>
       {status === 'completed' ? 'Afgerond' : 'Gepland'}
@@ -106,17 +106,20 @@ export default function ProjectsPage() {
                 onClick={() => navigate(`/projects/${p.id}`)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/30 bg-card hover:bg-muted/15 transition-all text-left active:scale-[0.998]"
               >
+                <div className="w-8 h-8 rounded-lg bg-[hsl(var(--tenant-primary,var(--primary))/0.05)] flex items-center justify-center shrink-0">
+                  <FolderKanban className="h-3.5 w-3.5 text-[hsl(var(--tenant-primary,var(--primary))/0.4)]" />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-foreground truncate">{p.project_name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] text-muted-foreground/60 font-mono">{p.project_number}</span>
-                    {p.city && <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
-                    {p.planned_date && <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDateCompact(p.planned_date)}</span>}
+                    <span className="text-[10px] text-muted-foreground/50 font-mono">{p.project_number}</span>
+                    {p.city && <span className="text-[10px] text-muted-foreground/50 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
+                    {p.planned_date && <span className="text-[10px] text-muted-foreground/50 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDateCompact(p.planned_date)}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <StatusLabel status={p.status} />
-                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/20" />
                 </div>
               </button>
             ))}
