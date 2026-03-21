@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download } from 'lucide-react';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
@@ -11,8 +11,11 @@ import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
-import { RapportDownloadButton } from '@/components/report/RapportDownloadButton';
+import { useRapportGenerator } from '@/hooks/useRapportGenerator';
+import { useHandtekening } from '@/hooks/useHandtekening';
+import { useToast } from '@/hooks/use-toast';
 import HandtekeningPad from '@/components/measurement/HandtekeningPad';
+import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
   const [handtekening, setHandtekening] = useState<string | null>(null);
