@@ -33,6 +33,8 @@ export interface Elektrode {
   metingen: Meting[];
   foto_display_b64?: string;
   foto_overzicht_b64?: string;
+  foto_display_url?: string;
+  foto_overzicht_url?: string;
 }
 
 export interface RapportData {
