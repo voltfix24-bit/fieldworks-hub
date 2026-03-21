@@ -24,7 +24,21 @@ export function hexToHsl(hex: string): string {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
-export function applyTenantBranding(primaryColor: string, secondaryColor: string, accentColor: string) {
+const RADIUS_MAP: Record<string, string> = {
+  none: '0px',
+  small: '4px',
+  medium: '8px',
+  large: '12px',
+  full: '16px',
+};
+
+export function applyTenantBranding(
+  primaryColor: string,
+  secondaryColor: string,
+  accentColor: string,
+  borderRadius?: string,
+  interfaceDensity?: string,
+) {
   const root = document.documentElement;
   const primaryHsl = hexToHsl(primaryColor);
   const secondaryHsl = hexToHsl(secondaryColor);
@@ -44,6 +58,17 @@ export function applyTenantBranding(primaryColor: string, secondaryColor: string
   // Sidebar theming
   root.style.setProperty('--sidebar-primary', primaryHsl);
   root.style.setProperty('--sidebar-ring', primaryHsl);
+
+  // Border radius
+  if (borderRadius && RADIUS_MAP[borderRadius]) {
+    root.style.setProperty('--radius', RADIUS_MAP[borderRadius]);
+  }
+
+  // Density class on body
+  root.classList.remove('density-compact', 'density-standard', 'density-spacious');
+  if (interfaceDensity && interfaceDensity !== 'standard') {
+    root.classList.add(`density-${interfaceDensity}`);
+  }
 }
 
 export function clearTenantBranding() {
