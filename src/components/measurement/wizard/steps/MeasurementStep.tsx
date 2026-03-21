@@ -18,6 +18,7 @@ interface MeasurementStepProps {
   initializeDepthRows: (penId: string, pen: any) => void;
   compact?: boolean;
   onWarningCountChange?: (count: number) => void;
+  onRvMissingChange?: (missing: boolean) => void;
 }
 
 export function MeasurementStep({
