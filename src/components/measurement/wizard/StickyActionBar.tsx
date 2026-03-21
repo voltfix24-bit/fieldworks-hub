@@ -23,7 +23,7 @@ export function StickyActionBar({
 }: StickyActionBarProps) {
   if (compact) {
     return (
-      <div className={cn('shrink-0 safe-bottom', className)}>
+      <div className={cn('shrink-0 pb-[max(10px,env(safe-area-inset-bottom))]', className)}>
         {warningMessage && (
           <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-500/[0.04]">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500/70 shrink-0 mt-0.5" />
