@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,13 +9,17 @@ import { InfoRow } from '@/components/ui/info-row';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ChevronLeft } from 'lucide-react';
 
 export default function UserProfile() {
   const { user, profile } = useAuth();
   const { tenant } = useTenant();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [fullName, setFullName] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -28,6 +33,66 @@ export default function UserProfile() {
     if (error) { toast({ title: 'Fout', description: error.message, variant: 'destructive' }); }
     else { toast({ title: 'Profiel bijgewerkt' }); }
   };
+
+  if (isMobile) {
+    return (
+      <div className="ios-settings-page animate-fade-in">
+        {/* Sticky top nav */}
+        <div className="ios-settings-topnav">
+          <button onClick={() => navigate('/meer')} className="ios-settings-nav-back">
+            <ChevronLeft className="h-5 w-5" style={{ color: 'hsl(var(--tenant-primary))' }} />
+            <span>Meer</span>
+          </button>
+          <span className="ios-settings-nav-title">Profiel</span>
+          <button onClick={handleSave} disabled={saving} className="ios-settings-nav-save">
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+        </div>
+
+        <div className="ios-settings-scroll">
+          {/* Name field */}
+          <p className="ios-settings-section-label">Persoonlijke gegevens</p>
+          <div className="ios-meer-card">
+            <div className="ios-settings-field">
+              <label className="ios-settings-field-label">Volledige naam</label>
+              <input
+                className="ios-settings-field-input"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                placeholder="Uw volledige naam"
+              />
+            </div>
+          </div>
+
+          {/* Account info */}
+          <p className="ios-settings-section-label">Accountgegevens</p>
+          <div className="ios-meer-card">
+            {[
+              { label: 'E-mail', value: user?.email || '—' },
+              { label: 'Rol', value: profile?.role?.replace('_', ' ') || '—' },
+              { label: 'Bedrijf', value: tenant?.company_name || '—' },
+            ].map((row, i, arr) => (
+              <div key={row.label}>
+                <div className="ios-settings-info-row">
+                  <span className="ios-settings-info-label">{row.label}</span>
+                  <span className="ios-settings-info-value">{row.value}</span>
+                </div>
+                {i < arr.length - 1 && <div className="ios-meer-divider" />}
+              </div>
+            ))}
+            <div className="ios-meer-divider" />
+            <div className="ios-settings-info-row">
+              <span className="ios-settings-info-label">Status</span>
+              <span className="ios-settings-status-badge">
+                <span className="ios-settings-status-dot" />
+                {profile?.status === 'active' ? 'Actief' : profile?.status || '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in max-w-2xl">

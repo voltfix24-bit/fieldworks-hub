@@ -1702,3 +1702,298 @@
   transition: transform 0.12s;
 }
 .ios-detail-confirm-cancel:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════
+   iOS 26 — Meer / Settings pages
+   ═══════════════════════════════════════ */
+
+/* ── Meer page ── */
+.ios-meer-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ios-meer-profile-card {
+  background: hsl(var(--card));
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+  margin-bottom: 4px;
+}
+.ios-meer-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(var(--tenant-primary) / 0.15), hsl(var(--tenant-primary) / 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1.5px solid hsl(var(--tenant-primary) / 0.15);
+}
+.ios-meer-profile-info { flex: 1; min-width: 0; }
+.ios-meer-profile-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+.ios-meer-profile-company {
+  font-size: 14px;
+  color: hsl(var(--muted-foreground));
+  margin-top: 2px;
+}
+.ios-meer-profile-edit {
+  background: hsl(var(--tenant-primary) / 0.08);
+  border: none;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: hsl(var(--tenant-primary));
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s, transform 0.1s;
+}
+.ios-meer-profile-edit:active { background: hsl(var(--tenant-primary) / 0.15); transform: scale(0.95); }
+
+.ios-meer-section { margin-top: 4px; }
+.ios-meer-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  padding: 6px 4px 4px;
+}
+.ios-meer-card {
+  background: hsl(var(--card));
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-meer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  min-height: 56px;
+  cursor: pointer;
+  transition: background 0.1s;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+}
+.ios-meer-row:active { background: hsl(var(--foreground) / 0.03); }
+.ios-meer-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ios-meer-icon-salmon { background: hsl(var(--tenant-primary) / 0.1); color: hsl(var(--tenant-primary)); }
+.ios-meer-icon-blue   { background: hsl(210 80% 55% / 0.1); color: hsl(210 80% 55%); }
+.ios-meer-icon-purple { background: hsl(260 60% 60% / 0.1); color: hsl(260 60% 60%); }
+.ios-meer-icon-green  { background: hsl(var(--status-completed) / 0.1); color: hsl(var(--status-completed)); }
+.ios-meer-icon-grey   { background: hsl(var(--foreground) / 0.06); color: hsl(var(--muted-foreground)); }
+
+.ios-meer-row-text { flex: 1; min-width: 0; }
+.ios-meer-row-title { font-size: 15px; font-weight: 500; color: hsl(var(--foreground)); }
+.ios-meer-row-sub   { font-size: 13px; color: hsl(var(--muted-foreground)); margin-top: 1px; }
+.ios-meer-divider { height: 0.5px; background: hsl(var(--background)); margin: 0 16px; }
+
+.ios-meer-logout-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.ios-meer-logout-row:active { background: hsl(var(--destructive) / 0.04); }
+.ios-meer-logout-label { font-size: 15px; font-weight: 600; color: hsl(var(--destructive)); }
+
+.ios-meer-version {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground) / 0.35);
+  text-align: center;
+  padding: 12px 0 4px;
+}
+
+/* ── Settings sub-pages (Profile, Huisstijl) ── */
+.ios-settings-page {
+  background: hsl(var(--background));
+  min-height: 100vh;
+}
+.ios-settings-topnav {
+  background: hsl(var(--background) / 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid hsl(var(--foreground) / 0.1);
+  padding: 14px 16px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ios-settings-nav-back {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: hsl(var(--tenant-primary));
+  transition: opacity 0.12s;
+}
+.ios-settings-nav-back:active { opacity: 0.5; }
+.ios-settings-nav-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+.ios-settings-nav-save {
+  background: linear-gradient(135deg, hsl(var(--tenant-primary) / 0.85), hsl(var(--tenant-primary)));
+  border: none;
+  border-radius: 10px;
+  padding: 7px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: hsl(var(--primary-foreground));
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 3px 10px hsl(var(--tenant-primary) / 0.25);
+  transition: transform 0.12s, opacity 0.12s;
+}
+.ios-settings-nav-save:active { transform: scale(0.95); opacity: 0.85; }
+.ios-settings-nav-save:disabled { opacity: 0.4; }
+
+.ios-settings-scroll {
+  padding: 16px 16px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ios-settings-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  padding: 6px 4px 2px;
+}
+.ios-settings-field {
+  padding: 12px 16px 10px;
+}
+.ios-settings-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+.ios-settings-field-input {
+  width: 100%;
+  background: hsl(var(--background));
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+  font-family: inherit;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+.ios-settings-field-input:focus {
+  box-shadow: 0 0 0 3px hsl(var(--tenant-primary) / 0.15);
+}
+.ios-settings-field-input::placeholder {
+  color: hsl(var(--muted-foreground) / 0.4);
+}
+
+.ios-settings-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  min-height: 50px;
+  gap: 12px;
+}
+.ios-settings-info-label {
+  font-size: 15px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+.ios-settings-info-value {
+  font-size: 15px;
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  text-align: right;
+}
+
+.ios-settings-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--status-completed));
+}
+.ios-settings-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(var(--status-completed));
+}
+
+/* Sub tabs — segmented control */
+.ios-settings-sub-tabs {
+  display: flex;
+  background: hsl(var(--foreground) / 0.06);
+  border-radius: 12px;
+  padding: 3px;
+  margin: 12px 16px 0;
+  overflow: hidden;
+}
+.ios-settings-sub-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+.ios-settings-sub-tab.active {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-weight: 700;
+  box-shadow: 0 1px 4px hsl(var(--foreground) / 0.1);
+}
