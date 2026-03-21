@@ -194,6 +194,16 @@ export default function MeasurementWorkspace() {
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
+
+    // Als dit de tweede pen is → elektrode wordt RV (gekoppeld)
+    if (pens.length === 1) {
+      await updateElectrode.mutateAsync({
+        id: activeElectrode.id,
+        is_coupled: true,
+        ra_value: null,
+      });
+    }
+
     setTimeout(() => {
       const el = document.getElementById(`pen-section-${newPen.id}`);
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
