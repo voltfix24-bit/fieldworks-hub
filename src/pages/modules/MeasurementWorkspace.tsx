@@ -106,6 +106,7 @@ export default function MeasurementWorkspace() {
       setSelectedClient(project.client_id || '');
       setSelectedTechnician(project.technician_id || '');
       setSelectedEquipment(project.equipment_id || '');
+      setTargetValue(String((project as any).target_value || '3.00'));
     }
   }, [session?.id, project?.id]);
 
