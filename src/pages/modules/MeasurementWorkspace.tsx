@@ -509,6 +509,14 @@ export default function MeasurementWorkspace() {
         </div>
       </div>
 
+      {/* ─── Offline banner (desktop) ─── */}
+      {!isOnline && (
+        <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-xl bg-amber-500/10 border border-amber-400/20">
+          <WifiOff className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+          <p className="text-[12px] text-amber-700 font-medium">Geen verbinding — metingen worden lokaal opgeslagen en later gesynchroniseerd</p>
+        </div>
+      )}
+
       <div className="mb-5 -mx-1 sm:mx-0">
         <WizardStepIndicator
           steps={DESKTOP_STEPS}
