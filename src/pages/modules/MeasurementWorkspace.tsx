@@ -548,8 +548,8 @@ function MobileContextBlock({
       >
         <div className="min-w-0 flex-1">
           <p className={cn(
-            'text-[11px] truncate leading-snug font-medium',
-            summaryItems.length > 0 ? 'text-foreground/60' : 'text-muted-foreground/50'
+            'text-[12px] truncate leading-snug',
+            summaryItems.length > 0 ? 'text-foreground/50' : 'text-muted-foreground/40'
           )}>
             {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Meetgegevens instellen'}
           </p>
