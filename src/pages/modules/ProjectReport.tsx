@@ -10,6 +10,7 @@ import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
+import { RapportDownloadButton } from '@/components/report/RapportDownloadButton';
 
 export default function ProjectReport() {
   const { id } = useParams();
@@ -122,9 +123,12 @@ export default function ProjectReport() {
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
           {isReady && (
-            <Button size="sm" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" /> Rapport exporteren
-            </Button>
+            <>
+              <RapportDownloadButton projectId={id!} />
+              <Button size="sm" onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" /> Print / PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
