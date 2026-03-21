@@ -200,8 +200,15 @@ Deno.serve(async (req) => {
       });
 
       if (!apiResponse.ok) {
-        const detail = await apiResponse.json().catch(() => ({}));
-        throw new Error(detail?.detail ?? `API fout: ${apiResponse.status}`);
+        const detailText = await apiResponse.text().catch(() => "");
+        let detailMsg = `API fout: ${apiResponse.status}`;
+        try {
+          const parsed = JSON.parse(detailText);
+          detailMsg = typeof parsed?.detail === "string"
+            ? parsed.detail
+            : JSON.stringify(parsed?.detail ?? parsed).slice(0, 500);
+        } catch { /* use default */ }
+        throw new Error(detailMsg);
       }
 
       const result = await apiResponse.json();
