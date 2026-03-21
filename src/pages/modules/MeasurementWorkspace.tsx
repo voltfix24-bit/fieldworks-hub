@@ -351,6 +351,14 @@ export default function MeasurementWorkspace() {
           )}
         </div>
 
+        {/* ─── Offline banner ─── */}
+        {!isOnline && (
+          <div className="shrink-0 flex items-center gap-2 px-4 py-2 bg-amber-500/10 border-b border-amber-400/20">
+            <WifiOff className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+            <p className="text-[11px] text-amber-700 font-medium">Geen verbinding — metingen worden lokaal opgeslagen en later gesynchroniseerd</p>
+          </div>
+        )}
+
         {/* ─── Scrollable content ─── */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2" key={showSketch ? 'sketch' : step}>
           <div className="wizard-step-enter">
