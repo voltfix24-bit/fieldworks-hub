@@ -41,6 +41,7 @@ export default function ProjectForm() {
     project_number: '', project_name: '', site_name: '',
     address_line_1: '', postal_code: '', city: '',
     planned_date: '', client_id: '', technician_id: '', equipment_id: '', notes: '',
+    target_value: '', housing_number: '', cable_material: '',
   });
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
