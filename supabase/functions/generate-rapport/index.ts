@@ -183,9 +183,16 @@ Deno.serve(async (req) => {
     };
 
     // Check if external API URL is configured
-    const rapportApiUrl = Deno.env.get("RAPPORT_API_URL");
+    let rapportApiUrl = Deno.env.get("RAPPORT_API_URL");
 
     if (rapportApiUrl) {
+      // Ensure URL has protocol
+      if (!rapportApiUrl.startsWith("http://") && !rapportApiUrl.startsWith("https://")) {
+        rapportApiUrl = `https://${rapportApiUrl}`;
+      }
+      // Remove trailing slash
+      rapportApiUrl = rapportApiUrl.replace(/\/+$/, "");
+
       const apiResponse = await fetch(`${rapportApiUrl}/rapport/preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
