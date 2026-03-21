@@ -310,7 +310,7 @@ export default function MeasurementWorkspace() {
         <div className="ios-wizard-topnav shrink-0">
           <div className="ios-wizard-nav-row">
             <button
-              onClick={() => navigate(`/projects/${id}`)}
+              onClick={handleBack}
               className="ios-wizard-nav-back"
             >
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
