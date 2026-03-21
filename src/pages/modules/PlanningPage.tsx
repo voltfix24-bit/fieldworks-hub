@@ -91,6 +91,13 @@ export default function PlanningPage() {
               <LayoutGrid className="h-3.5 w-3.5" />
               Kalender
             </button>
+            <button
+              onClick={() => setView('monteurs')}
+              className={cn('ios-planning-seg-btn', view === 'monteurs' && 'active')}
+            >
+              <Users className="h-3.5 w-3.5" />
+              Monteurs
+            </button>
           </div>
         </div>
 
