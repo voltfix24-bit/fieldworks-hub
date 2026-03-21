@@ -314,6 +314,222 @@
 }
 
 /* ══════════════════════════════════════════
+   iOS-native Dashboard
+   ══════════════════════════════════════════ */
+
+.ios-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Greeting */
+.ios-dash-greeting {
+  padding-top: 4px;
+}
+.ios-dash-greeting-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+}
+.ios-dash-greeting-sub {
+  font-size: 15px;
+  color: hsl(var(--muted-foreground));
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* Stat cards */
+.ios-dash-stats {
+  display: flex;
+  gap: 10px;
+}
+.ios-dash-stat-card {
+  flex: 1;
+  background: hsl(var(--card));
+  border-radius: 16px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-dash-stat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+}
+.ios-dot-orange { background: #FF9500; }
+.ios-dot-green  { background: hsl(var(--status-completed)); }
+.ios-dot-red    { background: hsl(var(--destructive)); }
+.ios-dash-stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.ios-val-green { color: hsl(var(--status-completed)); }
+.ios-val-red   { color: hsl(var(--destructive)); }
+.ios-dash-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  margin-top: 3px;
+}
+
+/* Alert banner */
+.ios-dash-alert {
+  width: 100%;
+  background: hsl(var(--destructive) / 0.06);
+  border: 0.5px solid hsl(var(--destructive) / 0.18);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.12s;
+  gap: 10px;
+}
+.ios-dash-alert:active { background: hsl(var(--destructive) / 0.12); }
+.ios-dash-alert-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ios-dash-alert-icon {
+  width: 32px;
+  height: 32px;
+  background: hsl(var(--destructive) / 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ios-dash-alert-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: hsl(var(--destructive));
+  text-align: left;
+}
+.ios-dash-alert-sub {
+  font-size: 12px;
+  color: hsl(var(--destructive) / 0.6);
+  margin-top: 1px;
+  text-align: left;
+}
+
+/* Section headers */
+.ios-dash-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 6px;
+}
+.ios-dash-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.1px;
+  text-transform: uppercase;
+}
+.ios-dash-section-link {
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--tenant-primary));
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.ios-dash-section-link:active { opacity: 0.6; }
+
+/* Project list card */
+.ios-dash-card {
+  background: hsl(var(--card));
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-dash-row-divider {
+  height: 0.5px;
+  background: hsl(var(--background));
+  margin: 0 16px;
+}
+
+/* Project row */
+.ios-dash-project-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  gap: 12px;
+  min-height: 64px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+.ios-dash-project-row:active { background: hsl(var(--foreground) / 0.03); }
+.ios-dash-project-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ios-pdot-green  { background: hsl(var(--status-completed)); }
+.ios-pdot-grey   { background: hsl(var(--muted-foreground) / 0.25); }
+.ios-pdot-orange { background: #FF9500; }
+.ios-pdot-red    { background: hsl(var(--destructive)); }
+
+.ios-dash-project-info {
+  flex: 1;
+  min-width: 0;
+}
+.ios-dash-project-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ios-dash-project-meta {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ios-dash-project-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.ios-dash-project-date {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+.ios-dash-project-chevron {
+  color: hsl(var(--muted-foreground) / 0.25);
+}
+
+.ios-dash-empty {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground) / 0.35);
+}
+
+/* ══════════════════════════════════════════
    iOS-native Project Form
    ══════════════════════════════════════════ */
 
