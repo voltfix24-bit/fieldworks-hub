@@ -123,10 +123,10 @@ Deno.serve(async (req) => {
 
       return {
         nummer: idx + 1,
-        // Set ra OR rv, never both
-        ...(isRv
-          ? { rv: eindwaarde }
-          : { ra: eindwaarde }),
+        // API expects `rv` field always — use eindwaarde for both RA and RV
+        rv: eindwaarde,
+        // Also pass ra for client-side fallback
+        ...(isRv ? {} : { ra: eindwaarde }),
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
@@ -200,8 +200,15 @@ Deno.serve(async (req) => {
       });
 
       if (!apiResponse.ok) {
-        const detail = await apiResponse.json().catch(() => ({}));
-        throw new Error(detail?.detail ?? `API fout: ${apiResponse.status}`);
+        const detailText = await apiResponse.text().catch(() => "");
+        let detailMsg = `API fout: ${apiResponse.status}`;
+        try {
+          const parsed = JSON.parse(detailText);
+          detailMsg = typeof parsed?.detail === "string"
+            ? parsed.detail
+            : JSON.stringify(parsed?.detail ?? parsed).slice(0, 500);
+        } catch { /* use default */ }
+        throw new Error(detailMsg);
       }
 
       const result = await apiResponse.json();
