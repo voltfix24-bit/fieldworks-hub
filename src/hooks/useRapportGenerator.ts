@@ -144,7 +144,7 @@ export function useRapportGenerator() {
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke("generate-rapport", {
-        body: { project_id: projectId },
+        body: { project_id: projectId, handtekening_b64: handtekeningB64 || undefined },
       });
 
       if (fnError) throw new Error(fnError.message);
