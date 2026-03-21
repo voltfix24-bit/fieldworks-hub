@@ -26,6 +26,7 @@ export default function HandtekeningPad({
   onChange,
   breedte = 500,
   hoogte = 180,
+  monteurId,
   className = "",
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
