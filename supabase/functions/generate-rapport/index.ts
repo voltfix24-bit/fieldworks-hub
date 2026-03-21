@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { project_id } = await req.json();
+    const { project_id, handtekening_b64 } = await req.json();
     if (!project_id) {
       return new Response(JSON.stringify({ error: "project_id is vereist" }), {
         status: 400,
