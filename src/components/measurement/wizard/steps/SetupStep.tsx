@@ -29,6 +29,7 @@ export function SetupStep({
   selectedTechnician, setSelectedTechnician,
   selectedEquipment, setSelectedEquipment,
   notes, setNotes,
+  targetValue, onTargetValueChange,
   clients, technicians, equipment, compact,
 }: SetupStepProps) {
   const fieldH = compact ? 'h-8' : 'h-11';
