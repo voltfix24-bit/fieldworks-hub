@@ -41,12 +41,27 @@ export function AppLayout() {
   );
 }
 
-/** Slim mobile top bar with tenant name */
+/** Slim mobile top bar with tenant logo + name */
 function MobileContextBar() {
-  const { tenant } = useTenant();
+  const { tenant, branding } = useTenant();
+  const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+
   return (
-    <div className="h-11 flex items-center px-4 border-b border-border/50 bg-background shrink-0">
-      <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+    <div className="h-11 flex items-center gap-2.5 px-4 border-b border-border/50 bg-background shrink-0">
+      {logoUrl ? (
+        <img
+          src={logoUrl}
+          alt={tenant?.company_name || 'Logo'}
+          className="h-5 w-auto max-w-[28px] object-contain shrink-0"
+        />
+      ) : (
+        <div className="h-5 w-5 rounded bg-[hsl(var(--tenant-primary,var(--primary))/0.12)] flex items-center justify-center shrink-0">
+          <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))]">
+            {(tenant?.company_name || '?')[0].toUpperCase()}
+          </span>
+        </div>
+      )}
+      <span className="text-[12px] font-semibold text-foreground truncate">
         {tenant?.company_name || ''}
       </span>
     </div>
