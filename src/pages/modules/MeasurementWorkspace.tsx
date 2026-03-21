@@ -339,6 +339,7 @@ export default function MeasurementWorkspace() {
                 depthsInitRef={depthsInitRef}
                 initializeDepthRows={initializeDepthRows}
                 onWarningCountChange={setWarningCount}
+                onRvMissingChange={setRvMissing}
                 compact
               />
             )}
