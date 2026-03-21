@@ -118,7 +118,7 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes, show
                   const val = valueLookup.get(pen.id)?.get(depth);
                   return (
                     <td key={pen.id} className="py-1 px-2 text-right tabular-nums font-semibold text-foreground">
-                      {val != null ? formatNlNumber(val) : '—'}
+                      {val != null ? formatNlNumber(val) : emptyCellChar}
                     </td>
                   );
                 })}
