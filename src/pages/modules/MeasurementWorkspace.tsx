@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
 import { useElectrodes, useCreateElectrode, useUpdateElectrode } from '@/hooks/use-electrodes';
