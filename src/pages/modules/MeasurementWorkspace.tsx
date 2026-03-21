@@ -84,6 +84,7 @@ export default function MeasurementWorkspace() {
   const [selectedTechnician, setSelectedTechnician] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState('');
   const [notes, setNotes] = useState('');
+  const [targetValue, setTargetValue] = useState('3.00');
 
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
