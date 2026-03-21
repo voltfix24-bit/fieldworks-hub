@@ -453,6 +453,7 @@ export default function MeasurementWorkspace() {
                 onClick={() => {
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
                   if (step === 0 && rvMissing) return;
+                  if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
                   setProgressionWarningDismissed(false);
                   setStep(step + 1);
                 }}

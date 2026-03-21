@@ -1,8 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { User, Settings, Building2, Palette, LogOut, ChevronRight } from 'lucide-react';
+import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,6 +37,22 @@ export default function MeerPage() {
   const { tenant, branding } = useTenant();
   const isMobile = useIsMobile();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'light') {
+      root.classList.remove('dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -94,6 +111,34 @@ export default function MeerPage() {
             </div>
           </div>
         ))}
+
+        {/* Weergave */}
+        <div className="ios-meer-section">
+          <p className="ios-meer-section-title">Weergave</p>
+          <div className="ios-meer-card">
+            <div className="flex items-center gap-2 px-4 py-3">
+              {([
+                { key: 'light' as const, label: 'Licht', Icon: Sun },
+                { key: 'dark' as const, label: 'Donker', Icon: Moon },
+                { key: 'system' as const, label: 'Systeem', Icon: Monitor },
+              ]).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setThemeState(key)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.96]',
+                    theme === key
+                      ? 'bg-[hsl(var(--tenant-primary,var(--primary))/0.12)] text-[hsl(var(--tenant-primary,var(--primary)))]'
+                      : 'text-muted-foreground/50'
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Logout */}
         <div className="ios-meer-card" style={{ marginTop: 8 }}>

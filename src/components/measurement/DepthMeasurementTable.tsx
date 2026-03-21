@@ -149,7 +149,14 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
 }) {
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
   const [isFocused, setIsFocused] = useState(false);
+  const [saved, setSaved] = useState(false);
   const resistanceRef = useRef<HTMLInputElement>(null);
+
+  // Swipe-to-delete state
+  const [swipeX, setSwipeX] = useState(0);
+  const [swiping, setSwiping] = useState(false);
+  const startX = useRef(0);
+  const DELETE_THRESHOLD = 80;
 
   useEffect(() => {
     setResistance(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
@@ -160,26 +167,63 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
     const r = parseNlNumberOrZero(resistance);
     if (row.id && r !== row.resistance_value) {
       onUpdate(row.id, row.depth_meters, r);
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(6);
+      // Visual flash
+      setSaved(true);
+      setTimeout(() => setSaved(false), 600);
     }
   }, [resistance, row.id, row.depth_meters, row.resistance_value, onUpdate]);
 
   const hasValue = resistance !== '' && parseNlNumber(resistance) > 0;
+  const canSwipe = !isPreset && !disabled;
 
   return (
     <div className={cn(
-      'transition-colors duration-75',
+      'transition-colors duration-75 relative',
       hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
     )}>
-      <div className={cn(
-        'grid items-center',
-        compact
-          ? 'grid-cols-[40px_1fr_24px] gap-0 px-1'
-          : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-1.5',
-        isEven ? 'bg-card' : 'bg-muted/20',
-        isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
-        hasProgressionWarning && 'bg-amber-500/[0.04]',
-        isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
-      )}>
+      {/* Swipe delete background */}
+      {canSwipe && swipeX > 10 && (
+        <div className="absolute inset-0 flex items-center justify-end px-4 bg-destructive/90 rounded-sm">
+          <Trash2 className="h-4 w-4 text-white" />
+        </div>
+      )}
+
+      <div
+        className={cn(
+          'grid items-center relative',
+          compact
+            ? 'grid-cols-[40px_1fr_24px] gap-0 px-1 min-h-[48px]'
+            : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-1.5 min-h-[52px]',
+          isEven ? 'bg-card' : 'bg-muted/20',
+          isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
+          hasProgressionWarning && 'bg-amber-500/[0.04]',
+          isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
+          saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
+        )}
+        style={canSwipe ? {
+          transform: `translateX(-${swipeX}px)`,
+          transition: swiping ? 'none' : 'transform 0.2s ease',
+        } : undefined}
+        onTouchStart={canSwipe ? (e) => {
+          startX.current = e.touches[0].clientX;
+          setSwiping(true);
+        } : undefined}
+        onTouchMove={canSwipe ? (e) => {
+          const dx = startX.current - e.touches[0].clientX;
+          if (dx > 0) setSwipeX(Math.min(dx, 100));
+        } : undefined}
+        onTouchEnd={canSwipe ? () => {
+          if (swipeX >= DELETE_THRESHOLD && row.id) {
+            if (navigator.vibrate) navigator.vibrate(10);
+            onDelete(row.id);
+          } else {
+            setSwipeX(0);
+          }
+          setSwiping(false);
+        } : undefined}
+      >
         {/* Depth — static display */}
         <div className="relative">
           <span className={cn(
@@ -201,6 +245,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             ref={resistanceRef}
             type="text"
             inputMode="decimal"
+            pattern="[0-9]*[.,]?[0-9]*"
             value={resistance}
             onChange={e => setResistance(e.target.value)}
             onFocus={() => setIsFocused(true)}
@@ -208,7 +253,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0',
-              compact ? 'h-8 text-[13px] pr-4 px-1' : 'h-9 text-[14px] pr-5 px-2',
+              compact ? 'h-10 text-[15px] pr-4 px-3' : 'h-11 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
@@ -225,20 +270,22 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         {/* Delete / warning icon */}
         <div className="flex justify-center">
           {hasProgressionWarning ? (
-            <AlertTriangle className={cn('text-amber-500', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+            <div className="min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <AlertTriangle className={cn('text-amber-500', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+            </div>
           ) : !isPreset ? (
             <button
               onClick={() => row.id && onDelete(row.id)}
               disabled={disabled}
               className={cn(
                 'text-muted-foreground/15 hover:text-destructive transition-colors rounded',
-                compact ? 'h-5 w-5 flex items-center justify-center' : 'h-8 w-8 flex items-center justify-center'
+                'min-h-[44px] min-w-[44px] flex items-center justify-center p-2'
               )}
             >
-              <Trash2 className={cn(compact ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
+              <Trash2 className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
             </button>
           ) : (
-            <span className={cn(compact ? 'w-5' : 'w-8')} />
+            <span className="min-w-[44px]" />
           )}
         </div>
       </div>
@@ -248,7 +295,6 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         <div className={cn(
           'flex items-center gap-1.5 bg-amber-500/[0.04]',
           compact ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-[10px]',
-          isEven ? '' : ''
         )}>
           <span className="text-amber-600 dark:text-amber-400 font-medium">
             Let op: waarde is hoger dan vorige diepte

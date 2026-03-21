@@ -35,6 +35,53 @@ export default function Dashboard() {
   const firstName = profile?.full_name?.split(' ')[0] || '';
   const greeting = getGreeting();
 
+  if (!projects) {
+    if (isMobile) {
+      return (
+        <div className="ios-dash animate-fade-in">
+          <div className="ios-dash-greeting">
+            <div className="h-7 w-48 rounded-lg bg-muted/30 animate-pulse" />
+            <div className="h-4 w-32 rounded-lg bg-muted/20 animate-pulse mt-2" />
+          </div>
+          <div className="grid grid-cols-3 gap-2 px-4 mt-4">
+            {[1,2,3].map(i => (
+              <div key={i} className="rounded-2xl bg-card p-3 h-16 animate-pulse">
+                <div className="h-3 w-8 rounded bg-muted/30 mb-2" />
+                <div className="h-5 w-6 rounded bg-muted/20" />
+              </div>
+            ))}
+          </div>
+          <div className="px-4 mt-5 space-y-2">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="flex items-center gap-3 rounded-xl bg-card p-3 animate-pulse">
+                <div className="w-8 h-8 rounded-full bg-muted/30 shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3.5 w-3/4 rounded bg-muted/30" />
+                  <div className="h-2.5 w-1/2 rounded bg-muted/20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="animate-fade-in max-w-2xl mx-auto space-y-4 pt-4">
+        <div className="h-8 w-48 rounded-lg bg-muted/30 animate-pulse" />
+        <div className="grid grid-cols-3 gap-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="rounded-xl bg-card p-4 h-20 animate-pulse" />
+          ))}
+        </div>
+        <div className="space-y-2">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-16 rounded-xl bg-card animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (isMobile) {
     return (
       <div className="ios-dash animate-fade-in">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
@@ -111,7 +111,8 @@ export function MobileTabBar() {
   const [lastProjectId, setLastProjectId] = useState<string | null>(null);
   const [lastProjectName, setLastProjectName] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
-
+  const sheetStartY = useRef(0);
+  const [sheetDragY, setSheetDragY] = useState(0);
   useEffect(() => {
     supabase
       .from('project_measurement_sessions')
@@ -150,15 +151,36 @@ export function MobileTabBar() {
       />
 
       {/* ── Bottom Sheet ── */}
-      <div className={cn(
-        'fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-[300]',
-        'rounded-t-3xl',
-        'border-t border-white/60',
-        'pb-10 transition-transform duration-[400ms]',
-        'bg-background/95 backdrop-blur-[40px]',
-        'shadow-[0_-8px_40px_rgba(0,0,0,0.14)]',
-        sheetOpen ? 'translate-y-0' : 'translate-y-full'
-      )}>
+      <div
+        className={cn(
+          'fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-[300]',
+          'rounded-t-3xl',
+          'border-t border-white/60',
+          'pb-10',
+          'bg-background/95 backdrop-blur-[40px]',
+          'shadow-[0_-8px_40px_rgba(0,0,0,0.14)]',
+        )}
+        style={{
+          transform: sheetOpen
+            ? `translateX(-50%) translateY(${sheetDragY}px)`
+            : 'translateX(-50%) translateY(100%)',
+          transition: sheetDragY > 0 ? 'none' : 'transform 400ms cubic-bezier(0.32,0.72,0,1)',
+        }}
+        onTouchStart={(e) => {
+          sheetStartY.current = e.touches[0].clientY;
+        }}
+        onTouchMove={(e) => {
+          const dy = e.touches[0].clientY - sheetStartY.current;
+          if (dy > 0) setSheetDragY(dy);
+        }}
+        onTouchEnd={() => {
+          if (sheetDragY > 80) {
+            setSheetOpen(false);
+            if (navigator.vibrate) navigator.vibrate(6);
+          }
+          setSheetDragY(0);
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-5">
           <div className="w-9 h-[5px] rounded-full bg-foreground/20" />
