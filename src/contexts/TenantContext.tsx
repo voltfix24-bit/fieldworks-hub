@@ -63,7 +63,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         .single();
       if (data) {
         setBranding(data);
-        applyTenantBranding(data.primary_color, data.secondary_color, data.accent_color);
+        const b = data as any;
+        applyTenantBranding(b.primary_color, b.secondary_color, b.accent_color, b.border_radius, b.interface_density);
       }
     }
   };
