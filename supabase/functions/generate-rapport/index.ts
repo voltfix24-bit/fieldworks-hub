@@ -177,6 +177,8 @@ Deno.serve(async (req) => {
         ? new Date(equip.next_calibration_date as string).toLocaleDateString("nl-NL")
         : undefined,
 
+      handtekening_b64: handtekening_b64 || undefined,
+
       elektrodes,
     };
 
