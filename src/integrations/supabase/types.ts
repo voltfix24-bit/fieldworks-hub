@@ -541,12 +541,14 @@ export type Database = {
         Row: {
           address_line_1: string | null
           address_line_2: string | null
+          cable_material: string | null
           city: string | null
           client_id: string | null
           completed_date: string | null
           country: string | null
           created_at: string
           equipment_id: string | null
+          housing_number: string | null
           id: string
           notes: string | null
           planned_date: string | null
@@ -555,6 +557,7 @@ export type Database = {
           project_number: string
           site_name: string | null
           status: Database["public"]["Enums"]["project_status"]
+          target_value: number | null
           technician_id: string | null
           tenant_id: string
           updated_at: string
@@ -562,12 +565,14 @@ export type Database = {
         Insert: {
           address_line_1?: string | null
           address_line_2?: string | null
+          cable_material?: string | null
           city?: string | null
           client_id?: string | null
           completed_date?: string | null
           country?: string | null
           created_at?: string
           equipment_id?: string | null
+          housing_number?: string | null
           id?: string
           notes?: string | null
           planned_date?: string | null
@@ -576,6 +581,7 @@ export type Database = {
           project_number: string
           site_name?: string | null
           status?: Database["public"]["Enums"]["project_status"]
+          target_value?: number | null
           technician_id?: string | null
           tenant_id: string
           updated_at?: string
@@ -583,12 +589,14 @@ export type Database = {
         Update: {
           address_line_1?: string | null
           address_line_2?: string | null
+          cable_material?: string | null
           city?: string | null
           client_id?: string | null
           completed_date?: string | null
           country?: string | null
           created_at?: string
           equipment_id?: string | null
+          housing_number?: string | null
           id?: string
           notes?: string | null
           planned_date?: string | null
@@ -597,6 +605,7 @@ export type Database = {
           project_number?: string
           site_name?: string | null
           status?: Database["public"]["Enums"]["project_status"]
+          target_value?: number | null
           technician_id?: string | null
           tenant_id?: string
           updated_at?: string

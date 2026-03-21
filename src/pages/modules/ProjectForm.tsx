@@ -308,6 +308,38 @@ export default function ProjectForm() {
               </div>
               <div className="ios-form-divider" />
               <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Toetswaarde (Ω)</span>
+                <input
+                  className="ios-form-input"
+                  inputMode="decimal"
+                  value={form.target_value}
+                  onChange={e => set('target_value', e.target.value)}
+                  placeholder="Bijv. 3.00"
+                />
+                <span className="ios-form-field-hint">Maximaal toegestane aardingsweerstand</span>
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Behuizingsnummer</span>
+                <input
+                  className="ios-form-input"
+                  value={form.housing_number}
+                  onChange={e => set('housing_number', e.target.value)}
+                  placeholder="Bijv. 7 002 525"
+                />
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Leidingmateriaal</span>
+                <input
+                  className="ios-form-input"
+                  value={form.cable_material}
+                  onChange={e => set('cable_material', e.target.value)}
+                  placeholder="Bijv. Cu 25mm²"
+                />
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
                 <span className="ios-form-field-label">Notities</span>
                 <textarea
                   className="ios-form-textarea"
