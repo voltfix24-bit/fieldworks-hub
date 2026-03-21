@@ -530,6 +530,233 @@
 }
 
 /* ══════════════════════════════════════════
+   iOS-native Planning / Calendar
+   ══════════════════════════════════════════ */
+
+.ios-planning {
+  display: flex;
+  flex-direction: column;
+}
+.ios-planning-header {
+  padding-bottom: 8px;
+}
+.ios-planning-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.6px;
+  margin-bottom: 16px;
+}
+.ios-planning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Segment control */
+.ios-planning-segment {
+  display: flex;
+  background: hsl(var(--foreground) / 0.06);
+  border-radius: 10px;
+  padding: 2px;
+  width: fit-content;
+}
+.ios-planning-seg-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 20px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+.ios-planning-seg-btn.active {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  box-shadow: 0 1px 4px hsl(var(--foreground) / 0.1), 0 0.5px 0 hsl(var(--foreground) / 0.05);
+}
+
+/* Calendar card */
+.ios-cal-card {
+  background: hsl(var(--card));
+  border-radius: 20px;
+  padding: 16px 12px 20px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+
+/* Month nav */
+.ios-cal-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 16px;
+}
+.ios-cal-month-label {
+  font-size: 17px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.3px;
+  text-transform: capitalize;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ios-cal-nav-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: hsl(var(--foreground) / 0.06);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.12s, transform 0.12s;
+}
+.ios-cal-nav-arrow:active { opacity: 0.5; transform: scale(0.9); }
+
+/* Day headers */
+.ios-cal-day-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+.ios-cal-day-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  padding: 4px 0;
+  letter-spacing: 0.3px;
+}
+
+/* Calendar grid */
+.ios-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px 0;
+}
+.ios-cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.ios-cal-day-num {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  transition: background 0.12s;
+}
+.ios-cal-cell:active .ios-cal-day-num { background: hsl(var(--foreground) / 0.05); }
+.ios-cal-day-num.today {
+  background: hsl(var(--tenant-primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 700;
+}
+.ios-cal-day-num.selected:not(.today) {
+  background: hsl(var(--tenant-primary) / 0.12);
+  color: hsl(var(--tenant-primary));
+  font-weight: 700;
+}
+.ios-cal-day-num.past { color: hsl(var(--muted-foreground) / 0.35); }
+.ios-cal-day-num.weekend { color: hsl(var(--muted-foreground)); }
+
+/* Event dots */
+.ios-cal-event-dots {
+  display: flex;
+  gap: 2px;
+  min-height: 5px;
+  align-items: center;
+}
+.ios-cal-event-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: hsl(var(--tenant-primary));
+}
+.ios-cal-event-dot.green { background: hsl(var(--status-completed)); }
+
+/* Day detail */
+.ios-cal-day-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ios-cal-day-detail-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.ios-cal-day-detail-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.3px;
+  text-transform: capitalize;
+}
+.ios-cal-day-detail-count {
+  font-size: 14px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+/* Project accent bar */
+.ios-planning-accent {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  background: hsl(var(--tenant-primary));
+  flex-shrink: 0;
+}
+.ios-planning-accent.green { background: hsl(var(--status-completed)); }
+.ios-planning-accent.today { background: hsl(var(--tenant-primary)); }
+
+/* Empty states */
+.ios-planning-empty {
+  background: hsl(var(--card));
+  border-radius: 16px;
+  padding: 28px 16px;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-planning-empty-day {
+  background: hsl(var(--card));
+  border-radius: 16px;
+  padding: 28px 16px;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-planning-empty-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* ══════════════════════════════════════════
    iOS-native Project Form
    ══════════════════════════════════════════ */
 
