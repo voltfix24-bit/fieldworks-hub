@@ -221,14 +221,12 @@ Deno.serve(async (req) => {
         }
       );
     } else {
-      // No external API configured — return the prepared data for debugging
+      // No external API — return prepared data for client-side PDF generation
       return new Response(
         JSON.stringify({
-          error: "RAPPORT_API_URL niet geconfigureerd. Stel deze secret in om PDF's te genereren.",
           prepared_data: rapportData,
         }),
         {
-          status: 422,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
