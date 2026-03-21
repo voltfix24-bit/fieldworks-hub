@@ -123,10 +123,10 @@ Deno.serve(async (req) => {
 
       return {
         nummer: idx + 1,
-        // Set ra OR rv, never both
-        ...(isRv
-          ? { rv: eindwaarde }
-          : { ra: eindwaarde }),
+        // API expects `rv` field always — use eindwaarde for both RA and RV
+        rv: eindwaarde,
+        // Also pass ra for client-side fallback
+        ...(isRv ? {} : { ra: eindwaarde }),
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
