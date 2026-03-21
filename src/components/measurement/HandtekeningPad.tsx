@@ -40,7 +40,7 @@ export default function HandtekeningPad({
     slaHandtekeningOp,
     verwijderHandtekening,
     isLoading,
-  } = useHandtekening();
+  } = useHandtekening(monteurId);
 
   // ── Canvas context helpers ──
   const getCtx = () => {
