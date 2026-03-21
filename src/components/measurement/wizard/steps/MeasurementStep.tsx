@@ -28,7 +28,12 @@ export function MeasurementStep({
 }: MeasurementStepProps) {
   const showRv = pens.length > 1;
   const hasTarget = electrode.target_value != null;
-  const targetMet = hasTarget && electrode.ra_value != null && electrode.ra_value <= electrode.target_value;
+  const targetMet = hasTarget && (
+    showRv
+      ? electrode.rv_value != null && electrode.rv_value <= electrode.target_value
+      : electrode.ra_value != null && electrode.ra_value <= electrode.target_value
+  );
+  const rvMissing = showRv && (electrode.rv_value == null || electrode.rv_value === 0);
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
