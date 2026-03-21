@@ -312,3 +312,306 @@
   from { opacity: 0; transform: translateY(var(--tw-translate-y, 0.5rem)); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ══════════════════════════════════════════
+   iOS-native Project Form
+   ══════════════════════════════════════════ */
+
+.ios-form-page {
+  background: hsl(var(--background));
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Header */
+.ios-form-header {
+  padding: 12px 20px 0;
+}
+.ios-form-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+.ios-form-back {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: hsl(var(--foreground) / 0.08);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  color: hsl(var(--foreground) / 0.55);
+}
+.ios-form-back:active { opacity: 0.6; transform: scale(0.94); }
+.ios-form-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.4px;
+}
+.ios-form-subtitle {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+  margin-left: 46px;
+  padding-bottom: 12px;
+}
+
+/* Scroll area */
+.ios-form-scroll {
+  padding: 8px 16px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Section label */
+.ios-form-section-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.1px;
+  text-transform: uppercase;
+  padding: 4px 4px 2px;
+}
+
+/* Card surface */
+.ios-form-card {
+  background: hsl(var(--card));
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-form-card:focus-within {
+  box-shadow: 0 0 0 3px hsl(var(--tenant-primary) / 0.15), 0 1px 0 hsl(var(--foreground) / 0.04);
+  transition: box-shadow 0.2s;
+}
+
+/* Input row (side by side fields) */
+.ios-form-input-row {
+  display: flex;
+  gap: 0;
+}
+
+/* Field inside card */
+.ios-form-field {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 10px;
+  position: relative;
+}
+.ios-form-field-full {
+  padding: 12px 16px 10px;
+}
+.ios-form-field-divider {
+  width: 0.5px;
+  background: hsl(var(--border));
+  align-self: stretch;
+}
+.ios-form-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+/* Native-feeling input */
+.ios-form-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  font-family: inherit;
+  padding: 0;
+  width: 100%;
+  min-height: 28px;
+}
+.ios-form-input::placeholder {
+  color: hsl(var(--muted-foreground) / 0.4);
+  font-weight: 400;
+}
+.ios-font-mono {
+  font-family: 'SF Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 14px;
+}
+
+/* Divider */
+.ios-form-divider {
+  height: 0.5px;
+  background: hsl(var(--border));
+  margin: 0 16px;
+}
+
+/* List row (label left, value right) */
+.ios-form-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  min-height: 52px;
+  gap: 12px;
+}
+.ios-form-list-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  flex-shrink: 0;
+}
+.ios-form-list-value {
+  font-size: 15px;
+  color: hsl(var(--muted-foreground));
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+}
+.ios-form-list-value.has-value {
+  color: hsl(var(--foreground));
+}
+.ios-form-date-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  font-size: 16px; /* prevent zoom on iOS */
+}
+
+/* Select trigger styled as list row value */
+.ios-form-select-trigger {
+  border: 0 !important;
+  background: transparent !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+  gap: 8px !important;
+  justify-content: flex-end !important;
+  text-align: right !important;
+  outline: none !important;
+  ring: none !important;
+}
+.ios-form-select-trigger:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
+.ios-form-select-trigger [data-radix-select-icon] {
+  display: none;
+}
+.ios-form-placeholder {
+  color: hsl(var(--muted-foreground) / 0.5);
+}
+.ios-form-chevron {
+  height: 14px;
+  width: 14px;
+  color: hsl(var(--muted-foreground) / 0.3);
+  flex-shrink: 0;
+}
+
+/* Textarea */
+.ios-form-textarea {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+  font-family: inherit;
+  width: 100%;
+  resize: none;
+  min-height: 72px;
+  line-height: 1.5;
+}
+.ios-form-textarea::placeholder {
+  color: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Accordion */
+.ios-form-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  min-height: 52px;
+  cursor: pointer;
+  width: 100%;
+  background: transparent;
+  border: none;
+  transition: background 0.12s;
+}
+.ios-form-accordion-trigger:active {
+  background: hsl(var(--foreground) / 0.03);
+}
+.ios-form-accordion-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+.ios-form-accordion-body {
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s;
+}
+.ios-form-accordion-body.is-open {
+  max-height: 400px;
+  opacity: 1;
+}
+.ios-form-accordion-body.is-closed {
+  max-height: 0;
+  opacity: 0;
+}
+.ios-form-accordion-inner {
+  padding: 0 0 4px;
+}
+
+/* Bottom CTA bar */
+.ios-form-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, hsl(var(--background)) 70%, hsl(var(--background) / 0));
+  pointer-events: none;
+}
+.ios-form-cta {
+  width: 100%;
+  min-height: 54px;
+  background: hsl(var(--tenant-primary));
+  border: none;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  color: hsl(var(--primary-foreground));
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  pointer-events: all;
+  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s;
+  box-shadow: 0 4px 16px hsl(var(--tenant-primary) / 0.3), 0 1px 3px hsl(var(--foreground) / 0.08);
+}
+.ios-form-cta:active {
+  transform: scale(0.975);
+  opacity: 0.9;
+}
+.ios-form-cta:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: all;
+}
