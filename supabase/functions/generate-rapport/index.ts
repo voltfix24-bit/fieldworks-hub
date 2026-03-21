@@ -117,6 +117,10 @@ Deno.serve(async (req) => {
         ? `${minValue.toFixed(2).replace(".", ",")} Ω`
         : "— Ω";
 
+      // Collect photo URLs from pens (first available per type)
+      const fotoDisplayUrl = elPens.find((p) => p.display_photo_url)?.display_photo_url || null;
+      const fotoOverzichtUrl = elPens.find((p) => p.overview_photo_url)?.overview_photo_url || null;
+
       return {
         nummer: idx + 1,
         // Set ra OR rv, never both
@@ -128,6 +132,8 @@ Deno.serve(async (req) => {
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
         pennen_gekoppeld: gekoppeld,
         metingen,
+        foto_display_url: fotoDisplayUrl,
+        foto_overzicht_url: fotoOverzichtUrl,
       };
     });
 

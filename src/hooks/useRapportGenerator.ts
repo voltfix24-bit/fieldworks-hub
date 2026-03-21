@@ -203,6 +203,53 @@ function downloadBase64Pdf(b64: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Fetch een afbeelding-URL en retourneer als data-URL (base64).
+ * Geeft null terug bij fouten.
+ */
+async function urlNaarDataUrl(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Laad foto URLs en converteer naar base64 data-URLs voor jsPDF.
+ * Muteert de elektrode objecten in-place.
+ */
+async function laadFotosVoorElektrodes(elektrodes: Elektrode[]): Promise<void> {
+  const taken: Promise<void>[] = [];
+
+  for (const e of elektrodes) {
+    if (e.foto_display_url && !e.foto_display_b64) {
+      taken.push(
+        urlNaarDataUrl(e.foto_display_url).then((dataUrl) => {
+          if (dataUrl) e.foto_display_b64 = dataUrl;
+        })
+      );
+    }
+    if (e.foto_overzicht_url && !e.foto_overzicht_b64) {
+      taken.push(
+        urlNaarDataUrl(e.foto_overzicht_url).then((dataUrl) => {
+          if (dataUrl) e.foto_overzicht_b64 = dataUrl;
+        })
+      );
+    }
+  }
+
+  await Promise.all(taken);
+}
+
 export function fotoNaarBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();

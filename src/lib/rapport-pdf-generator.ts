@@ -456,6 +456,56 @@ export function generateRapportPdf(data: RapportData): jsPDF {
       `Meetmethode: ${data.meetmethode || "3-punts"}  ·  Maatgevende waarde: laagste gemeten ${eindtype}  ·  Toetswaarde: ≤ ${toetswaarde}`,
       ML, y + 2
     );
+    y += 6;
+
+    // ── Documentatiefoto's per elektrode ──
+    const fotos: { label: string; dataUrl: string }[] = [];
+    if (e.foto_display_b64) {
+      fotos.push({ label: "Meetdisplay", dataUrl: e.foto_display_b64 });
+    }
+    if (e.foto_overzicht_b64) {
+      fotos.push({ label: "Overzichtsfoto", dataUrl: e.foto_overzicht_b64 });
+    }
+
+    if (fotos.length > 0) {
+      // Check if we need a new page (photos need ~65mm)
+      if (y > 210) {
+        addNewPage(doc, data, brandColor);
+        y = 22;
+      }
+
+      doc.setDrawColor(...hexToRgb(SEPARATOR));
+      doc.setLineWidth(0.1);
+      doc.line(ML, y, PAGE_W - MR, y);
+      y += 4;
+
+      doc.setFontSize(8.5);
+      doc.setTextColor(...hexToRgb(DARK));
+      doc.setFont("helvetica", "bold");
+      doc.text("Documentatiefoto's", ML, y);
+      y += 5;
+
+      const fotoW = fotos.length === 1 ? 70 : (CW - 6) / 2;
+      const fotoH = fotoW * 0.7;
+
+      fotos.forEach((foto, fi) => {
+        const fx = ML + fi * (fotoW + 6);
+        try {
+          // Detect format from data URL or default to JPEG
+          const format = foto.dataUrl.startsWith("data:image/png") ? "PNG" : "JPEG";
+          doc.addImage(foto.dataUrl, format, fx, y, fotoW, fotoH);
+          // Caption
+          doc.setFontSize(7.5);
+          doc.setTextColor(...hexToRgb(LIGHT));
+          doc.setFont("helvetica", "normal");
+          doc.text(foto.label, fx + fotoW / 2, y + fotoH + 3, { align: "center" });
+        } catch {
+          // Image couldn't be loaded — skip silently
+        }
+      });
+
+      y += fotoH + 6;
+    }
   }
 
   // ══════════════════════════════════════
