@@ -395,9 +395,10 @@ export default function MeasurementWorkspace() {
                 </button>
               ) : <div />}
               <button
-                className="ios-wizard-btn-next"
+                className={cn('ios-wizard-btn-next', rvMissing && step === 0 && 'opacity-40 pointer-events-none')}
                 onClick={() => {
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
+                  if (step === 0 && rvMissing) return;
                   setProgressionWarningDismissed(false);
                   setStep(step + 1);
                 }}
