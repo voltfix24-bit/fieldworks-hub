@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, forwardRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ interface PhotoUploaderProps {
   compact?: boolean;
 }
 
-export function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading, compact }: PhotoUploaderProps) {
+export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading, compact }, ref) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<HTMLInputElement>(null);
