@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
@@ -143,6 +146,34 @@ export default function ProjectReport() {
     }
   };
 
+  // Email state
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState(client?.email || '');
+  const [emailNaam, setEmailNaam] = useState(client?.contact_name || '');
+  const [emailSending, setEmailSending] = useState(false);
+
+  const handleSendEmail = async () => {
+    if (!emailTo) return;
+    setEmailSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-rapport', {
+        body: {
+          project_id: id,
+          handtekening_b64: actieveHandtekening ?? undefined,
+          recipient_email: emailTo,
+          recipient_name: emailNaam,
+        },
+      });
+      if (error) throw error;
+      toast({ title: 'Rapport verstuurd', description: `Verzonden naar ${emailTo}` });
+      setEmailOpen(false);
+    } catch (err) {
+      toast({ title: 'Versturen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Toolbar — hidden in print */}
@@ -240,24 +271,82 @@ export default function ProjectReport() {
               />
             )}
 
-            {/* Generate button */}
-            <button
-              onClick={handleDownload}
-              disabled={!actieveHandtekening || rapportLoading}
-              className={cn(
-                'w-full mt-5 flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 transition-all active:scale-[0.98]',
-                actieveHandtekening
-                  ? 'bg-[#F4896B] text-white shadow-sm'
-                  : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
-              )}
-            >
-              {rapportLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              {rapportLoading ? 'Genereren…' : 'Rapport genereren'}
-            </button>
+            {/* Generate + Email buttons */}
+            <div className="flex gap-2 mt-5">
+              <button
+                onClick={handleDownload}
+                disabled={!actieveHandtekening || rapportLoading}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 transition-all active:scale-[0.98]',
+                  actieveHandtekening
+                    ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+                )}
+              >
+                {rapportLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {rapportLoading ? 'Genereren…' : 'Download'}
+              </button>
+              <button
+                onClick={() => setEmailOpen(true)}
+                disabled={!actieveHandtekening || rapportLoading}
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 px-4 transition-all active:scale-[0.98]',
+                  actieveHandtekening
+                    ? 'bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))]'
+                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+                )}
+              >
+                <Mail className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Email modal */}
+            {emailOpen && (
+              <div className="mt-4 rounded-xl border border-border/40 bg-muted/10 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[13px] font-semibold text-foreground">Rapport versturen</h3>
+                  <button onClick={() => setEmailOpen(false)} className="text-muted-foreground/40 hover:text-foreground transition-colors">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[11px] text-muted-foreground/60">E-mailadres</Label>
+                  <Input
+                    type="email"
+                    value={emailTo}
+                    onChange={e => setEmailTo(e.target.value)}
+                    placeholder="klant@bedrijf.nl"
+                    className="h-9 text-[13px]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[11px] text-muted-foreground/60">Naam ontvanger</Label>
+                  <Input
+                    value={emailNaam}
+                    onChange={e => setEmailNaam(e.target.value)}
+                    placeholder="Naam"
+                    className="h-9 text-[13px]"
+                  />
+                </div>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={!emailTo || emailSending}
+                  className={cn(
+                    'w-full flex items-center justify-center gap-2 rounded-xl font-semibold text-[13px] py-2.5 transition-all',
+                    emailTo
+                      ? 'bg-[hsl(var(--tenant-primary))] text-white'
+                      : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+                  )}
+                >
+                  {emailSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  {emailSending ? 'Versturen…' : 'Versturen'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

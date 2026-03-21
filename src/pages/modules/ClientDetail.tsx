@@ -5,13 +5,17 @@ import { InfoRow } from '@/components/ui/info-row';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { useClient, useDeleteClient } from '@/hooks/use-clients';
+import { useClientProjects } from '@/hooks/use-client-projects';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Pencil, Trash2, Building2, MapPin, User, FileText } from 'lucide-react';
+import { formatNlDate } from '@/lib/nl-date';
+import { ArrowLeft, Pencil, Trash2, Building2, MapPin, User, FileText, FolderKanban, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function ClientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: client, isLoading } = useClient(id);
+  const { data: clientProjects = [] } = useClientProjects(id);
   const deleteMut = useDeleteClient();
   const { toast } = useToast();
 
@@ -70,6 +74,42 @@ export default function ClientDetail() {
             <p className="text-sm text-foreground whitespace-pre-wrap">{client.notes}</p>
           </DetailCard>
         )}
+      </div>
+
+      {/* Projecten sectie */}
+      <div className="mt-6">
+        <DetailCard
+          title={`Projecten (${clientProjects.length})`}
+          icon={<FolderKanban className="h-4 w-4 text-muted-foreground" />}
+        >
+          {clientProjects.length === 0 ? (
+            <p className="text-[13px] text-muted-foreground/40 py-4 text-center">Nog geen projecten</p>
+          ) : (
+            <div className="divide-y divide-border/20 -mx-4">
+              {clientProjects.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => navigate(`/projects/${p.id}`)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-foreground/[0.02] transition-colors text-left"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-foreground truncate">{p.project_name}</p>
+                    <p className="text-[11px] text-muted-foreground/40">
+                      {p.project_number} · {formatNlDate(p.planned_date)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={cn(
+                      'w-[6px] h-[6px] rounded-full',
+                      p.status === 'completed' ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--status-planned)/0.4)]'
+                    )} />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/15" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </DetailCard>
       </div>
     </div>
   );

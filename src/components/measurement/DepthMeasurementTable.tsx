@@ -248,11 +248,22 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             pattern="[0-9]*[.,]?[0-9]*"
             value={resistance}
             onChange={e => setResistance(e.target.value)}
-            onFocus={() => setIsFocused(true)}
+            onFocus={(e) => { setIsFocused(true); e.target.select(); }}
             onBlur={handleBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
+                e.preventDefault();
+                handleBlur();
+                const inputs = document.querySelectorAll('.depth-input');
+                const arr = Array.from(inputs);
+                const idx = arr.indexOf(e.currentTarget);
+                const next = arr[idx + 1] as HTMLInputElement | undefined;
+                if (next) { next.focus(); next.select(); }
+              }
+            }}
             placeholder="—"
             className={cn(
-              'w-full bg-transparent outline-none border-0',
+              'w-full bg-transparent outline-none border-0 depth-input',
               compact ? 'h-10 text-[15px] pr-4 px-3' : 'h-11 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',

@@ -3,6 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { AlertTriangle, AlertCircle } from 'lucide-react';
+import { formatNlDate } from '@/lib/nl-date';
 
 interface SetupStepProps {
   measurementDate: string;
@@ -34,6 +36,14 @@ export function SetupStep({
 }: SetupStepProps) {
   const fieldH = compact ? 'h-8' : 'h-11';
   const fieldText = compact ? 'text-[11px]' : 'text-[13px]';
+
+  // Calibration warning logic
+  const geselecteerdApparaat = equipment.find((e: any) => e.id === selectedEquipment);
+  const kalibratieVerlopen = geselecteerdApparaat?.next_calibration_date &&
+    new Date(geselecteerdApparaat.next_calibration_date) < new Date();
+  const kalibratieVerlooptSpoedig = geselecteerdApparaat?.next_calibration_date &&
+    !kalibratieVerlopen &&
+    new Date(geselecteerdApparaat.next_calibration_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   return (
     <div>
@@ -86,6 +96,38 @@ export function SetupStep({
             </SelectContent>
           </Select>
         </FieldGroup>
+
+        {/* Calibration warnings */}
+        {kalibratieVerlopen && (
+          <div className={cn(
+            'flex items-start gap-2.5 rounded-xl border px-3',
+            compact ? 'py-2' : 'py-3',
+            'bg-destructive/5 border-destructive/20'
+          )}>
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+            <div>
+              <p className={cn('font-semibold text-destructive', compact ? 'text-[10px]' : 'text-[12px]')}>
+                Kalibratie verlopen
+              </p>
+              <p className={cn('text-destructive/70 mt-0.5', compact ? 'text-[9px]' : 'text-[11px]')}>
+                Verlopen op {formatNlDate(geselecteerdApparaat.next_calibration_date)}. Dit apparaat mag niet worden gebruikt voor officiële metingen.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!kalibratieVerlopen && kalibratieVerlooptSpoedig && (
+          <div className={cn(
+            'flex items-start gap-2.5 rounded-xl border px-3',
+            compact ? 'py-2' : 'py-3',
+            'bg-amber-500/5 border-amber-500/20'
+          )}>
+            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+            <p className={cn('text-amber-700 dark:text-amber-400 font-medium', compact ? 'text-[10px]' : 'text-[11px]')}>
+              Kalibratie verloopt binnenkort op {formatNlDate(geselecteerdApparaat.next_calibration_date)}. Plan een nieuwe kalibratie.
+            </p>
+          </div>
+        )}
 
         <FieldGroup label="Toetswaarde (Ω)" compact={compact}>
           <Input

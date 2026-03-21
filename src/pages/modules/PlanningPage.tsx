@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTechnicians } from '@/hooks/use-technicians';
 import { PageHeader } from '@/components/ui/page-header';
 import { useProjects } from '@/hooks/use-projects';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Calendar as CalendarIcon, MapPin, FolderOpen, ChevronRight,
-  List, ChevronLeft, LayoutGrid,
+  List, ChevronLeft, LayoutGrid, Users,
 } from 'lucide-react';
 import {
   format, parseISO, isToday, isThisWeek,
@@ -16,11 +17,12 @@ import { nl } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-type ViewMode = 'list' | 'calendar';
+type ViewMode = 'list' | 'calendar' | 'monteurs';
 
 export default function PlanningPage() {
   const navigate = useNavigate();
   const { data: projects = [] } = useProjects();
+  const { data: technicians = [] } = useTechnicians();
   const isMobile = useIsMobile();
   const [view, setView] = useState<ViewMode>('list');
   const [calMonth, setCalMonth] = useState(new Date());
@@ -36,6 +38,18 @@ export default function PlanningPage() {
   const todayProjects = planned.filter(p => { try { return isToday(parseISO(p.planned_date!)); } catch { return false; } });
   const weekProjects = planned.filter(p => { try { const d = parseISO(p.planned_date!); return !isToday(d) && isThisWeek(d, { weekStartsOn: 1 }); } catch { return false; } });
   const laterProjects = planned.filter(p => { try { const d = parseISO(p.planned_date!); return !isToday(d) && !isThisWeek(d, { weekStartsOn: 1 }); } catch { return false; } });
+
+  const projectenPerMonteur = useMemo(() => {
+    const map = new Map<string, { tech: any; projecten: typeof planned }>();
+    planned.forEach(p => {
+      if (!p.technician_id) return;
+      if (!map.has(p.technician_id)) {
+        map.set(p.technician_id, { tech: p.technicians, projecten: [] });
+      }
+      map.get(p.technician_id)!.projecten.push(p);
+    });
+    return Array.from(map.values());
+  }, [planned]);
 
   const calDays = useMemo(() => eachDayOfInterval({ start: startOfMonth(calMonth), end: endOfMonth(calMonth) }), [calMonth]);
   const projectsByDate = useMemo(() => {
@@ -76,6 +90,13 @@ export default function PlanningPage() {
             >
               <LayoutGrid className="h-3.5 w-3.5" />
               Kalender
+            </button>
+            <button
+              onClick={() => setView('monteurs')}
+              className={cn('ios-planning-seg-btn', view === 'monteurs' && 'active')}
+            >
+              <Users className="h-3.5 w-3.5" />
+              Monteurs
             </button>
           </div>
         </div>
@@ -209,6 +230,41 @@ export default function PlanningPage() {
             </div>
           </div>
         )}
+
+        {view === 'monteurs' && (
+          <div className="ios-planning-content">
+            {projectenPerMonteur.length === 0 ? (
+              <div className="ios-planning-empty">
+                <span className="ios-planning-empty-icon">👷</span>
+                <p>Geen geplande projecten</p>
+              </div>
+            ) : (
+              projectenPerMonteur.map(({ tech, projecten }) => (
+                <div key={tech?.full_name || 'unknown'} className="mb-4">
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="w-8 h-8 rounded-full bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center">
+                      <span className="text-[12px] font-bold text-[hsl(var(--tenant-primary))]">
+                        {tech?.full_name?.[0] || '?'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-foreground">{tech?.full_name || 'Onbekend'}</p>
+                      <p className="text-[11px] text-muted-foreground/40">{projecten.length} project{projecten.length !== 1 ? 'en' : ''} gepland</p>
+                    </div>
+                  </div>
+                  <div className="ios-dash-card">
+                    {projecten.slice(0, 5).map((p, i) => (
+                      <div key={p.id}>
+                        <PlanningProjectRow project={p} onClick={() => navigate(`/projects/${p.id}`)} />
+                        {i < Math.min(projecten.length, 5) - 1 && <div className="ios-dash-row-divider" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -241,6 +297,12 @@ export default function PlanningPage() {
             view === 'calendar' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground/60'
           )}>
             <LayoutGrid className="h-3.5 w-3.5" /> Kalender
+          </button>
+          <button onClick={() => setView('monteurs')} className={cn(
+            'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all',
+            view === 'monteurs' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground/60'
+          )}>
+            <Users className="h-3.5 w-3.5" /> Monteurs
           </button>
         </div>
       } />
@@ -337,6 +399,34 @@ export default function PlanningPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {view === 'monteurs' && (
+        <div className="space-y-4">
+          {projectenPerMonteur.length === 0 ? (
+            <div className="text-center py-16">
+              <Users className="h-6 w-6 text-muted-foreground/15 mx-auto mb-2" />
+              <p className="text-[13px] text-muted-foreground/40">Geen geplande projecten per monteur</p>
+            </div>
+          ) : (
+            projectenPerMonteur.map(({ tech, projecten }) => (
+              <div key={tech?.full_name || 'unknown'}>
+                <div className="flex items-center gap-3 px-1 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center">
+                    <span className="text-[12px] font-bold text-[hsl(var(--tenant-primary))]">{tech?.full_name?.[0] || '?'}</span>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-foreground">{tech?.full_name || 'Onbekend'}</p>
+                    <p className="text-[11px] text-muted-foreground/40">{projecten.length} project{projecten.length !== 1 ? 'en' : ''}</p>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  {projecten.map(p => <DesktopProjectRow key={p.id} project={p} onClick={() => navigate(`/projects/${p.id}`)} />)}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
