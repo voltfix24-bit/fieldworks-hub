@@ -1060,6 +1060,210 @@
 }
 
 /* ═══════════════════════════════════════
+   iOS 26 — Measurement Wizard (mobile)
+   ═══════════════════════════════════════ */
+.ios-wizard-topnav {
+  background: hsl(var(--background) / 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid hsl(var(--foreground) / 0.1);
+  padding: 14px 16px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.ios-wizard-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ios-wizard-nav-back {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: hsl(var(--tenant-primary));
+  transition: opacity 0.12s;
+}
+.ios-wizard-nav-back:active { opacity: 0.5; }
+.ios-wizard-nav-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--foreground) / 0.06);
+  border-radius: 8px;
+  padding: 3px 8px;
+}
+
+/* Step tabs — segmented control */
+.ios-wizard-step-tabs {
+  display: flex;
+  background: hsl(var(--foreground) / 0.06);
+  border-radius: 12px;
+  padding: 3px;
+  margin-top: 12px;
+}
+.ios-wizard-step-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 4px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+  border: none;
+  background: transparent;
+  font-family: inherit;
+}
+.ios-wizard-step-tab.active {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-weight: 700;
+  box-shadow: 0 1px 4px hsl(var(--foreground) / 0.1), 0 0.5px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-wizard-step-tab.done {
+  color: hsl(var(--status-completed));
+}
+.ios-wizard-step-tab.done.active {
+  color: hsl(var(--foreground));
+}
+
+/* Bottom bar */
+.ios-wizard-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 36px;
+  background: linear-gradient(to top, hsl(var(--background)) 65%, hsl(var(--background) / 0));
+  gap: 12px;
+}
+.ios-wizard-btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  transition: opacity 0.12s;
+}
+.ios-wizard-btn-back:active { opacity: 0.5; }
+.ios-wizard-btn-next {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, hsl(var(--tenant-primary) / 0.8), hsl(var(--tenant-primary)));
+  border: none;
+  border-radius: 14px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(var(--primary-foreground));
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 5px 18px hsl(var(--tenant-primary) / 0.35), 0 1px 0 hsl(0 0% 100% / 0.15) inset;
+  transition: transform 0.12s, box-shadow 0.12s;
+  min-height: 50px;
+}
+.ios-wizard-btn-next:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 10px hsl(var(--tenant-primary) / 0.25);
+}
+
+/* Warning bar */
+.ios-wizard-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: hsl(40 90% 50% / 0.06);
+  border-top: 0.5px solid hsl(40 90% 50% / 0.15);
+}
+.ios-wizard-warning-text {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(40 70% 40%);
+}
+.ios-wizard-warning-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: hsl(40 80% 45%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+.ios-wizard-warning-btn:active { background: hsl(40 90% 50% / 0.1); }
+
+/* Context block */
+.ios-wizard-context-block {
+  background: hsl(var(--card));
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+}
+.ios-wizard-context-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+.ios-wizard-context-trigger:active { background: hsl(var(--foreground) / 0.03); }
+.ios-wizard-context-summary {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ios-wizard-context-edit {
+  color: hsl(var(--muted-foreground) / 0.4);
+  flex-shrink: 0;
+}
+.ios-wizard-context-save {
+  width: 100%;
+  height: 36px;
+  border-radius: 10px;
+  background: hsl(var(--tenant-primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.1s;
+}
+.ios-wizard-context-save:active { transform: scale(0.97); }
+.ios-wizard-context-save:disabled { opacity: 0.5; }
+
+/* ═══════════════════════════════════════
    iOS 26 — Project Detail (mobile)
    ═══════════════════════════════════════ */
 .ios-detail-page {
