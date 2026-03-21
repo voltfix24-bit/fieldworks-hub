@@ -388,7 +388,7 @@ export default function MeasurementWorkspace() {
         )}
 
         {showSketch && (
-          <div className="shrink-0 border-t border-border/30 bg-background">
+          <div className="shrink-0 bg-background">
             <StickyActionBar
               showPrev
               onPrev={() => setShowSketch(false)}
