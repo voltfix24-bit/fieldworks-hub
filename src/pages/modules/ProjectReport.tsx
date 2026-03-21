@@ -236,6 +236,7 @@ export default function ProjectReport() {
                 onChange={setHandtekening}
                 breedte={460}
                 hoogte={160}
+                monteurId={user?.id}
               />
             )}
 
