@@ -362,7 +362,7 @@ export default function MeasurementWorkspace() {
 
         {/* ─── Sticky bottom CTA ─── */}
         {step < 2 && !showSketch && (
-          <div className="shrink-0 border-t border-border/30 bg-background">
+          <div className="shrink-0 bg-background">
             <StickyActionBar
               showPrev={step > 0}
               onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
