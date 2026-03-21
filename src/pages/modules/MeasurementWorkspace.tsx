@@ -222,7 +222,13 @@ export default function MeasurementWorkspace() {
     setUploading(true);
     try {
       const url = await uploadMeasurementPhoto(file, tenantId, activePen.project_id);
-      updatePen.mutate({ id: activePen.id, [type]: url });
+      try {
+        await updatePen.mutateAsync({ id: activePen.id, [type]: url });
+      } catch (dbErr: any) {
+        toast({ variant: 'destructive', title: 'Database-update mislukt', description: dbErr?.message || 'Foto is geüpload maar kon niet aan de pen worden gekoppeld.' });
+      }
+    } catch (uploadErr: any) {
+      toast({ variant: 'destructive', title: 'Upload mislukt', description: uploadErr?.message || 'Het bestand kon niet worden opgeslagen. Controleer je verbinding en probeer opnieuw.' });
     } finally { setUploading(false); }
   };
 
