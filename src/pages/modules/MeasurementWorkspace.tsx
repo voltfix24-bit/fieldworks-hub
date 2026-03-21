@@ -541,10 +541,10 @@ function MobileContextBlock({
   ].filter(Boolean);
 
   return (
-    <div className="mb-1.5 rounded-lg border border-border/25 bg-muted/5 overflow-hidden">
+    <div className="mb-2 rounded-2xl bg-muted/15 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-1.5 active:bg-muted/10 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 active:bg-muted/20 transition-colors"
       >
         <div className="min-w-0 flex-1">
           <p className={cn(
