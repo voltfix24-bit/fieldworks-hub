@@ -64,6 +64,7 @@ export interface RapportData {
   kalibratie_volgende?: string;
   kalibratie_instituut?: string;
   situatieschets_b64?: string;
+  handtekening_b64?: string;
   elektrodes: Elektrode[];
 }
 

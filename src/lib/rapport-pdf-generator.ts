@@ -580,27 +580,58 @@ export function generateRapportPdf(data: RapportData): jsPDF {
   doc.text(declLines, ML, y);
   y += declLines.length * 4 + 10;
 
-  const sigItems: [string, string][] = [
-    ["NAAM MONTEUR", data.monteur],
-    ["HANDTEKENING", ""],
-    ["DATUM", data.meetdatum],
-  ];
-  const sigW = CW / 3;
+  // ── Signature block: Name + Signature | Date ──
+  const sigColW = CW * 0.45;
+  const datumColX = ML + sigColW + 10;
 
-  sigItems.forEach(([label, value], i) => {
-    const sx = ML + i * sigW;
-    doc.setFontSize(7);
-    doc.setTextColor(...hexToRgb(LIGHT));
-    doc.setFont("helvetica", "normal");
-    doc.text(label, sx, y);
+  // Name
+  doc.setFontSize(7);
+  doc.setTextColor(...hexToRgb(LIGHT));
+  doc.setFont("helvetica", "normal");
+  doc.text("NAAM MONTEUR", ML, y);
+  doc.setFontSize(9);
+  doc.setTextColor(...hexToRgb(NEAR_BLACK));
+  doc.setFont("helvetica", "bold");
+  doc.text(data.monteur, ML, y + 5);
+  y += 10;
+
+  // Signature
+  doc.setFontSize(7);
+  doc.setTextColor(...hexToRgb(LIGHT));
+  doc.setFont("helvetica", "normal");
+  doc.text("HANDTEKENING", ML, y);
+  y += 2;
+
+  if (data.handtekening_b64) {
+    try {
+      const sigDataUrl = data.handtekening_b64.startsWith("data:")
+        ? data.handtekening_b64
+        : `data:image/png;base64,${data.handtekening_b64}`;
+      doc.addImage(sigDataUrl, "PNG", ML, y, 52, 20);
+      y += 22;
+    } catch {
+      // Fallback: empty line
+      doc.setDrawColor(...hexToRgb(SEPARATOR));
+      doc.setLineWidth(0.15);
+      doc.line(ML, y + 10, ML + 52, y + 10);
+      y += 14;
+    }
+  } else {
     doc.setDrawColor(...hexToRgb(SEPARATOR));
     doc.setLineWidth(0.15);
-    doc.line(sx, y + 10, sx + 42, y + 10);
-    doc.setFontSize(9);
-    doc.setTextColor(...hexToRgb(NEAR_BLACK));
-    doc.setFont("helvetica", "bold");
-    doc.text(value, sx, y + 14);
-  });
+    doc.line(ML, y + 10, ML + 52, y + 10);
+    y += 14;
+  }
+
+  // Date
+  doc.setFontSize(7);
+  doc.setTextColor(...hexToRgb(LIGHT));
+  doc.setFont("helvetica", "normal");
+  doc.text("DATUM", datumColX, y - (data.handtekening_b64 ? 30 : 22));
+  doc.setFontSize(9);
+  doc.setTextColor(...hexToRgb(NEAR_BLACK));
+  doc.setFont("helvetica", "bold");
+  doc.text(data.meetdatum, datumColX, y - (data.handtekening_b64 ? 25 : 17));
 
   return doc;
 }
