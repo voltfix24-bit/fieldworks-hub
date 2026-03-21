@@ -28,7 +28,7 @@ export default function ProjectsPage() {
 
   const StatusLabel = ({ status }: { status: string }) => (
     <span className={cn(
-      'text-[10px] px-1.5 py-0.5 rounded font-semibold',
+      'text-[9px] px-1.5 py-0.5 rounded-md font-semibold',
       status === 'completed' ? 'status-completed' : 'status-planned'
     )}>
       {status === 'completed' ? 'Afgerond' : 'Gepland'}
