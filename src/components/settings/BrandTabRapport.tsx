@@ -180,7 +180,7 @@ export function BrandTabRapport({ form, updateField }: BrandTabRapportProps) {
             <SelectTrigger className="h-9 text-sm mt-1"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="—">Streepje (—)</SelectItem>
-              <SelectItem value="">Leeg</SelectItem>
+              <SelectItem value=" ">Leeg</SelectItem>
               <SelectItem value="-">Minteken (-)</SelectItem>
             </SelectContent>
           </Select>
