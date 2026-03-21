@@ -17,7 +17,7 @@ import { nl } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-type ViewMode = 'list' | 'calendar';
+type ViewMode = 'list' | 'calendar' | 'monteurs';
 
 export default function PlanningPage() {
   const navigate = useNavigate();
