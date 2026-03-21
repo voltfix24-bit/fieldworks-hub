@@ -53,6 +53,11 @@ export function MeasurementStep({
     onWarningCountChange?.(totalWarnings);
   }, [totalWarnings, onWarningCountChange]);
 
+  // Report RV missing state to parent
+  useEffect(() => {
+    onRvMissingChange?.(rvMissing);
+  }, [rvMissing, onRvMissingChange]);
+
   useEffect(() => {
     if (pens.length > 0) {
       setExpandedPenId(pens[pens.length - 1].id);
