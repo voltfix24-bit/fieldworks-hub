@@ -76,12 +76,14 @@ export function MobileTabBar() {
                 label="Bestaand project openen"
                 onClick={() => { setSheetOpen(false); navigate('/projects'); }}
               />
-              <ActionSheetItem
-                icon={RotateCcw}
-                label="Laatste meting hervatten"
-                sublabel="Open het meest recente project"
-                onClick={() => { setSheetOpen(false); navigate('/projects'); }}
-              />
+              {lastProjectId ? (
+                <ActionSheetItem
+                  icon={RotateCcw}
+                  label="Laatste meting hervatten"
+                  sublabel={lastProjectName || undefined}
+                  onClick={() => { setSheetOpen(false); navigate(`/projects/${lastProjectId}/measurements`); }}
+                />
+              ) : null}
             </div>
           </div>
         </div>

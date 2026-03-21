@@ -340,6 +340,7 @@ export default function MeasurementWorkspace() {
                 onRemoveOverview={() => updatePen.mutate({ id: activePen.id, overview_photo_url: null })}
                 uploading={uploading}
                 penCode={activePen.pen_code}
+                electrodeCode={activeElectrode?.electrode_code}
                 compact
               />
             )}
