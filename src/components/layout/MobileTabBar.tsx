@@ -24,6 +24,24 @@ export function MobileTabBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
+  const [lastProjectName, setLastProjectName] = useState<string | null>(null);
+
+  // Fetch most recent project with a measurement session
+  useEffect(() => {
+    supabase
+      .from('project_measurement_sessions')
+      .select('project_id, projects!inner(id, project_name)')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setLastProjectId(data.project_id);
+          setLastProjectName((data as any).projects?.project_name || null);
+        }
+      });
+  }, [location.pathname]);
 
   if (!isMobile) return null;
   if (HIDDEN_ROUTE_PATTERNS.some(p => p.test(location.pathname))) return null;
