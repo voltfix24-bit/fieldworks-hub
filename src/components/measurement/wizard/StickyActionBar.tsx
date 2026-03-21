@@ -23,7 +23,7 @@ export function StickyActionBar({
 }: StickyActionBarProps) {
   if (compact) {
     return (
-      <div className={cn('shrink-0 bg-background safe-bottom', className)}>
+      <div className={cn('shrink-0 safe-bottom', className)}>
         {warningMessage && (
           <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-500/[0.04]">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500/70 shrink-0 mt-0.5" />
@@ -39,6 +39,7 @@ export function StickyActionBar({
         )}
         <div className={cn(
           'flex items-center gap-2 px-4 py-2.5',
+          'glass-surface border-t-0 border-x-0 rounded-none',
           showPrev ? 'justify-between' : 'justify-end',
         )}>
           {showPrev && onPrev && (
@@ -70,19 +71,19 @@ export function StickyActionBar({
   // Desktop
   return (
     <div className={cn(
-      'sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl',
-      'border-t border-border/30 -mx-2 sm:-mx-4',
+      'sticky bottom-0 z-30 bg-card/80 backdrop-blur-xl',
+      'border-t border-border/20 -mx-2 sm:-mx-4',
       'flex items-center gap-2 px-4 py-3 mt-6',
       showPrev ? 'justify-between' : 'justify-end',
       className
     )}>
       {showPrev && onPrev && (
-        <Button variant="ghost" onClick={onPrev} className="h-10 px-4 text-[13px] font-medium text-muted-foreground">
+        <Button variant="ghost" onClick={onPrev} className="h-10 px-4 text-[13px] font-medium text-muted-foreground rounded-xl">
           <ChevronLeft className="h-4 w-4 mr-1" /> {prevLabel}
         </Button>
       )}
       {onNext && (
-        <Button onClick={onNext} disabled={nextDisabled || nextLoading} className="h-10 px-6 text-[13px] font-semibold min-w-[120px]">
+        <Button onClick={onNext} disabled={nextDisabled || nextLoading} className="h-10 px-6 text-[13px] font-semibold min-w-[120px] rounded-xl">
           {nextLoading && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
           {nextLoading ? 'Bezig…' : nextLabel}
           {!nextLoading && <ChevronRight className="h-4 w-4 ml-1" />}

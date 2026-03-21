@@ -30,20 +30,20 @@ export default function ProjectsPage() {
       <PageHeader
         title="Projecten"
         description={isMobile ? undefined : 'Beheer meet- en inspectieprojecten'}
-        action={<Button size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/projects/new')}><Plus className="mr-1.5 h-4 w-4" /> Nieuw</Button>}
+        action={<Button size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/projects/new')} className="rounded-xl"><Plus className="mr-1.5 h-4 w-4" /> Nieuw</Button>}
       />
 
       {isLoading ? (
         <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
       ) : projects?.length === 0 ? (
         <EmptyState icon={FolderKanban} title="Nog geen projecten" description="Maak uw eerste project aan om veldwerk te organiseren."
-          action={<Button variant="outline" onClick={() => navigate('/projects/new')}><Plus className="mr-2 h-4 w-4" /> Project aanmaken</Button>}
+          action={<Button variant="outline" onClick={() => navigate('/projects/new')} className="rounded-xl"><Plus className="mr-2 h-4 w-4" /> Project aanmaken</Button>}
         />
       ) : (
         <>
           <ListToolbar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Zoek op naam, nummer of locatie…">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className={cn(isMobile ? 'w-28 h-8 text-xs' : 'w-36')}>
+              <SelectTrigger className={cn(isMobile ? 'w-28 h-8 text-xs rounded-lg' : 'w-36 rounded-lg')}>
                 <SelectValue placeholder="Alle" />
               </SelectTrigger>
               <SelectContent>
@@ -56,28 +56,28 @@ export default function ProjectsPage() {
 
           {/* Desktop */}
           <div className="hidden lg:block">
-            <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+            <div className="rounded-2xl bg-card overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border/40">
-                    <th className="text-left text-[11px] font-medium text-muted-foreground/60 px-4 py-2.5 uppercase tracking-wider">Nummer</th>
-                    <th className="text-left text-[11px] font-medium text-muted-foreground/60 px-4 py-2.5 uppercase tracking-wider">Project</th>
-                    <th className="text-left text-[11px] font-medium text-muted-foreground/60 px-4 py-2.5 uppercase tracking-wider">Locatie</th>
-                    <th className="text-left text-[11px] font-medium text-muted-foreground/60 px-4 py-2.5 uppercase tracking-wider">Datum</th>
-                    <th className="text-left text-[11px] font-medium text-muted-foreground/60 px-4 py-2.5 uppercase tracking-wider">Klant</th>
-                    <th className="text-left text-[11px] font-medium text-muted-foreground/60 px-4 py-2.5 uppercase tracking-wider">Status</th>
+                  <tr className="border-b border-border/30">
+                    <th className="text-left text-[11px] font-medium text-muted-foreground/50 px-4 py-2.5 uppercase tracking-wider">Nummer</th>
+                    <th className="text-left text-[11px] font-medium text-muted-foreground/50 px-4 py-2.5 uppercase tracking-wider">Project</th>
+                    <th className="text-left text-[11px] font-medium text-muted-foreground/50 px-4 py-2.5 uppercase tracking-wider">Locatie</th>
+                    <th className="text-left text-[11px] font-medium text-muted-foreground/50 px-4 py-2.5 uppercase tracking-wider">Datum</th>
+                    <th className="text-left text-[11px] font-medium text-muted-foreground/50 px-4 py-2.5 uppercase tracking-wider">Klant</th>
+                    <th className="text-left text-[11px] font-medium text-muted-foreground/50 px-4 py-2.5 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/30">
+                <tbody className="divide-y divide-border/20">
                   {filtered.map(p => (
-                    <tr key={p.id} className="hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => navigate(`/projects/${p.id}`)}>
-                      <td className="px-4 py-3 text-sm font-mono text-muted-foreground/60">{p.project_number}</td>
+                    <tr key={p.id} className="hover:bg-foreground/[0.015] cursor-pointer transition-colors" onClick={() => navigate(`/projects/${p.id}`)}>
+                      <td className="px-4 py-3 text-sm font-mono text-muted-foreground/50">{p.project_number}</td>
                       <td className="px-4 py-3 text-sm font-medium text-foreground">{p.project_name}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground/60">{[p.city, p.country].filter(Boolean).join(', ') || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground/60">{formatNlDate(p.planned_date)}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground/60">{p.clients?.company_name || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground/50">{[p.city, p.country].filter(Boolean).join(', ') || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground/50">{formatNlDate(p.planned_date)}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground/50">{p.clients?.company_name || '—'}</td>
                       <td className="px-4 py-3">
-                        <StatusDot status={p.status} />
+                        <StatusPill status={p.status} />
                       </td>
                     </tr>
                   ))}
@@ -87,31 +87,33 @@ export default function ProjectsPage() {
           </div>
 
           {/* Mobile */}
-          <div className="lg:hidden space-y-1.5">
-            {filtered.map(p => (
-              <button
-                key={p.id}
-                onClick={() => navigate(`/projects/${p.id}`)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-card transition-all text-left active:scale-[0.99]"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-foreground truncate leading-snug">{p.project_name}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-muted-foreground/45 font-mono">{p.project_number}</span>
-                    {p.city && <span className="text-[11px] text-muted-foreground/45 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
-                    {p.planned_date && <span className="text-[11px] text-muted-foreground/45 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDateCompact(p.planned_date)}</span>}
+          <div className="lg:hidden">
+            <div className="ios-group overflow-hidden divide-y divide-border/20">
+              {filtered.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => navigate(`/projects/${p.id}`)}
+                  className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left active:bg-foreground/[0.02]"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-semibold text-foreground truncate leading-snug">{p.project_name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground/35 font-mono">{p.project_number}</span>
+                      {p.city && <span className="text-[11px] text-muted-foreground/35 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
+                      {p.planned_date && <span className="text-[11px] text-muted-foreground/35 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDateCompact(p.planned_date)}</span>}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <StatusDot status={p.status} />
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/15" />
-                </div>
-              </button>
-            ))}
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <StatusDot status={p.status} />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/12" />
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {filtered.length === 0 && (search || statusFilter !== 'all') && (
-            <p className="text-sm text-muted-foreground text-center py-8">Geen projecten gevonden</p>
+            <p className="text-sm text-muted-foreground/40 text-center py-8">Geen projecten gevonden</p>
           )}
         </>
       )}
@@ -121,12 +123,21 @@ export default function ProjectsPage() {
 
 function StatusDot({ status }: { status: string }) {
   return (
+    <span className={cn(
+      'w-[6px] h-[6px] rounded-full',
+      status === 'completed' ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--status-planned)/0.4)]'
+    )} />
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  return (
     <div className="flex items-center gap-1.5">
       <span className={cn(
-        'w-2 h-2 rounded-full',
-        status === 'completed' ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--status-planned)/0.5)]'
+        'w-[6px] h-[6px] rounded-full',
+        status === 'completed' ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--status-planned)/0.4)]'
       )} />
-      <span className="text-[11px] text-muted-foreground/50 font-medium">
+      <span className="text-[11px] text-muted-foreground/45 font-medium">
         {status === 'completed' ? 'Afgerond' : 'Gepland'}
       </span>
     </div>

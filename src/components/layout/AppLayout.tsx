@@ -18,7 +18,7 @@ export function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         {!isMobile && <AppSidebar />}
 
         <div className="flex-1 flex flex-col min-w-0">
@@ -39,18 +39,18 @@ export function AppLayout() {
   );
 }
 
-/** Clean single-logo brand bar */
+/** Minimal logo-only brand bar */
 function MobileBrandBar() {
   const { tenant, branding } = useTenant();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
 
   return (
-    <div className="flex items-center justify-center px-4 py-2.5 bg-background shrink-0">
+    <div className="flex items-center justify-center px-4 py-2.5 shrink-0">
       {logoUrl ? (
         <img
           src={logoUrl}
           alt={tenant?.company_name || 'Logo'}
-          className="h-7 w-auto max-w-[140px] object-contain"
+          className="h-8 w-auto max-w-[150px] object-contain"
         />
       ) : (
         <div className="h-8 w-8 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center">

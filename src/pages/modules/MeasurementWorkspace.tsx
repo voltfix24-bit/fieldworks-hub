@@ -258,21 +258,21 @@ export default function MeasurementWorkspace() {
   if (isMobile) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
-        {/* ─── Compact mobile header ─── */}
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-background shrink-0">
+        {/* ─── Glass mobile header ─── */}
+        <div className="flex items-center gap-2 px-4 py-2.5 glass-surface border-t-0 border-x-0 rounded-none shrink-0">
           <button
             onClick={() => navigate(`/projects/${id}`)}
             className="h-8 w-8 -ml-1 flex items-center justify-center text-muted-foreground active:opacity-60 rounded-lg transition-opacity"
           >
-            <ArrowLeft className="h-4.5 w-4.5" />
+            <ArrowLeft className="h-[18px] w-[18px]" />
           </button>
           <div className="flex-1 min-w-0">
-            <span className="text-[14px] font-bold text-foreground truncate leading-none tracking-tight block">
+            <span className="text-[14px] font-semibold text-foreground truncate leading-none tracking-tight block">
               {project.project_name}
             </span>
           </div>
           {activeElectrode && !showSketch && (
-            <span className="text-[11px] font-semibold text-muted-foreground/50 shrink-0 leading-none">
+            <span className="text-[11px] font-semibold text-muted-foreground/40 shrink-0 leading-none">
               {activeElectrode.electrode_code}
               {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
             </span>

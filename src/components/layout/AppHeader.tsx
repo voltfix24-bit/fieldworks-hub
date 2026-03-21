@@ -19,14 +19,14 @@ export function AppHeader() {
     : user?.email?.[0]?.toUpperCase() || '?';
 
   return (
-    <header className="h-12 border-b border-border/30 bg-background flex items-center justify-between px-4 shrink-0">
+    <header className="h-12 border-b border-border/30 bg-card/60 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="text-muted-foreground/50 hover:text-foreground" />
+        <SidebarTrigger className="text-muted-foreground/40 hover:text-foreground transition-colors" />
       </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted/30 transition-colors">
+          <button className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-foreground/[0.04] transition-colors">
             <Avatar className="h-7 w-7">
               <AvatarFallback className="bg-muted text-foreground text-[10px] font-semibold">
                 {initials}
