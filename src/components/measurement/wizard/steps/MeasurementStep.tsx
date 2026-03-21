@@ -38,6 +38,7 @@ export function MeasurementStep({
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
+  const [targetInput, setTargetInput] = useState('');
   const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
 
   const handlePenWarnings = useCallback((penId: string, count: number) => {
@@ -69,6 +70,11 @@ export function MeasurementStep({
     setRvInput(electrode.rv_value != null ? String(electrode.rv_value).replace('.', ',') : '');
   }, [electrode.rv_value]);
 
+  // Sync target input with electrode value
+  useEffect(() => {
+    setTargetInput(electrode.target_value != null ? String(electrode.target_value).replace('.', ',') : '');
+  }, [electrode.target_value]);
+
   const handleRvBlur = () => {
     const parsed = parseNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
@@ -76,9 +82,37 @@ export function MeasurementStep({
     }
   };
 
+  const handleTargetBlur = () => {
+    const parsed = parseNlNumberOrNull(targetInput);
+    if (parsed !== electrode.target_value) {
+      onUpdateElectrode({ target_value: parsed });
+    }
+  };
+
   return (
     <div className={cn(compact ? 'space-y-2 pb-2' : 'space-y-4 pb-24')}>
-      {/* ─── Compacte statusbalk: eindwaarde ─── */}
+      {/* ─── Toetswaarde invoer ─── */}
+      <div className="flex items-center gap-3">
+        <span className="text-[11px] font-medium text-muted-foreground/50 uppercase tracking-widest">Toetswaarde</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] text-muted-foreground/40">≤</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={targetInput}
+            onChange={e => setTargetInput(e.target.value)}
+            onBlur={handleTargetBlur}
+            placeholder="3,00"
+            className={cn(
+              'w-20 rounded-xl border border-border/40 bg-background px-3 py-1.5 text-[13px] text-center font-semibold tabular-nums',
+              'focus:outline-none focus:ring-2 focus:ring-[hsl(var(--tenant-primary,var(--primary))/0.3)]',
+              'placeholder:text-muted-foreground/30'
+            )}
+          />
+          <span className="text-[12px] text-muted-foreground/45 font-semibold">Ω</span>
+        </div>
+      </div>
+
       <div className={cn(
         'flex items-center justify-between rounded-2xl px-4 py-3',
         !showRv

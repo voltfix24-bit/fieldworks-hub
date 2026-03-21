@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
@@ -13,6 +13,7 @@ import { useEquipmentList } from '@/hooks/use-equipment';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOnlineStatus } from '@/hooks/use-online-status';
 import { GroundingIcon, GroundingLoader } from '@/components/measurement/GroundingIcon';
 import { formatNlDate } from '@/lib/nl-date';
 import { cn } from '@/lib/utils';
@@ -42,6 +43,7 @@ export default function MeasurementWorkspace() {
   const { profile } = useAuth();
   const isMobile = useIsMobile();
   const tenantId = profile?.tenant_id || '';
+  const { isOnline } = useOnlineStatus();
 
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: session, isLoading: sessionLoading } = useMeasurementSession(id);
@@ -85,6 +87,7 @@ export default function MeasurementWorkspace() {
 
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
+  const [autoInitError, setAutoInitError] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
@@ -153,7 +156,11 @@ export default function MeasurementWorkspace() {
           });
           setActivePenId(newPen.id);
           initializeDepthRows(newPen.id, newPen);
-        } catch (e) { console.error('Auto-init failed', e); }
+        } catch (e) {
+          console.error('Auto-init failed', e);
+          setAutoInitError(true);
+          setAutoInitDone(false);
+        }
       })();
     }
   }, [project, session, sessionLoading, projectLoading, autoInitDone]);
@@ -255,11 +262,38 @@ export default function MeasurementWorkspace() {
   if (projectLoading || sessionLoading) return (
     <div className="flex justify-center py-20"><GroundingLoader /></div>
   );
+  if (autoInitError) return (
+    <div className="flex justify-center py-20">
+      <div className="rounded-2xl border border-destructive/20 bg-destructive/[0.04] p-6 text-center max-w-sm mx-auto">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mx-auto mb-3 text-destructive">
+          <path d="M12 2L22 20H2L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 9V13M12 17H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <p className="text-[14px] font-semibold text-foreground mb-1">Initialisatie mislukt</p>
+        <p className="text-[12px] text-muted-foreground mb-4">Controleer je verbinding en probeer opnieuw.</p>
+        <button
+          onClick={() => { setAutoInitError(false); setAutoInitDone(false); }}
+          className="rounded-xl px-5 py-2.5 text-[13px] font-semibold text-white bg-[hsl(var(--tenant-primary,var(--primary)))] active:scale-[0.97] transition-transform"
+        >
+          Opnieuw proberen
+        </button>
+      </div>
+    </div>
+  );
   if (!project) return (
     <div className="text-center py-16">
       <p className="text-[13px] text-muted-foreground">Project niet gevonden</p>
     </div>
   );
+
+  const handleBack = () => {
+    toast({
+      title: 'Meting automatisch opgeslagen',
+      description: 'Je kunt veilig teruggaan. Alle metingen zijn bewaard.',
+      duration: 3000,
+    });
+    setTimeout(() => navigate(`/projects/${id}`), 800);
+  };
 
   const clientName = clients.find((c: any) => c.id === (session?.client_id || selectedClient))?.company_name;
   const techName = technicians.find((t: any) => t.id === (session?.technician_id || selectedTechnician))?.full_name;
@@ -276,7 +310,7 @@ export default function MeasurementWorkspace() {
         <div className="ios-wizard-topnav shrink-0">
           <div className="ios-wizard-nav-row">
             <button
-              onClick={() => navigate(`/projects/${id}`)}
+              onClick={handleBack}
               className="ios-wizard-nav-back"
             >
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -316,6 +350,14 @@ export default function MeasurementWorkspace() {
             </div>
           )}
         </div>
+
+        {/* ─── Offline banner ─── */}
+        {!isOnline && (
+          <div className="shrink-0 flex items-center gap-2 px-4 py-2 bg-amber-500/10 border-b border-amber-400/20">
+            <WifiOff className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+            <p className="text-[11px] text-amber-700 font-medium">Geen verbinding — metingen worden lokaal opgeslagen en later gesynchroniseerd</p>
+          </div>
+        )}
 
         {/* ─── Scrollable content ─── */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2" key={showSketch ? 'sketch' : step}>
@@ -453,7 +495,7 @@ export default function MeasurementWorkspace() {
     <div className="animate-fade-in max-w-2xl mx-auto px-1 sm:px-4">
       <div className="flex items-center gap-2 mb-4 pt-1">
         <button
-          onClick={() => navigate(`/projects/${id}`)}
+          onClick={handleBack}
           className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 rounded-lg active:scale-95 transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -466,6 +508,14 @@ export default function MeasurementWorkspace() {
           <span className="text-[11px] text-muted-foreground font-mono tracking-wide">{project.project_number}</span>
         </div>
       </div>
+
+      {/* ─── Offline banner (desktop) ─── */}
+      {!isOnline && (
+        <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-xl bg-amber-500/10 border border-amber-400/20">
+          <WifiOff className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+          <p className="text-[12px] text-amber-700 font-medium">Geen verbinding — metingen worden lokaal opgeslagen en later gesynchroniseerd</p>
+        </div>
+      )}
 
       <div className="mb-5 -mx-1 sm:mx-0">
         <WizardStepIndicator

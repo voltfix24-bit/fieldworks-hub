@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+
+type Pen = Tables<'pens'>;
+type PenInsert = TablesInsert<'pens'>;
+type PenUpdate = TablesUpdate<'pens'> & { id: string };
 
 export function usePens(electrodeId: string | undefined) {
   return useQuery({
@@ -11,7 +16,7 @@ export function usePens(electrodeId: string | undefined) {
         .eq('electrode_id', electrodeId!)
         .order('sort_order');
       if (error) throw error;
-      return data;
+      return data as Pen[];
     },
     enabled: !!electrodeId,
   });
@@ -20,10 +25,10 @@ export function usePens(electrodeId: string | undefined) {
 export function useCreatePen() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (pen: any) => {
+    mutationFn: async (pen: PenInsert) => {
       const { data, error } = await supabase.from('pens').insert(pen).select().single();
       if (error) throw error;
-      return data;
+      return data as Pen;
     },
     onSuccess: (data) => qc.invalidateQueries({ queryKey: ['pens', data.electrode_id] }),
   });
@@ -32,10 +37,10 @@ export function useCreatePen() {
 export function useUpdatePen() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
+    mutationFn: async ({ id, ...updates }: PenUpdate) => {
       const { data, error } = await supabase.from('pens').update(updates).eq('id', id).select().single();
       if (error) throw error;
-      return data;
+      return data as Pen;
     },
     onSuccess: (data) => qc.invalidateQueries({ queryKey: ['pens', data.electrode_id] }),
   });
