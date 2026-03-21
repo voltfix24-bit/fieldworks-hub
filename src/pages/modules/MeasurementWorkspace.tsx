@@ -560,7 +560,7 @@ function MobileContextBlock({
       </button>
 
       {open && (
-        <div className="px-3 pb-2.5 pt-1.5 space-y-2 border-t border-border/15 animate-in slide-in-from-top-1 duration-150">
+        <div className="px-4 pb-3 pt-2 space-y-2.5 border-t border-border/10 animate-in slide-in-from-top-1 duration-150">
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-0.5">
               <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Datum</Label>
