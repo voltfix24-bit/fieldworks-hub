@@ -25,7 +25,7 @@ export function MeasurementStep({
   electrode, pens, tenantId,
   onUpdateElectrode, onAddPen, recalcRa,
   depthsInitRef, initializeDepthRows, compact,
-  onWarningCountChange,
+  onWarningCountChange, onRvMissingChange,
 }: MeasurementStepProps) {
   const showRv = pens.length > 1;
   const hasTarget = electrode.target_value != null;
