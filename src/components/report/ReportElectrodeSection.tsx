@@ -6,6 +6,8 @@ interface ReportElectrodeSectionProps {
   electrode: ReportElectrode;
   index: number;
   totalElectrodes: number;
+  showPhotos?: boolean;
+  emptyCellChar?: string;
 }
 
 /** Strip redundant prefix: if electrode_code is "Elektrode 1", just use "1" */
