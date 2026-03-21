@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download } from 'lucide-react';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
@@ -11,8 +11,11 @@ import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
-import { RapportDownloadButton } from '@/components/report/RapportDownloadButton';
+import { useRapportGenerator } from '@/hooks/useRapportGenerator';
+import { useHandtekening } from '@/hooks/useHandtekening';
+import { useToast } from '@/hooks/use-toast';
 import HandtekeningPad from '@/components/measurement/HandtekeningPad';
+import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
   const [handtekening, setHandtekening] = useState<string | null>(null);
@@ -21,6 +24,11 @@ export default function ProjectReport() {
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
+  const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
+  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening();
+  const { toast } = useToast();
+  const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
+  const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>('nieuw');
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
@@ -114,6 +122,18 @@ export default function ProjectReport() {
 
   const showSignBlock = rs.report_sign_block === true && sec('ondertekening');
 
+  // Determine active signature
+  const actieveHandtekening = gebruikOpgeslagen ? opgeslagenHandtekening : handtekening;
+
+  const handleDownload = async () => {
+    try {
+      await genereerViaEdge(id!, actieveHandtekening ?? undefined);
+      toast({ title: 'Rapport gedownload', description: 'Het PDF rapport is succesvol gegenereerd.' });
+    } catch (err) {
+      toast({ title: 'Rapport generatie mislukt', description: err instanceof Error ? err.message : 'Onbekende fout', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Toolbar — hidden in print */}
@@ -126,12 +146,9 @@ export default function ProjectReport() {
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
           {isReady && (
-            <>
-              <RapportDownloadButton projectId={id!} handtekeningB64={handtekening} />
-              <Button size="sm" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" /> Print / PDF
-              </Button>
-            </>
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" /> Print / PDF
+            </Button>
           )}
         </div>
       </div>
@@ -147,6 +164,91 @@ export default function ProjectReport() {
             </div>
           </div>
           <ReadinessChecklist items={readinessItems} />
+        </div>
+      )}
+
+      {/* ─── ONDERTEKENING STAP ─── */}
+      {isReady && (
+        <div className="print:hidden max-w-lg mx-auto mb-8">
+          <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
+            <div className="flex items-center gap-2.5 mb-1">
+              <PenTool className="h-4 w-4 text-muted-foreground/50" />
+              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Ondertekening</h2>
+            </div>
+            <p className="text-[12px] text-muted-foreground/50 mb-5">Teken hieronder ter bevestiging</p>
+
+            {/* Saved signature notice */}
+            {heeftOpgeslagen && !gebruikOpgeslagen && !handtekening && (
+              <div className="rounded-xl bg-muted/20 p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium text-foreground">Opgeslagen handtekening beschikbaar</p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">Eerder opgeslagen door deze monteur</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => setGebruikOpgeslagen(true)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#F4896B]/10 text-[#F4896B] active:scale-[0.96] transition-all"
+                  >
+                    Gebruik opgeslagen
+                  </button>
+                  <button
+                    onClick={() => setGebruikOpgeslagen(false)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-muted/30 text-muted-foreground active:scale-[0.96] transition-all"
+                  >
+                    Opnieuw tekenen
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Show saved signature preview */}
+            {gebruikOpgeslagen && opgeslagenHandtekening && (
+              <div className="mb-4">
+                <div className="rounded-xl border border-border bg-white p-3">
+                  <img
+                    src={`data:image/png;base64,${opgeslagenHandtekening}`}
+                    alt="Opgeslagen handtekening"
+                    className="w-full h-28 object-contain"
+                  />
+                </div>
+                <button
+                  onClick={() => { setGebruikOpgeslagen(false); setHandtekening(null); }}
+                  className="mt-2 text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Opnieuw tekenen
+                </button>
+              </div>
+            )}
+
+            {/* Draw new signature */}
+            {!gebruikOpgeslagen && (
+              <HandtekeningPad
+                onChange={setHandtekening}
+                breedte={460}
+                hoogte={160}
+              />
+            )}
+
+            {/* Generate button */}
+            <button
+              onClick={handleDownload}
+              disabled={!actieveHandtekening || rapportLoading}
+              className={cn(
+                'w-full mt-5 flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 transition-all active:scale-[0.98]',
+                actieveHandtekening
+                  ? 'bg-[#F4896B] text-white shadow-sm'
+                  : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+              )}
+            >
+              {rapportLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {rapportLoading ? 'Genereren…' : 'Rapport genereren'}
+            </button>
+          </div>
         </div>
       )}
 
