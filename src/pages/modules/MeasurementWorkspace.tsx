@@ -85,6 +85,7 @@ export default function MeasurementWorkspace() {
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
+  const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // Sync form fields from session or project
@@ -362,6 +363,7 @@ export default function MeasurementWorkspace() {
                 onGoToSketch={() => setShowSketch(true)}
                 onSave={() => navigate(`/projects/${id}`)}
                 nextElectrodeNumber={electrodes.length + 1}
+                onHandtekeningChange={setHandtekeningB64}
                 compact
               />
             )}
@@ -505,6 +507,7 @@ export default function MeasurementWorkspace() {
             onGoToSketch={() => setShowSketch(true)}
             onSave={() => navigate(`/projects/${id}`)}
             nextElectrodeNumber={electrodes.length + 1}
+            onHandtekeningChange={setHandtekeningB64}
           />
         )}
 
