@@ -1,22 +1,93 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus } from 'lucide-react';
+import { useGeneratedReports, downloadReport } from '@/hooks/use-generated-reports';
+import { useToast } from '@/hooks/use-toast';
+import { formatNlDate } from '@/lib/nl-date';
+import { FileText, Download, ChevronRight, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function ReportsPage() {
+  const { data: reports = [], isLoading } = useGeneratedReports();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  const handleDownload = async (fileUrl: string, id: string) => {
+    setDownloading(id);
+    try {
+      await downloadReport(fileUrl);
+    } catch (err) {
+      toast({ title: 'Download mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <PageHeader
         title="Rapporten"
-        description="Bekijk en genereer meetrapporten met uw bedrijfshuisstijl"
-        action={<Button><Plus className="mr-2 h-4 w-4" /> Rapport Genereren</Button>}
+        description="Bekijk en download gegenereerde meetrapporten"
       />
-      <EmptyState
-        icon={FileText}
-        title="Nog geen rapporten"
-        description="Rapporten worden gegenereerd op basis van afgeronde projectmetingen met uw bedrijfshuisstijl."
-        action={<Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Rapport Genereren</Button>}
-      />
+
+      {isLoading ? (
+        <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+      ) : reports.length === 0 ? (
+        <EmptyState
+          icon={FileText}
+          title="Nog geen rapporten"
+          description="Rapporten verschijnen hier zodra ze gegenereerd zijn vanuit een project."
+        />
+      ) : (
+        <div className="rounded-2xl bg-card overflow-hidden divide-y divide-border/20">
+          {reports.map((r: any) => (
+            <div
+              key={r.id}
+              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-foreground/[0.015]"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center shrink-0">
+                <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-semibold text-foreground truncate">
+                  {r.projects?.project_name || 'Onbekend project'}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[11px] text-muted-foreground/40 font-mono">
+                    {r.projects?.project_number}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground/30">·</span>
+                  <span className="text-[11px] text-muted-foreground/40">
+                    {formatNlDate(r.created_at)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => handleDownload(r.file_url, r.id)}
+                  disabled={downloading === r.id}
+                  className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary)/0.15)] transition-colors"
+                >
+                  {downloading === r.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                </button>
+                <button
+                  onClick={() => navigate(`/projects/${r.project_id}`)}
+                  className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
