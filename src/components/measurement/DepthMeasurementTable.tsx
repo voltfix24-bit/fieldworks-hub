@@ -248,8 +248,19 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             pattern="[0-9]*[.,]?[0-9]*"
             value={resistance}
             onChange={e => setResistance(e.target.value)}
-            onFocus={() => setIsFocused(true)}
+            onFocus={(e) => { setIsFocused(true); e.target.select(); }}
             onBlur={handleBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
+                e.preventDefault();
+                handleBlur();
+                const inputs = document.querySelectorAll('.depth-input');
+                const arr = Array.from(inputs);
+                const idx = arr.indexOf(e.currentTarget);
+                const next = arr[idx + 1] as HTMLInputElement | undefined;
+                if (next) { next.focus(); next.select(); }
+              }
+            }}
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0',
