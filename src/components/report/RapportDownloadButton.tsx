@@ -26,7 +26,7 @@ export function RapportDownloadButton({
 
   const handleDownload = async () => {
     try {
-      await genereerViaEdge(projectId);
+      await genereerViaEdge(projectId, handtekeningB64 ?? undefined);
       toast({
         title: 'Rapport gedownload',
         description: 'Het PDF rapport is succesvol gegenereerd.',
