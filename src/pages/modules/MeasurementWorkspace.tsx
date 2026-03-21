@@ -565,21 +565,16 @@ function MobileContextBlock({
   ].filter(Boolean);
 
   return (
-    <div className="mb-2 rounded-2xl bg-muted/15 overflow-hidden">
+    <div className="ios-wizard-context-block mb-3">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-2.5 active:bg-muted/20 transition-colors"
+        className="ios-wizard-context-trigger"
       >
-        <div className="min-w-0 flex-1">
-          <p className={cn(
-            'text-[12px] truncate leading-snug',
-            summaryItems.length > 0 ? 'text-foreground/50' : 'text-muted-foreground/40'
-          )}>
-            {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Meetgegevens instellen'}
-          </p>
-        </div>
-        <div className="flex items-center gap-1 shrink-0 ml-2">
-          <Pencil className="h-2.5 w-2.5 text-muted-foreground/40" />
+        <span className="ios-wizard-context-summary">
+          {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Meetgegevens instellen'}
+        </span>
+        <div className="ios-wizard-context-edit">
+          <Pencil className="h-3 w-3" />
         </div>
       </button>
 
@@ -626,7 +621,7 @@ function MobileContextBlock({
           <button
             onClick={onSave}
             disabled={saving}
-            className="w-full h-9 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[12px] font-semibold active:scale-[0.97] transition-all disabled:opacity-50"
+            className="ios-wizard-context-save"
           >
             {saving ? 'Opslaan…' : 'Opslaan'}
           </button>
