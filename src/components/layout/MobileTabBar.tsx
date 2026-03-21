@@ -111,7 +111,8 @@ export function MobileTabBar() {
   const [lastProjectId, setLastProjectId] = useState<string | null>(null);
   const [lastProjectName, setLastProjectName] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
-
+  const sheetStartY = useRef(0);
+  const [sheetDragY, setSheetDragY] = useState(0);
   useEffect(() => {
     supabase
       .from('project_measurement_sessions')
