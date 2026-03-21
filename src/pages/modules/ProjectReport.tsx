@@ -15,6 +15,7 @@ import { RapportDownloadButton } from '@/components/report/RapportDownloadButton
 import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 
 export default function ProjectReport() {
+  const [handtekening, setHandtekening] = useState<string | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: project, isLoading: projectLoading } = useProject(id);
