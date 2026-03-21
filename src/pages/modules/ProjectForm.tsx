@@ -1,8 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProject, useCreateProject, useUpdateProject } from '@/hooks/use-projects';
 import { useClients } from '@/hooks/use-clients';
@@ -10,9 +7,10 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
 
 function genProjectNumber(): string {
   const y = new Date().getFullYear();
@@ -108,237 +106,237 @@ export default function ProjectForm() {
   const techName = activeTechs.find(t => t.id === form.technician_id)?.full_name;
   const equipName = activeEquip.find(e => e.id === form.equipment_id)?.device_name;
 
+  const displayDate = form.planned_date
+    ? format(new Date(form.planned_date), 'd MMM yyyy', { locale: nl })
+    : '';
+
   return (
-    <div className="animate-fade-in max-w-lg mx-auto pb-28">
+    <div className="animate-fade-in max-w-lg mx-auto ios-form-page">
       {/* ───── 1. COMPACT HEADER ───── */}
-      <div className="flex items-center gap-3 mb-5">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="h-8 w-8 rounded-full bg-foreground/[0.05] hover:bg-foreground/[0.08] flex items-center justify-center transition-colors shrink-0"
-          aria-label="Terug"
-        >
-          <ArrowLeft className="h-[15px] w-[15px] text-foreground/60" />
-        </button>
-        <div>
-          <h1 className="text-[17px] font-semibold text-foreground leading-snug">
+      <div className="ios-form-header">
+        <div className="ios-form-nav-row">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="ios-form-back"
+            aria-label="Terug"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <span className="ios-form-title">
             {isEdit ? 'Project bewerken' : 'Nieuw project'}
-          </h1>
-          <p className="text-[12px] text-muted-foreground/45 leading-snug">
-            {isEdit ? 'Pas de gegevens aan' : 'Vul de basis in om te starten'}
-          </p>
+          </span>
         </div>
+        <p className="ios-form-subtitle">
+          {isEdit ? 'Pas de gegevens aan' : 'Vul de basis in om te starten'}
+        </p>
       </div>
 
-      {/* ───── 2. MAIN FORM CARD ───── */}
-      <div className="ios-group overflow-hidden">
+      {/* ───── 2. SCROLL AREA ───── */}
+      <div className="ios-form-scroll">
 
         {/* ── SECTION A: Project ── */}
-        <SectionTitle>Project</SectionTitle>
-        <div className="px-4 pb-3 space-y-2">
-          <div className="grid grid-cols-[105px_1fr] gap-2">
-            <div>
-              <FieldLabel>Projectnummer</FieldLabel>
-              <Input
+        <IosLabel>Project</IosLabel>
+        <div className="ios-form-card">
+          <div className="ios-form-input-row">
+            <div className="ios-form-field" style={{ flex: '0 0 115px' }}>
+              <span className="ios-form-field-label">Nummer</span>
+              <input
+                className="ios-form-input ios-font-mono"
                 value={form.project_number}
                 onChange={e => set('project_number', e.target.value)}
-                required
                 placeholder="P-2026-001"
-                className="h-10 text-[13px] font-mono bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
-            <div>
-              <FieldLabel>Projectnaam</FieldLabel>
-              <Input
+            <div className="ios-form-field-divider" />
+            <div className="ios-form-field" style={{ flex: 1 }}>
+              <span className="ios-form-field-label">Projectnaam</span>
+              <input
+                className="ios-form-input"
                 value={form.project_name}
                 onChange={e => set('project_name', e.target.value)}
-                required
                 placeholder="Naam van het project"
-                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
           </div>
         </div>
 
-        <Divider />
-
         {/* ── SECTION B: Locatie ── */}
-        <SectionTitle>Locatie</SectionTitle>
-        <div className="px-4 pb-3 space-y-2">
-          <div>
-            <FieldLabel>Straat en huisnummer</FieldLabel>
-            <Input
+        <IosLabel>Locatie</IosLabel>
+        <div className="ios-form-card">
+          <div className="ios-form-field ios-form-field-full">
+            <span className="ios-form-field-label">Straat en huisnummer</span>
+            <input
+              className="ios-form-input"
               value={form.address_line_1}
               onChange={e => set('address_line_1', e.target.value)}
               placeholder="Hoofdstraat 12"
-              className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
             />
           </div>
-          <div className="grid grid-cols-[100px_1fr] gap-2">
-            <div>
-              <FieldLabel>Postcode</FieldLabel>
-              <Input
+          <div className="ios-form-divider" />
+          <div className="ios-form-input-row">
+            <div className="ios-form-field" style={{ flex: '0 0 100px' }}>
+              <span className="ios-form-field-label">Postcode</span>
+              <input
+                className="ios-form-input"
                 value={form.postal_code}
                 onChange={e => set('postal_code', e.target.value)}
                 placeholder="1234 AB"
-                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
-            <div>
-              <FieldLabel>Plaats</FieldLabel>
-              <Input
+            <div className="ios-form-field-divider" />
+            <div className="ios-form-field" style={{ flex: 1 }}>
+              <span className="ios-form-field-label">Plaats</span>
+              <input
+                className="ios-form-input"
                 value={form.city}
                 onChange={e => set('city', e.target.value)}
                 placeholder="Amsterdam"
-                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
           </div>
         </div>
 
-        <Divider />
-
         {/* ── SECTION C: Uitvoering ── */}
-        <SectionTitle>Uitvoering</SectionTitle>
-        <div className="divide-y divide-border/15">
-          <RowField label="Datum">
-            <Input
-              type="date"
-              value={form.planned_date}
-              onChange={e => set('planned_date', e.target.value)}
-              className="border-0 bg-transparent h-9 text-[13px] text-right p-0 focus-visible:ring-0 shadow-none w-[130px]"
-            />
-          </RowField>
-          <RowField label="Opdrachtgever">
+        <IosLabel>Uitvoering</IosLabel>
+        <div className="ios-form-card">
+          {/* Datum */}
+          <div className="ios-form-list-row">
+            <span className="ios-form-list-label">Datum</span>
+            <div className="ios-form-list-value has-value">
+              <span>{displayDate}</span>
+              <input
+                type="date"
+                value={form.planned_date}
+                onChange={e => set('planned_date', e.target.value)}
+                className="ios-form-date-input"
+              />
+            </div>
+          </div>
+
+          <div className="ios-form-divider" />
+
+          {/* Opdrachtgever */}
+          <div className="ios-form-list-row">
+            <span className="ios-form-list-label">Opdrachtgever</span>
             <Select value={form.client_id || '__none'} onValueChange={v => set('client_id', v === '__none' ? '' : v)}>
-              <SelectTrigger className="border-0 bg-transparent h-9 text-[13px] shadow-none focus:ring-0 p-0 w-auto gap-1 justify-end text-right [&>svg]:hidden">
-                <span className={cn('truncate', !clientName && 'text-muted-foreground/50')}>
+              <SelectTrigger className="ios-form-select-trigger">
+                <span className={cn('truncate', !clientName && 'ios-form-placeholder')}>
                   {clientName || 'Geen'}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+                <ChevronRight className="ios-form-chevron" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">Geen</SelectItem>
                 {activeClients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
               </SelectContent>
             </Select>
-          </RowField>
-          <RowField label="Monteur">
+          </div>
+
+          <div className="ios-form-divider" />
+
+          {/* Monteur */}
+          <div className="ios-form-list-row">
+            <span className="ios-form-list-label">Monteur</span>
             <Select value={form.technician_id || '__none'} onValueChange={v => set('technician_id', v === '__none' ? '' : v)}>
-              <SelectTrigger className="border-0 bg-transparent h-9 text-[13px] shadow-none focus:ring-0 p-0 w-auto gap-1 justify-end text-right [&>svg]:hidden">
-                <span className={cn('truncate', !techName && 'text-muted-foreground/50')}>
+              <SelectTrigger className="ios-form-select-trigger">
+                <span className={cn('truncate', !techName && 'ios-form-placeholder')}>
                   {techName || 'Geen'}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+                <ChevronRight className="ios-form-chevron" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">Geen</SelectItem>
                 {activeTechs.map(t => <SelectItem key={t.id} value={t.id}>{t.full_name}{t.is_default ? ' ★' : ''}</SelectItem>)}
               </SelectContent>
             </Select>
-          </RowField>
-          <RowField label="Apparaat">
+          </div>
+
+          <div className="ios-form-divider" />
+
+          {/* Apparaat */}
+          <div className="ios-form-list-row">
+            <span className="ios-form-list-label">Apparaat</span>
             <Select value={form.equipment_id || '__none'} onValueChange={v => set('equipment_id', v === '__none' ? '' : v)}>
-              <SelectTrigger className="border-0 bg-transparent h-9 text-[13px] shadow-none focus:ring-0 p-0 w-auto gap-1 justify-end text-right [&>svg]:hidden">
-                <span className={cn('truncate', !equipName && 'text-muted-foreground/50')}>
+              <SelectTrigger className="ios-form-select-trigger">
+                <span className={cn('truncate', !equipName && 'ios-form-placeholder')}>
                   {equipName || 'Geen'}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+                <ChevronRight className="ios-form-chevron" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">Geen</SelectItem>
                 {activeEquip.map(e => <SelectItem key={e.id} value={e.id}>{e.device_name}{e.is_default ? ' ★' : ''}</SelectItem>)}
               </SelectContent>
             </Select>
-          </RowField>
+          </div>
         </div>
-      </div>
 
-      {/* ───── 3. OPTIONAL EXTRA ───── */}
-      <button
-        type="button"
-        onClick={() => setShowExtra(!showExtra)}
-        className="w-full flex items-center justify-between py-2.5 px-1 mt-3 group"
-      >
-        <span className="text-[12px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
-          Extra gegevens
-        </span>
-        <ChevronRight className={cn(
-          'h-3.5 w-3.5 text-muted-foreground/20 transition-transform duration-200',
-          showExtra && 'rotate-90'
-        )} />
-      </button>
-      {showExtra && (
-        <div className="ios-group overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="px-4 py-3 space-y-3">
-            <div>
-              <FieldLabel>Locatienaam</FieldLabel>
-              <Input
-                value={form.site_name}
-                onChange={e => set('site_name', e.target.value)}
-                placeholder="Gebouw of terrein"
-                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
-              />
-            </div>
-            <div>
-              <FieldLabel>Notities</FieldLabel>
-              <Textarea
-                value={form.notes}
-                onChange={e => set('notes', e.target.value)}
-                placeholder="Eventuele opmerkingen…"
-                className="text-[13px] min-h-[56px] resize-none bg-foreground/[0.03] border-border/20 rounded-lg"
-              />
+        {/* ───── 3. OPTIONAL EXTRA ───── */}
+        <div className={cn('ios-form-card ios-form-accordion', showExtra && 'is-open')}>
+          <button
+            type="button"
+            className="ios-form-accordion-trigger"
+            onClick={() => setShowExtra(v => !v)}
+          >
+            <span className="ios-form-accordion-label">Extra gegevens</span>
+            <ChevronDown
+              className={cn(
+                'h-4 w-4 text-muted-foreground/40 transition-transform duration-300',
+                showExtra && 'rotate-180'
+              )}
+            />
+          </button>
+          <div className={cn('ios-form-accordion-body', showExtra ? 'is-open' : 'is-closed')}>
+            <div className="ios-form-accordion-inner">
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Locatienaam</span>
+                <input
+                  className="ios-form-input"
+                  value={form.site_name}
+                  onChange={e => set('site_name', e.target.value)}
+                  placeholder="Gebouw of terrein"
+                />
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Notities</span>
+                <textarea
+                  className="ios-form-textarea"
+                  value={form.notes}
+                  onChange={e => set('notes', e.target.value)}
+                  placeholder="Eventuele opmerkingen…"
+                  rows={3}
+                />
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* ───── 4. STICKY BOTTOM CTA ───── */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pt-4">
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
-        <Button
+      <div className="ios-form-bottom-bar">
+        <button
           type="button"
+          className="ios-form-cta"
           onClick={handleSubmit}
           disabled={saving || !canSubmit}
-          className="relative w-full h-[50px] text-[15px] font-semibold rounded-2xl shadow-sm"
         >
           {saving ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
               Opslaan…
-            </>
+            </span>
           ) : isEdit ? 'Opslaan' : 'Project aanmaken'}
-        </Button>
+        </button>
       </div>
     </div>
   );
 }
 
-/* ─── Primitives ─── */
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
+/* ─── Section label primitive ─── */
+function IosLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-semibold text-muted-foreground/40 uppercase tracking-wider px-4 pt-4 pb-1.5">
-      {children}
-    </p>
-  );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="block text-[11px] font-medium text-muted-foreground/60 mb-1">{children}</label>
-  );
-}
-
-function Divider() {
-  return <div className="mx-4 h-px bg-border/15" />;
-}
-
-function RowField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between pl-4 pr-3 min-h-[44px] ios-row">
-      <span className="text-[13px] text-foreground shrink-0">{label}</span>
-      <div className="flex items-center justify-end min-w-0 ml-3">{children}</div>
-    </div>
+    <p className="ios-form-section-label">{children}</p>
   );
 }
