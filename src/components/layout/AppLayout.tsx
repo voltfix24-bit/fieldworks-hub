@@ -41,29 +41,26 @@ export function AppLayout() {
   );
 }
 
-/** Premium mobile brand header */
+/** Premium mobile brand header — logo only */
 function MobileContextBar() {
   const { tenant, branding } = useTenant();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-background shrink-0 border-b border-border/30">
+    <div className="flex items-center justify-center px-4 py-3 bg-background shrink-0">
       {logoUrl ? (
         <img
           src={logoUrl}
           alt={tenant?.company_name || 'Logo'}
-          className="h-9 w-auto max-w-[44px] object-contain shrink-0"
+          className="h-8 w-auto max-w-[160px] object-contain"
         />
       ) : (
-        <div className="h-9 w-9 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] flex items-center justify-center shrink-0">
-          <span className="text-base font-semibold text-[hsl(var(--tenant-primary,var(--primary)))]">
+        <div className="h-10 w-10 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] flex items-center justify-center">
+          <span className="text-lg font-semibold text-[hsl(var(--tenant-primary,var(--primary)))]">
             {(tenant?.company_name || '?')[0].toUpperCase()}
           </span>
         </div>
       )}
-      <span className="text-sm font-medium tracking-tight text-[hsl(var(--tenant-primary,var(--primary)))] truncate">
-        {tenant?.company_name || ''}
-      </span>
     </div>
   );
 }
