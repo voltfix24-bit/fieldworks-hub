@@ -487,7 +487,7 @@ export default function MeasurementWorkspace() {
     <div className="animate-fade-in max-w-2xl mx-auto px-1 sm:px-4">
       <div className="flex items-center gap-2 mb-4 pt-1">
         <button
-          onClick={() => navigate(`/projects/${id}`)}
+          onClick={handleBack}
           className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 rounded-lg active:scale-95 transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
