@@ -258,41 +258,53 @@ export default function MeasurementWorkspace() {
   if (isMobile) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
-        {/* ─── Glass mobile header ─── */}
-        <div className="flex items-center gap-2 px-4 py-2.5 glass-surface border-t-0 border-x-0 rounded-none shrink-0">
-          <button
-            onClick={() => navigate(`/projects/${id}`)}
-            className="h-8 w-8 -ml-1 flex items-center justify-center text-muted-foreground active:opacity-60 rounded-lg transition-opacity"
-          >
-            <ArrowLeft className="h-[18px] w-[18px]" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <span className="text-[14px] font-semibold text-foreground truncate leading-none tracking-tight block">
-              {project.project_name}
-            </span>
+        {/* ─── iOS sticky top nav ─── */}
+        <div className="ios-wizard-topnav shrink-0">
+          <div className="ios-wizard-nav-row">
+            <button
+              onClick={() => navigate(`/projects/${id}`)}
+              className="ios-wizard-nav-back"
+            >
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span>{project.project_name}</span>
+            </button>
+            {activeElectrode && !showSketch && (
+              <span className="ios-wizard-nav-badge">
+                {activeElectrode.electrode_code}
+                {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
+              </span>
+            )}
           </div>
-          {activeElectrode && !showSketch && (
-            <span className="text-[11px] font-semibold text-muted-foreground/40 shrink-0 leading-none">
-              {activeElectrode.electrode_code}
-              {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
-            </span>
+
+          {/* Step tabs */}
+          {!showSketch && (
+            <div className="ios-wizard-step-tabs">
+              {WIZARD_STEPS.map((s, i) => (
+                <button
+                  key={s.key}
+                  className={cn(
+                    'ios-wizard-step-tab',
+                    i === step && 'active',
+                    i < step && 'done',
+                  )}
+                  onClick={() => {
+                    if (i <= step) { setShowSketch(false); setStep(i); setProgressionWarningDismissed(false); }
+                  }}
+                >
+                  {i < step && (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2.5 6L5 8.5L9.5 3.5" stroke="hsl(var(--status-completed))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {s.label}
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* ─── Step indicator ─── */}
-        {!showSketch && (
-          <div className="px-4 py-1.5 shrink-0">
-            <WizardStepIndicator
-              steps={WIZARD_STEPS}
-              currentStep={displayStep}
-              onStepClick={(i) => { setShowSketch(false); setStep(i); setProgressionWarningDismissed(false); }}
-              compact
-            />
-          </div>
-        )}
-
         {/* ─── Scrollable content ─── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-2" key={showSketch ? 'sketch' : step}>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2" key={showSketch ? 'sketch' : step}>
           <div className="wizard-step-enter">
 
             {/* Project context block — shown above measurements */}
@@ -360,42 +372,54 @@ export default function MeasurementWorkspace() {
           </div>
         </div>
 
-        {/* ─── Sticky bottom CTA ─── */}
+        {/* ─── iOS bottom bar ─── */}
         {step < 2 && !showSketch && (
-          <div className="shrink-0 bg-background">
-            <StickyActionBar
-              showPrev={step > 0}
-              onPrev={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}
-              onNext={() => {
-                if (step === 0 && warningCount > 0 && !progressionWarningDismissed) {
-                  return;
-                }
-                setProgressionWarningDismissed(false);
-                setStep(step + 1);
-              }}
-              nextLabel="Volgende"
-              nextLoading={false}
-              compact
-              warningMessage={step === 0 && warningCount > 0 && !progressionWarningDismissed
-                ? `${warningCount} ${warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af van verwachte diepteprogressie`
-                : undefined}
-              onConfirmWarning={() => {
-                setProgressionWarningDismissed(true);
-                setStep(step + 1);
-              }}
-            />
+          <div className="shrink-0">
+            {warningCount > 0 && step === 0 && !progressionWarningDismissed && (
+              <div className="ios-wizard-warning">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L15 14H1L8 1Z" stroke="hsl(40, 90%, 50%)" strokeWidth="1.5" fill="hsl(40, 90%, 50%, 0.08)"/><path d="M8 6V9M8 11.5V11" stroke="hsl(40, 90%, 50%)" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <span className="ios-wizard-warning-text">
+                  {warningCount} {warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af
+                </span>
+                <button className="ios-wizard-warning-btn" onClick={() => { setProgressionWarningDismissed(true); setStep(step + 1); }}>
+                  Doorgaan
+                </button>
+              </div>
+            )}
+            <div className="ios-wizard-bottom-bar">
+              {step > 0 ? (
+                <button className="ios-wizard-btn-back" onClick={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}>
+                  <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Vorige
+                </button>
+              ) : <div />}
+              <button
+                className="ios-wizard-btn-next"
+                onClick={() => {
+                  if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
+                  setProgressionWarningDismissed(false);
+                  setStep(step + 1);
+                }}
+              >
+                Volgende
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1L7 7L1 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         )}
 
         {showSketch && (
-          <div className="shrink-0 bg-background">
-            <StickyActionBar
-              showPrev
-              onPrev={() => setShowSketch(false)}
-              onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
-              nextLabel="Opslaan"
-              compact
-            />
+          <div className="shrink-0">
+            <div className="ios-wizard-bottom-bar">
+              <button className="ios-wizard-btn-back" onClick={() => setShowSketch(false)}>
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Vorige
+              </button>
+              <button className="ios-wizard-btn-next" onClick={() => { setShowSketch(false); navigate(`/projects/${id}`); }}>
+                Opslaan
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         )}
       </div>
