@@ -81,7 +81,7 @@ export default function ProjectForm() {
 
   const handleSubmit = async () => {
     if (!profile?.tenant_id) return;
-    const payload = {
+    const payload: any = {
       tenant_id: profile.tenant_id, project_number: form.project_number,
       project_name: form.project_name, site_name: form.site_name || null,
       address_line_1: form.address_line_1 || null, address_line_2: null,
@@ -89,6 +89,9 @@ export default function ProjectForm() {
       planned_date: form.planned_date || null, status: 'planned' as const,
       client_id: form.client_id || null, technician_id: form.technician_id || null,
       equipment_id: form.equipment_id || null, notes: form.notes || null,
+      target_value: parseFloat(form.target_value) || null,
+      housing_number: form.housing_number || null,
+      cable_material: form.cable_material || null,
     };
     try {
       if (isEdit) {
