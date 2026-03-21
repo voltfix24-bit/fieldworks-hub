@@ -602,7 +602,7 @@ function MobileContextBlock({
           <button
             onClick={onSave}
             disabled={saving}
-            className="w-full h-8 rounded-md bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[11px] font-bold active:scale-[0.97] transition-all disabled:opacity-50"
+            className="w-full h-9 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[12px] font-semibold active:scale-[0.97] transition-all disabled:opacity-50"
           >
             {saving ? 'Opslaan…' : 'Opslaan'}
           </button>
