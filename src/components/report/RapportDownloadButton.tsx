@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface RapportDownloadButtonProps {
   projectId: string;
+  handtekeningB64?: string | null;
   disabled?: boolean;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
