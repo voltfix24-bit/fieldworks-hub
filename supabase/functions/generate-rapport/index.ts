@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { project_id } = await req.json();
+    const { project_id, handtekening_b64 } = await req.json();
     if (!project_id) {
       return new Response(JSON.stringify({ error: "project_id is vereist" }), {
         status: 400,
@@ -176,6 +176,8 @@ Deno.serve(async (req) => {
       kalibratie_volgende: equip?.next_calibration_date
         ? new Date(equip.next_calibration_date as string).toLocaleDateString("nl-NL")
         : undefined,
+
+      handtekening_b64: handtekening_b64 || undefined,
 
       elektrodes,
     };
