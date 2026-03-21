@@ -1,6 +1,4 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { DetailCard } from '@/components/ui/detail-card';
-import { InfoRow } from '@/components/ui/info-row';
 import { Button } from '@/components/ui/button';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/use-projects';
 import { useMeasurementSession } from '@/hooks/use-measurement-sessions';
@@ -32,8 +30,8 @@ export default function ProjectDetail() {
   const { data: attachments = [] } = useAttachments(id);
   const { data: reportData } = useReportData(id);
 
-  if (isLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-  if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
+  if (isLoading) return <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>;
+  if (!project) return <p className="text-muted-foreground text-center py-16">Project niet gevonden</p>;
 
   const client = project.clients as any;
   const tech = project.technicians as any;
@@ -79,211 +77,257 @@ export default function ProjectDetail() {
     } catch (err: any) { toast({ title: 'Fout', description: err.message, variant: 'destructive' }); }
   };
 
-  // ── Mobile-optimised view ──
+  // ── Mobile ──
   if (isMobile) {
     return (
-      <div className="animate-fade-in">
+      <div className="animate-fade-in space-y-4">
         {/* Header */}
-        <div className="mb-3">
-          <button onClick={() => navigate('/projects')} className="flex items-center gap-1 text-xs text-muted-foreground mb-2 active:scale-97 transition-transform">
-            <ArrowLeft className="h-3.5 w-3.5" /> Projecten
+        <div>
+          <button onClick={() => navigate('/projects')} className="flex items-center gap-1 text-[13px] text-muted-foreground/60 mb-3 active:opacity-60 transition-opacity">
+            <ArrowLeft className="h-4 w-4" /> Projecten
           </button>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-[16px] font-bold text-foreground leading-snug truncate">{project.project_name}</h1>
-              <p className="text-[11px] text-muted-foreground/60 font-mono mt-0.5">{project.project_number}</p>
-            </div>
-            <span className={cn(
-              'text-[10px] px-2 py-0.5 rounded-md font-semibold shrink-0 mt-0.5',
-              project.status === 'completed' ? 'status-completed' : 'status-planned'
-            )}>
-              {project.status === 'completed' ? 'Afgerond' : 'Gepland'}
-            </span>
+          <h1 className="text-[20px] font-bold text-foreground tracking-tight leading-snug">{project.project_name}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[12px] text-muted-foreground/45 font-mono">{project.project_number}</span>
+            <StatusDot status={project.status} />
           </div>
         </div>
 
-        {/* Primary actions — full width, stacked */}
-        <div className="space-y-2 mb-4">
-          <button
-            onClick={() => navigate(`/projects/${id}/measurements`)}
-            className="w-full flex items-center justify-between rounded-xl bg-[hsl(var(--tenant-primary))] text-white px-4 py-3 active:scale-[0.97] transition-all"
-          >
-            <div className="flex items-center gap-2.5">
-              <GroundingIcon size={18} />
-              <span className="text-[14px] font-bold">{hasSession ? 'Metingen' : 'Meten starten'}</span>
+        {/* Primary CTA */}
+        <button
+          onClick={() => navigate(`/projects/${id}/measurements`)}
+          className="w-full flex items-center justify-between rounded-2xl bg-[hsl(var(--tenant-primary))] text-white px-5 py-4 active:scale-[0.97] transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <GroundingIcon size={20} />
+            <div>
+              <span className="text-[15px] font-bold block leading-snug">{hasSession ? 'Metingen' : 'Meten starten'}</span>
+              {hasSession && hasMeasurements && (
+                <span className="text-[11px] opacity-70">{electrodes.length} elektrodes · {reportData?.stats.measurementCount} metingen</span>
+              )}
             </div>
-            <ChevronRight className="h-4 w-4 opacity-60" />
-          </button>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => navigate(`/projects/${id}/report`)}
-              className="flex items-center justify-between rounded-xl border border-border/40 bg-card text-foreground px-3.5 py-2.5 active:scale-[0.97] transition-all"
-            >
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[13px] font-medium">Rapport</span>
-              </div>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
-            </button>
-            <button
-              onClick={() => navigate(`/projects/${id}/edit`)}
-              className="flex items-center justify-between rounded-xl border border-border/40 bg-card text-foreground px-3.5 py-2.5 active:scale-[0.97] transition-all"
-            >
-              <div className="flex items-center gap-2">
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[13px] font-medium">Bewerken</span>
-              </div>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
-            </button>
           </div>
+          <ChevronRight className="h-5 w-5 opacity-50" />
+        </button>
+
+        {/* Secondary actions */}
+        <div className="flex gap-2">
+          <SecondaryAction icon={FileText} label="Rapport" onClick={() => navigate(`/projects/${id}/report`)} />
+          <SecondaryAction icon={Pencil} label="Bewerken" onClick={() => navigate(`/projects/${id}/edit`)} />
         </div>
 
-        {/* Project info */}
-        <div className="rounded-xl bg-card border border-border/30 divide-y divide-border/30 mb-3">
-          <MobileInfoRow label="Locatie" value={[project.address_line_1, project.city].filter(Boolean).join(', ')} />
-          <MobileInfoRow label="Klant" value={client?.company_name} />
-          <MobileInfoRow label="Monteur" value={tech?.full_name} />
-          <MobileInfoRow label="Apparaat" value={equip?.device_name} />
-          <MobileInfoRow label="Datum" value={formatNlDate(project.planned_date)} />
-        </div>
+        {/* Project info — flat list */}
+        <section>
+          <SectionLabel>Projectgegevens</SectionLabel>
+          <div className="rounded-2xl bg-card overflow-hidden divide-y divide-border/20">
+            <InfoLine label="Locatie" value={[project.address_line_1, project.city].filter(Boolean).join(', ')} />
+            <InfoLine label="Klant" value={client?.company_name} />
+            <InfoLine label="Monteur" value={tech?.full_name} />
+            <InfoLine label="Apparaat" value={equip?.device_name} />
+            <InfoLine label="Datum" value={formatNlDate(project.planned_date)} />
+          </div>
+        </section>
 
-        {/* Progress stats */}
+        {/* Progress */}
         {hasSession && (
-          <div className="rounded-xl bg-card border border-border/30 p-3.5 mb-3">
-            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Voortgang</p>
-            <div className="grid grid-cols-3 gap-3">
-              <MobileStat label="Elektrodes" value={electrodes.length} />
-              <MobileStat label="Metingen" value={reportData?.stats.measurementCount || 0} />
-              <MobileStat label="Foto's" value={reportData?.stats.photosCount || 0} />
+          <section>
+            <SectionLabel>Voortgang</SectionLabel>
+            <div className="flex items-center gap-6 px-1">
+              <ProgressStat label="Elektrodes" value={electrodes.length} />
+              <ProgressStat label="Metingen" value={reportData?.stats.measurementCount || 0} />
+              <ProgressStat label="Foto's" value={reportData?.stats.photosCount || 0} />
             </div>
-          </div>
+          </section>
         )}
 
         <ReadinessChecklist items={readinessItems} />
 
-        {/* Secondary actions */}
-        <div className="mt-4 space-y-1.5">
+        {/* Status actions */}
+        <div className="space-y-2 pt-2">
           {project.status === 'planned' ? (
             <button
               onClick={() => handleStatusChange('completed')}
               disabled={updateMut.isPending || !isReportReady}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-[hsl(var(--status-completed)/0.2)] bg-[hsl(var(--status-completed)/0.04)] text-[hsl(var(--status-completed))] active:scale-[0.98] transition-all disabled:opacity-40"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[hsl(var(--status-completed)/0.06)] text-[hsl(var(--status-completed))] active:scale-[0.98] transition-all disabled:opacity-30"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span className="text-[13px] font-semibold">Project afronden</span>
+              <span className="text-[14px] font-semibold">Project afronden</span>
             </button>
           ) : (
             <button
               onClick={() => handleStatusChange('planned')}
               disabled={updateMut.isPending}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-border/30 bg-card text-foreground active:scale-[0.98] transition-all disabled:opacity-40"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-muted/30 text-foreground active:scale-[0.98] transition-all disabled:opacity-30"
             >
               <RotateCcw className="h-4 w-4 text-muted-foreground" />
-              <span className="text-[13px] font-medium">Heropenen</span>
+              <span className="text-[14px] font-medium">Heropenen</span>
             </button>
           )}
           <button
             onClick={handleDelete}
             disabled={deleteMut.isPending}
-            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-destructive/70 active:scale-[0.98] transition-all disabled:opacity-40"
+            className="w-full text-center py-2 text-[12px] text-destructive/50 font-medium active:opacity-60 transition-opacity disabled:opacity-20"
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            <span className="text-[12px] font-medium">Verwijderen</span>
+            Verwijderen
           </button>
         </div>
       </div>
     );
   }
 
-  // ── Desktop view ──
+  // ── Desktop ──
   return (
-    <div className="animate-fade-in">
-      <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => navigate('/projects')}><ArrowLeft className="mr-2 h-4 w-4" /> Terug naar Projecten</Button></div>
+    <div className="animate-fade-in max-w-4xl">
+      <div className="mb-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/projects')}><ArrowLeft className="mr-2 h-4 w-4" /> Projecten</Button>
+      </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{project.project_name}</h1>
-            <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${project.status === 'completed' ? 'status-completed' : 'status-planned'}`}>
-              {project.status === 'completed' ? 'Afgerond' : 'Gepland'}
-            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{project.project_name}</h1>
+            <StatusDot status={project.status} />
           </div>
-          <p className="text-sm text-muted-foreground font-mono">{project.project_number}</p>
-          {project.site_name && <p className="text-sm text-muted-foreground mt-1">{project.site_name}</p>}
+          <p className="text-sm text-muted-foreground/60 font-mono">{project.project_number}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/edit`)}><Pencil className="mr-2 h-4 w-4" /> Bewerken</Button>
-          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}><Play className="mr-2 h-4 w-4" /> Metingen</Button>
-          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}><FileText className="mr-2 h-4 w-4" /> Rapport</Button>
-          {project.status === 'planned' ? (
-            <Button size="sm" onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending}><CheckCircle2 className="mr-2 h-4 w-4" /> Afronden</Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}><RotateCcw className="mr-2 h-4 w-4" /> Heropenen</Button>
-          )}
-          <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleteMut.isPending}><Trash2 className="mr-2 h-4 w-4" /> Verwijderen</Button>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/edit`)}><Pencil className="mr-2 h-3.5 w-3.5" /> Bewerken</Button>
+          <Button size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}><Play className="mr-2 h-3.5 w-3.5" /> Metingen</Button>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}><FileText className="mr-2 h-3.5 w-3.5" /> Rapport</Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <DetailCard title="Projectoverzicht" icon={<ClipboardList className="h-4 w-4 text-muted-foreground" />}>
-          <InfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
-          {project.completed_date && <InfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
-          <InfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city, project.country].filter(Boolean).join(', ') || null} />
-        </DetailCard>
-        <DetailCard title="Klant" icon={<Users className="h-4 w-4 text-muted-foreground" />}
-          action={client && <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${project.client_id}`)}>Bekijk</Button>}>
-          {client ? (<><InfoRow label="Bedrijf" value={client.company_name} /><InfoRow label="Contact" value={client.contact_name} /><InfoRow label="E-mail" value={client.email} /></>) : <p className="text-sm text-muted-foreground">Geen klant toegewezen</p>}
-        </DetailCard>
-        <DetailCard title="Monteur" icon={<HardHat className="h-4 w-4 text-muted-foreground" />}
-          action={tech && <Button variant="ghost" size="sm" onClick={() => navigate(`/technicians/${project.technician_id}`)}>Bekijk</Button>}>
-          {tech ? (<><InfoRow label="Naam" value={tech.full_name} /><InfoRow label="Code" value={tech.employee_code} /><InfoRow label="E-mail" value={tech.email} /></>) : <p className="text-sm text-muted-foreground">Geen monteur toegewezen</p>}
-        </DetailCard>
-        <DetailCard title="Apparatuur" icon={<Wrench className="h-4 w-4 text-muted-foreground" />}
-          action={equip && <Button variant="ghost" size="sm" onClick={() => navigate(`/equipment/${project.equipment_id}`)}>Bekijk</Button>}>
-          {equip ? (<><InfoRow label="Apparaat" value={equip.device_name} /><InfoRow label="Merk/Model" value={[equip.brand, equip.model].filter(Boolean).join(' ') || null} /><InfoRow label="Serienummer" value={equip.serial_number} /></>) : <p className="text-sm text-muted-foreground">Geen apparatuur toegewezen</p>}
-        </DetailCard>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+        <DesktopSection title="Projectoverzicht">
+          <DesktopInfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
+          {project.completed_date && <DesktopInfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
+          <DesktopInfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ') || null} />
+        </DesktopSection>
+        <DesktopSection title="Klant" action={client && <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${project.client_id}`)}>Bekijk</Button>}>
+          {client ? (<><DesktopInfoRow label="Bedrijf" value={client.company_name} /><DesktopInfoRow label="Contact" value={client.contact_name} /></>) : <p className="text-sm text-muted-foreground/50">Geen klant toegewezen</p>}
+        </DesktopSection>
+        <DesktopSection title="Monteur" action={tech && <Button variant="ghost" size="sm" onClick={() => navigate(`/technicians/${project.technician_id}`)}>Bekijk</Button>}>
+          {tech ? (<><DesktopInfoRow label="Naam" value={tech.full_name} /><DesktopInfoRow label="Code" value={tech.employee_code} /></>) : <p className="text-sm text-muted-foreground/50">Geen monteur toegewezen</p>}
+        </DesktopSection>
+        <DesktopSection title="Apparatuur" action={equip && <Button variant="ghost" size="sm" onClick={() => navigate(`/equipment/${project.equipment_id}`)}>Bekijk</Button>}>
+          {equip ? (<><DesktopInfoRow label="Apparaat" value={equip.device_name} /><DesktopInfoRow label="Merk/Model" value={[equip.brand, equip.model].filter(Boolean).join(' ') || null} /></>) : <p className="text-sm text-muted-foreground/50">Geen apparatuur toegewezen</p>}
+        </DesktopSection>
       </div>
 
       {project.notes && (
-        <DetailCard title="Notities" icon={<FileText className="h-4 w-4 text-muted-foreground" />}>
-          <p className="text-sm text-foreground whitespace-pre-wrap">{project.notes}</p>
-        </DetailCard>
+        <DesktopSection title="Notities">
+          <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{project.notes}</p>
+        </DesktopSection>
       )}
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <DetailCard title="Meetopstelling" icon={<Ruler className="h-4 w-4 text-muted-foreground" />}
-          action={<Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>{hasSession ? 'Werkruimte openen' : 'Metingen starten'}</Button>}>
-          {hasSession ? (<><InfoRow label="Datum" value={formatNlDate(session?.measurement_date)} /><InfoRow label="Elektrodes" value={String(electrodes.length)} /><InfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} /></>) : <p className="text-sm text-muted-foreground">Nog geen meetsessie.</p>}
-        </DetailCard>
-        <DetailCard title="Rapport" icon={<FileText className="h-4 w-4 text-muted-foreground" />}
-          action={<div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}>Bekijk rapport</Button>
+        <DesktopSection title="Meetopstelling" action={
+          <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>{hasSession ? 'Openen' : 'Starten'}</Button>
+        }>
+          {hasSession ? (<><DesktopInfoRow label="Datum" value={formatNlDate(session?.measurement_date)} /><DesktopInfoRow label="Elektrodes" value={String(electrodes.length)} /><DesktopInfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} /></>) : <p className="text-sm text-muted-foreground/50">Nog geen meetsessie.</p>}
+        </DesktopSection>
+        <DesktopSection title="Rapport" action={
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/report`)}>Bekijk</Button>
             {isReportReady && <Button size="sm" onClick={() => { navigate(`/projects/${id}/report`); setTimeout(() => window.print(), 500); }}><Printer className="h-3.5 w-3.5" /></Button>}
-          </div>}>
-          {isReportReady ? (<><div className="flex items-center gap-2 mb-2"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))]" /><span className="text-sm font-medium text-foreground">Rapport gereed</span></div><p className="text-xs text-muted-foreground">{reportData?.stats.electrodeCount} elektrodes · {reportData?.stats.measurementCount} metingen · {reportData?.stats.photosCount} foto's</p></>) : (
-            <div className="flex items-center gap-2"><AlertCircle className="h-4 w-4 text-amber-500" /><span className="text-sm text-muted-foreground">Voltooi eerst de metingen</span></div>
+          </div>
+        }>
+          {isReportReady ? (
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))]" />
+              <span className="text-sm font-medium text-foreground">Gereed</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-500/70" />
+              <span className="text-sm text-muted-foreground/60">Voltooi eerst de metingen</span>
+            </div>
           )}
-        </DetailCard>
+        </DesktopSection>
         <ReadinessChecklist items={readinessItems} />
+      </div>
+
+      <div className="mt-8 flex gap-2">
+        {project.status === 'planned' ? (
+          <Button onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending || !isReportReady}><CheckCircle2 className="mr-2 h-4 w-4" /> Afronden</Button>
+        ) : (
+          <Button variant="outline" onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}><RotateCcw className="mr-2 h-4 w-4" /> Heropenen</Button>
+        )}
+        <Button variant="ghost" className="text-destructive/60" onClick={handleDelete} disabled={deleteMut.isPending}><Trash2 className="mr-2 h-4 w-4" /> Verwijderen</Button>
       </div>
     </div>
   );
 }
 
-function MobileInfoRow({ label, value }: { label: string; value?: string | null }) {
+/* ── Shared components ── */
+
+function StatusDot({ status }: { status: string }) {
   return (
-    <div className="flex items-center justify-between px-3.5 py-2">
-      <span className="text-[11px] text-muted-foreground/60 font-medium">{label}</span>
-      <span className="text-[12px] text-foreground font-medium truncate ml-4 text-right">{value || '—'}</span>
+    <div className="flex items-center gap-1.5">
+      <span className={cn(
+        'w-2 h-2 rounded-full',
+        status === 'completed' ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--status-planned)/0.4)]'
+      )} />
+      <span className="text-[11px] text-muted-foreground/50 font-medium">
+        {status === 'completed' ? 'Afgerond' : 'Gepland'}
+      </span>
     </div>
   );
 }
 
-function MobileStat({ label, value }: { label: string; value: number }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-center">
-      <p className="text-lg font-bold text-foreground tabular-nums">{value}</p>
-      <p className="text-[10px] text-muted-foreground/60 font-medium mt-0.5">{label}</p>
+    <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-muted-foreground/40 mb-2">{children}</p>
+  );
+}
+
+function SecondaryAction({ icon: Icon, label, onClick }: { icon: React.ElementType; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-card py-3 active:scale-[0.97] transition-all"
+    >
+      <Icon className="h-4 w-4 text-muted-foreground/60" />
+      <span className="text-[13px] font-medium text-foreground">{label}</span>
+    </button>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5">
+      <span className="text-[12px] text-muted-foreground/50">{label}</span>
+      <span className="text-[13px] text-foreground font-medium truncate ml-4 text-right">{value || '—'}</span>
+    </div>
+  );
+}
+
+function ProgressStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[18px] font-bold text-foreground tabular-nums">{value}</span>
+      <span className="text-[11px] text-muted-foreground/50">{label}</span>
+    </div>
+  );
+}
+
+function DesktopSection({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-border/40 bg-card p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[13px] font-semibold text-foreground">{title}</h3>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function DesktopInfoRow({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="flex items-center py-2 border-b border-border/20 last:border-0">
+      <span className="text-sm text-muted-foreground/50 w-36 shrink-0">{label}</span>
+      <span className="text-sm text-foreground">{value || '—'}</span>
     </div>
   );
 }
