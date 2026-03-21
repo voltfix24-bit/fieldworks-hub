@@ -485,12 +485,14 @@ export default function MeasurementWorkspace() {
           />
         )}
 
-        {step === 1 && !showSketch && activeElectrode && (
+        {step === 1 && !showSketch && activeElectrode && activePen && (
           <PhotoStep
             electrodeCode={activeElectrode.electrode_code}
-            fotoDisplayB64={getElektrodeFoto(activeElectrode.id).foto_display_b64}
-            fotoOverzichtB64={getElektrodeFoto(activeElectrode.id).foto_overzicht_b64}
-            onFotoChange={(field, value) => setElektrodeFoto(activeElectrode.id, field, value)}
+            displayPhotoUrl={activePen.display_photo_url}
+            overviewPhotoUrl={activePen.overview_photo_url}
+            onUpload={(type, file) => handlePhotoUpload(type, file)}
+            onRemove={(type) => updatePen.mutate({ id: activePen.id, [type]: null })}
+            uploading={uploading}
           />
         )}
 
