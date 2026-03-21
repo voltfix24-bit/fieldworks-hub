@@ -262,11 +262,38 @@ export default function MeasurementWorkspace() {
   if (projectLoading || sessionLoading) return (
     <div className="flex justify-center py-20"><GroundingLoader /></div>
   );
+  if (autoInitError) return (
+    <div className="flex justify-center py-20">
+      <div className="rounded-2xl border border-destructive/20 bg-destructive/[0.04] p-6 text-center max-w-sm mx-auto">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mx-auto mb-3 text-destructive">
+          <path d="M12 2L22 20H2L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 9V13M12 17H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <p className="text-[14px] font-semibold text-foreground mb-1">Initialisatie mislukt</p>
+        <p className="text-[12px] text-muted-foreground mb-4">Controleer je verbinding en probeer opnieuw.</p>
+        <button
+          onClick={() => { setAutoInitError(false); setAutoInitDone(false); }}
+          className="rounded-xl px-5 py-2.5 text-[13px] font-semibold text-white bg-[hsl(var(--tenant-primary,var(--primary)))] active:scale-[0.97] transition-transform"
+        >
+          Opnieuw proberen
+        </button>
+      </div>
+    </div>
+  );
   if (!project) return (
     <div className="text-center py-16">
       <p className="text-[13px] text-muted-foreground">Project niet gevonden</p>
     </div>
   );
+
+  const handleBack = () => {
+    toast({
+      title: 'Meting automatisch opgeslagen',
+      description: 'Je kunt veilig teruggaan. Alle metingen zijn bewaard.',
+      duration: 3000,
+    });
+    setTimeout(() => navigate(`/projects/${id}`), 800);
+  };
 
   const clientName = clients.find((c: any) => c.id === (session?.client_id || selectedClient))?.company_name;
   const techName = technicians.find((t: any) => t.id === (session?.technician_id || selectedTechnician))?.full_name;
