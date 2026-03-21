@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface RapportDownloadButtonProps {
   projectId: string;
+  handtekeningB64?: string | null;
   disabled?: boolean;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
@@ -14,6 +15,7 @@ interface RapportDownloadButtonProps {
 
 export function RapportDownloadButton({
   projectId,
+  handtekeningB64,
   disabled = false,
   variant = 'default',
   size = 'sm',
@@ -24,7 +26,7 @@ export function RapportDownloadButton({
 
   const handleDownload = async () => {
     try {
-      await genereerViaEdge(projectId);
+      await genereerViaEdge(projectId, handtekeningB64 ?? undefined);
       toast({
         title: 'Rapport gedownload',
         description: 'Het PDF rapport is succesvol gegenereerd.',

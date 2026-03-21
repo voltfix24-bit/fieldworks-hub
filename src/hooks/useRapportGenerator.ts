@@ -64,6 +64,7 @@ export interface RapportData {
   kalibratie_volgende?: string;
   kalibratie_instituut?: string;
   situatieschets_b64?: string;
+  handtekening_b64?: string;
   elektrodes: Elektrode[];
 }
 
@@ -137,7 +138,7 @@ export function useRapportGenerator() {
    * Genereer PDF client-side. Data wordt opgehaald via de edge function,
    * maar de PDF wordt lokaal gebouwd met jsPDF.
    */
-  const genereerViaEdge = useCallback(async (projectId: string): Promise<void> => {
+  const genereerViaEdge = useCallback(async (projectId: string, handtekeningB64?: string): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
@@ -158,6 +159,11 @@ export function useRapportGenerator() {
       const rapportData: RapportData = data?.prepared_data || data;
       if (!rapportData?.project_naam) {
         throw new Error("Geen rapportdata ontvangen");
+      }
+
+      // Attach signature if provided
+      if (handtekeningB64) {
+        rapportData.handtekening_b64 = handtekeningB64;
       }
 
       // Fetch photo URLs and convert to base64 for PDF embedding

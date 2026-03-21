@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, FileText, AlertCircle } from 'lucide-react';
@@ -11,8 +12,10 @@ import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSecti
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { RapportDownloadButton } from '@/components/report/RapportDownloadButton';
+import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 
 export default function ProjectReport() {
+  const [handtekening, setHandtekening] = useState<string | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: project, isLoading: projectLoading } = useProject(id);
@@ -124,7 +127,7 @@ export default function ProjectReport() {
           </Button>
           {isReady && (
             <>
-              <RapportDownloadButton projectId={id!} />
+              <RapportDownloadButton projectId={id!} handtekeningB64={handtekening} />
               <Button size="sm" onClick={handlePrint}>
                 <Printer className="mr-2 h-4 w-4" /> Print / PDF
               </Button>
@@ -241,9 +244,25 @@ export default function ProjectReport() {
               <div className="grid grid-cols-2 gap-8">
                 {rs.report_sign_executor !== false && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-8">Uitvoerder</p>
-                    <div className="border-b border-foreground/20 mb-1" />
-                    <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
+                    <p className="text-[10px] text-muted-foreground mb-2">Uitvoerder</p>
+                    <div className="print:hidden">
+                      <HandtekeningPad onChange={setHandtekening} breedte={400} hoogte={140} />
+                    </div>
+                    {/* Print view: show signature image if available */}
+                    <div className="hidden print:block">
+                      {handtekening ? (
+                        <img
+                          src={`data:image/png;base64,${handtekening}`}
+                          alt="Handtekening"
+                          className="w-40 h-16 object-contain"
+                        />
+                      ) : (
+                        <>
+                          <div className="border-b border-foreground/20 mb-1 mt-8" />
+                          <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
                 {rs.report_sign_reviewer === true && (
