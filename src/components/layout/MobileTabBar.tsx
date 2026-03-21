@@ -122,20 +122,26 @@ export function MobileTabBar() {
                   key={tab.key}
                   onClick={() => { setSheetOpen(false); navigate(tab.path!); }}
                   className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl',
-                    'transition-colors duration-150 min-w-[52px]',
-                    'active:scale-[0.96]',
+                    'relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl',
+                    'transition-all duration-200 min-w-[52px]',
+                    'active:scale-[0.93]',
                     isActive
                       ? 'text-[hsl(var(--tenant-primary))]'
                       : 'text-muted-foreground/50'
                   )}
                 >
+                  {/* Active indicator dot */}
+                  <span className={cn(
+                    'absolute -top-0.5 left-1/2 -translate-x-1/2 h-[3px] rounded-full bg-[hsl(var(--tenant-primary))]',
+                    'transition-all duration-300 ease-out',
+                    isActive ? 'w-4 opacity-100' : 'w-0 opacity-0'
+                  )} />
                   <Icon className={cn(
-                    'h-[18px] w-[18px] transition-colors duration-150',
-                    isActive && 'stroke-[2.2]'
+                    'h-[18px] w-[18px] transition-all duration-200',
+                    isActive ? 'stroke-[2.2] scale-110' : 'scale-100'
                   )} />
                   <span className={cn(
-                    'text-[10px] leading-tight transition-colors duration-150',
+                    'text-[10px] leading-tight transition-all duration-200',
                     isActive ? 'font-semibold' : 'font-medium'
                   )}>
                     {tab.label}
