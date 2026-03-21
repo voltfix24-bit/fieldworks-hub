@@ -122,14 +122,6 @@ export default function ProjectReport() {
 
   const showSignBlock = rs.report_sign_block === true && sec('ondertekening');
 
-  const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
-  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening();
-  const { toast } = useToast();
-  const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
-  const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>(
-    heeftOpgeslagen ? 'keuze' : 'nieuw'
-  );
-
   // Determine active signature
   const actieveHandtekening = gebruikOpgeslagen ? opgeslagenHandtekening : handtekening;
 
