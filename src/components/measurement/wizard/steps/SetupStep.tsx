@@ -15,6 +15,8 @@ interface SetupStepProps {
   setSelectedEquipment: (v: string) => void;
   notes: string;
   setNotes: (v: string) => void;
+  targetValue: string;
+  onTargetValueChange: (v: string) => void;
   clients: any[];
   technicians: any[];
   equipment: any[];
