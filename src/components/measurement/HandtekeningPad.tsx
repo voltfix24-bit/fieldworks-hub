@@ -17,6 +17,8 @@ interface Props {
   breedte?: number;
   /** Hoogte van het canvas in pixels */
   hoogte?: number;
+  /** Monteur ID voor opslag per gebruiker */
+  monteurId?: string;
   className?: string;
 }
 
