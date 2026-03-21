@@ -10,24 +10,31 @@ interface ReportHeaderProps {
 
 export function ReportHeader({ projectName, projectNumber, measurementDate, location }: ReportHeaderProps) {
   const { tenant, branding } = useTenant();
+  const rs = branding as any;
+  const reportTitle = rs?.report_title || 'Aardingsmeting Rapport';
+  const showLogo = rs?.report_show_logo !== false;
+  const logoSize = rs?.report_logo_size || 'medium';
+
+  const logoClass = logoSize === 'small' ? 'h-7' : logoSize === 'large' ? 'h-14' : 'h-10';
 
   return (
     <div className="report-header mb-8 print:mb-6">
-      {/* Top identity bar */}
       <div className="flex items-start justify-between pb-4 border-b-2" style={{ borderColor: 'hsl(var(--tenant-primary))' }}>
         <div className="flex items-center gap-3">
-          {branding?.logo_url && (
-            <img src={branding.logo_url} alt="" className="h-10 w-auto max-w-[140px] object-contain print:h-8" />
+          {showLogo && branding?.logo_url && (
+            <img src={branding.logo_url} alt="" className={`${logoClass} w-auto max-w-[160px] object-contain print:max-h-10`} />
           )}
           <span className="text-[12px] font-semibold text-foreground tracking-tight">{tenant?.company_name}</span>
         </div>
       </div>
 
-      {/* Report title */}
       <div className="mt-6 print:mt-4">
         <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-1.5" style={{ color: 'hsl(var(--tenant-primary))' }}>
-          Aardingsmeting Rapport
+          {reportTitle}
         </p>
+        {rs?.report_subtitle && (
+          <p className="text-[10px] text-muted-foreground mb-1">{rs.report_subtitle}</p>
+        )}
         <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight print:text-lg">
           {projectName}
         </h1>

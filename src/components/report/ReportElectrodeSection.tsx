@@ -129,7 +129,7 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes, show
       )}
 
       {/* Electrode-level photos */}
-      {photos.length > 0 && <ReportImageBlock images={photos} />}
+      {showPhotos && photos.length > 0 && <ReportImageBlock images={photos} />}
     </div>
   );
 }

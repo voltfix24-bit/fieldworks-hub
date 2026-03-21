@@ -2,16 +2,20 @@ import { useTenant } from '@/contexts/TenantContext';
 
 export function ReportFooter() {
   const { tenant, branding } = useTenant();
+  const rs = branding as any;
 
-  const company = branding?.footer_company_name || tenant?.company_name || '';
-  const addressParts = [branding?.footer_address, branding?.footer_city, branding?.footer_country].filter(Boolean).join(', ');
+  const company = rs?.footer_company_name || tenant?.company_name || '';
+  const addressParts = [rs?.footer_address, rs?.footer_postal_code, rs?.footer_city, rs?.footer_country].filter(Boolean).join(', ');
   const contactParts = [
-    branding?.footer_email,
-    branding?.footer_phone && `Tel. ${branding.footer_phone}`,
-    branding?.footer_website,
+    rs?.footer_email,
+    rs?.footer_phone && `Tel. ${rs.footer_phone}`,
+    rs?.footer_website,
+  ].filter(Boolean);
+  const regParts = [
+    rs?.kvk_number && `KvK: ${rs.kvk_number}`,
+    rs?.btw_number && `BTW: ${rs.btw_number}`,
   ].filter(Boolean);
 
-  // Don't render footer if no meaningful content
   if (!company && !addressParts && contactParts.length === 0) return null;
 
   return (
@@ -21,6 +25,7 @@ export function ReportFooter() {
           <p className="font-semibold text-foreground text-[10px]">{company}</p>
           {addressParts && <p>{addressParts}</p>}
           {contactParts.length > 0 && <p>{contactParts.join('  ·  ')}</p>}
+          {regParts.length > 0 && <p>{regParts.join('  ·  ')}</p>}
         </div>
         {branding?.logo_url && (
           <img src={branding.logo_url} alt="" className="h-4 w-auto opacity-15" />
