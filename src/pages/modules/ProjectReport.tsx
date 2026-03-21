@@ -358,7 +358,7 @@ export default function ProjectReport() {
                   <div>
                     <p className="text-[10px] text-muted-foreground mb-2">Uitvoerder</p>
                     <div className="print:hidden">
-                      <HandtekeningPad onChange={setHandtekening} breedte={400} hoogte={140} />
+                      <HandtekeningPad onChange={setHandtekening} breedte={400} hoogte={140} monteurId={user?.id} />
                     </div>
                     {/* Print view: show signature image if available */}
                     <div className="hidden print:block">
