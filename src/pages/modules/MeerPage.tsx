@@ -37,6 +37,22 @@ export default function MeerPage() {
   const { tenant, branding } = useTenant();
   const isMobile = useIsMobile();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'light') {
+      root.classList.remove('dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
