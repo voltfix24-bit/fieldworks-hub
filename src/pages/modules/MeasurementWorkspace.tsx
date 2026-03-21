@@ -65,6 +65,7 @@ export default function MeasurementWorkspace() {
 
   // Warning count from MeasurementStep (reported via callback)
   const [warningCount, setWarningCount] = useState(0);
+  const [rvMissing, setRvMissing] = useState(false);
 
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
