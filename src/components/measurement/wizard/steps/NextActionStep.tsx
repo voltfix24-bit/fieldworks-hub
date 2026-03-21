@@ -2,6 +2,9 @@ import { Paperclip, Save, PenTool } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
 import HandtekeningPad from '../../HandtekeningPad';
+import { useHandtekening } from '@/hooks/useHandtekening';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 interface NextActionStepProps {
   onAddElectrode: () => void;
@@ -13,6 +16,20 @@ interface NextActionStepProps {
 }
 
 export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange }: NextActionStepProps) {
+  const { user } = useAuth();
+  const { slaHandtekeningOp } = useHandtekening(user?.id);
+
+  const handleHandtekeningChange = async (base64: string | null) => {
+    onHandtekeningChange?.(base64);
+    if (base64) {
+      try {
+        await slaHandtekeningOp(base64);
+        toast({ title: 'Handtekening opgeslagen', description: 'Wordt automatisch gebruikt op de rapportpagina.' });
+      } catch {
+        // Silent fail — signature still works for current session
+      }
+    }
+  };
   return (
     <div>
       <div className={compact ? 'mb-3' : 'mb-5'}>
@@ -74,9 +91,10 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           Optioneel — wordt opgenomen in het rapport
         </p>
         <HandtekeningPad
-          onChange={onHandtekeningChange}
+          onChange={handleHandtekeningChange}
           breedte={compact ? 400 : 500}
           hoogte={compact ? 140 : 180}
+          monteurId={user?.id}
         />
       </div>
     </div>

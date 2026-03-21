@@ -17,6 +17,8 @@ interface Props {
   breedte?: number;
   /** Hoogte van het canvas in pixels */
   hoogte?: number;
+  /** Monteur ID voor opslag per gebruiker */
+  monteurId?: string;
   className?: string;
 }
 
@@ -24,6 +26,7 @@ export default function HandtekeningPad({
   onChange,
   breedte = 500,
   hoogte = 180,
+  monteurId,
   className = "",
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,7 +40,7 @@ export default function HandtekeningPad({
     slaHandtekeningOp,
     verwijderHandtekening,
     isLoading,
-  } = useHandtekening();
+  } = useHandtekening(monteurId);
 
   // ── Canvas context helpers ──
   const getCtx = () => {
