@@ -104,7 +104,6 @@ export default function ProjectForm() {
   const saving = createMut.isPending || updateMut.isPending;
   const canSubmit = form.project_number.trim() && form.project_name.trim();
 
-  /* helpers for select display */
   const clientName = activeClients.find(c => c.id === form.client_id)?.company_name;
   const techName = activeTechs.find(t => t.id === form.technician_id)?.full_name;
   const equipName = activeEquip.find(e => e.id === form.equipment_id)?.device_name;
@@ -112,27 +111,27 @@ export default function ProjectForm() {
   return (
     <div className="animate-fade-in max-w-lg mx-auto pb-28">
       {/* ───── 1. COMPACT HEADER ───── */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-5">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="h-8 w-8 rounded-full bg-secondary/60 hover:bg-secondary flex items-center justify-center transition-colors shrink-0"
+          className="h-8 w-8 rounded-full bg-foreground/[0.05] hover:bg-foreground/[0.08] flex items-center justify-center transition-colors shrink-0"
           aria-label="Terug"
         >
-          <ArrowLeft className="h-[15px] w-[15px] text-foreground/70" />
+          <ArrowLeft className="h-[15px] w-[15px] text-foreground/60" />
         </button>
         <div>
           <h1 className="text-[17px] font-semibold text-foreground leading-snug">
             {isEdit ? 'Project bewerken' : 'Nieuw project'}
           </h1>
-          <p className="text-[12px] text-muted-foreground leading-snug">
+          <p className="text-[12px] text-muted-foreground/45 leading-snug">
             {isEdit ? 'Pas de gegevens aan' : 'Vul de basis in om te starten'}
           </p>
         </div>
       </div>
 
       {/* ───── 2. MAIN FORM CARD ───── */}
-      <div className="rounded-2xl bg-card border border-border/40 overflow-hidden">
+      <div className="ios-group overflow-hidden">
 
         {/* ── SECTION A: Project ── */}
         <SectionTitle>Project</SectionTitle>
@@ -145,7 +144,7 @@ export default function ProjectForm() {
                 onChange={e => set('project_number', e.target.value)}
                 required
                 placeholder="P-2026-001"
-                className="h-10 text-[13px] font-mono bg-secondary/30 border-border/30"
+                className="h-10 text-[13px] font-mono bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
             <div>
@@ -155,7 +154,7 @@ export default function ProjectForm() {
                 onChange={e => set('project_name', e.target.value)}
                 required
                 placeholder="Naam van het project"
-                className="h-10 text-[13px] bg-secondary/30 border-border/30"
+                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
           </div>
@@ -172,7 +171,7 @@ export default function ProjectForm() {
               value={form.address_line_1}
               onChange={e => set('address_line_1', e.target.value)}
               placeholder="Hoofdstraat 12"
-              className="h-10 text-[13px] bg-secondary/30 border-border/30"
+              className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
             />
           </div>
           <div className="grid grid-cols-[100px_1fr] gap-2">
@@ -182,7 +181,7 @@ export default function ProjectForm() {
                 value={form.postal_code}
                 onChange={e => set('postal_code', e.target.value)}
                 placeholder="1234 AB"
-                className="h-10 text-[13px] bg-secondary/30 border-border/30"
+                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
             <div>
@@ -191,7 +190,7 @@ export default function ProjectForm() {
                 value={form.city}
                 onChange={e => set('city', e.target.value)}
                 placeholder="Amsterdam"
-                className="h-10 text-[13px] bg-secondary/30 border-border/30"
+                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
           </div>
@@ -201,8 +200,7 @@ export default function ProjectForm() {
 
         {/* ── SECTION C: Uitvoering ── */}
         <SectionTitle>Uitvoering</SectionTitle>
-        <div className="divide-y divide-border/20">
-          {/* Datum */}
+        <div className="divide-y divide-border/15">
           <RowField label="Datum">
             <Input
               type="date"
@@ -211,15 +209,13 @@ export default function ProjectForm() {
               className="border-0 bg-transparent h-9 text-[13px] text-right p-0 focus-visible:ring-0 shadow-none w-[130px]"
             />
           </RowField>
-
-          {/* Opdrachtgever */}
           <RowField label="Opdrachtgever">
             <Select value={form.client_id || '__none'} onValueChange={v => set('client_id', v === '__none' ? '' : v)}>
               <SelectTrigger className="border-0 bg-transparent h-9 text-[13px] shadow-none focus:ring-0 p-0 w-auto gap-1 justify-end text-right [&>svg]:hidden">
-                <span className={cn('truncate', !clientName && 'text-muted-foreground')}>
+                <span className={cn('truncate', !clientName && 'text-muted-foreground/50')}>
                   {clientName || 'Geen'}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">Geen</SelectItem>
@@ -227,15 +223,13 @@ export default function ProjectForm() {
               </SelectContent>
             </Select>
           </RowField>
-
-          {/* Monteur */}
           <RowField label="Monteur">
             <Select value={form.technician_id || '__none'} onValueChange={v => set('technician_id', v === '__none' ? '' : v)}>
               <SelectTrigger className="border-0 bg-transparent h-9 text-[13px] shadow-none focus:ring-0 p-0 w-auto gap-1 justify-end text-right [&>svg]:hidden">
-                <span className={cn('truncate', !techName && 'text-muted-foreground')}>
+                <span className={cn('truncate', !techName && 'text-muted-foreground/50')}>
                   {techName || 'Geen'}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">Geen</SelectItem>
@@ -243,15 +237,13 @@ export default function ProjectForm() {
               </SelectContent>
             </Select>
           </RowField>
-
-          {/* Apparaat */}
           <RowField label="Apparaat">
             <Select value={form.equipment_id || '__none'} onValueChange={v => set('equipment_id', v === '__none' ? '' : v)}>
               <SelectTrigger className="border-0 bg-transparent h-9 text-[13px] shadow-none focus:ring-0 p-0 w-auto gap-1 justify-end text-right [&>svg]:hidden">
-                <span className={cn('truncate', !equipName && 'text-muted-foreground')}>
+                <span className={cn('truncate', !equipName && 'text-muted-foreground/50')}>
                   {equipName || 'Geen'}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">Geen</SelectItem>
@@ -266,18 +258,18 @@ export default function ProjectForm() {
       <button
         type="button"
         onClick={() => setShowExtra(!showExtra)}
-        className="w-full flex items-center justify-between py-2.5 px-1 mt-2 group"
+        className="w-full flex items-center justify-between py-2.5 px-1 mt-3 group"
       >
-        <span className="text-[12px] text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
+        <span className="text-[12px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
           Extra gegevens
         </span>
         <ChevronRight className={cn(
-          'h-3.5 w-3.5 text-muted-foreground/25 transition-transform duration-200',
+          'h-3.5 w-3.5 text-muted-foreground/20 transition-transform duration-200',
           showExtra && 'rotate-90'
         )} />
       </button>
       {showExtra && (
-        <div className="rounded-2xl bg-card border border-border/30 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="ios-group overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="px-4 py-3 space-y-3">
             <div>
               <FieldLabel>Locatienaam</FieldLabel>
@@ -285,7 +277,7 @@ export default function ProjectForm() {
                 value={form.site_name}
                 onChange={e => set('site_name', e.target.value)}
                 placeholder="Gebouw of terrein"
-                className="h-10 text-[13px] bg-secondary/30 border-border/30"
+                className="h-10 text-[13px] bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
             <div>
@@ -294,7 +286,7 @@ export default function ProjectForm() {
                 value={form.notes}
                 onChange={e => set('notes', e.target.value)}
                 placeholder="Eventuele opmerkingen…"
-                className="text-[13px] min-h-[56px] resize-none bg-secondary/30 border-border/30"
+                className="text-[13px] min-h-[56px] resize-none bg-foreground/[0.03] border-border/20 rounded-lg"
               />
             </div>
           </div>
@@ -302,12 +294,13 @@ export default function ProjectForm() {
       )}
 
       {/* ───── 4. STICKY BOTTOM CTA ───── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pt-3 bg-gradient-to-t from-background via-background to-background/0">
+      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pt-4">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
         <Button
           type="button"
           onClick={handleSubmit}
           disabled={saving || !canSubmit}
-          className="w-full h-[50px] text-[15px] font-semibold rounded-2xl shadow-sm"
+          className="relative w-full h-[50px] text-[15px] font-semibold rounded-2xl shadow-sm"
         >
           {saving ? (
             <>
@@ -325,7 +318,7 @@ export default function ProjectForm() {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wider px-4 pt-4 pb-1.5">
+    <p className="text-[11px] font-semibold text-muted-foreground/40 uppercase tracking-wider px-4 pt-4 pb-1.5">
       {children}
     </p>
   );
@@ -333,18 +326,17 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block text-[11px] font-medium text-muted-foreground mb-1">{children}</label>
+    <label className="block text-[11px] font-medium text-muted-foreground/60 mb-1">{children}</label>
   );
 }
 
 function Divider() {
-  return <div className="mx-4 h-px bg-border/30" />;
+  return <div className="mx-4 h-px bg-border/15" />;
 }
 
-/** Apple-style inline row: label left, control right */
 function RowField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between pl-4 pr-3 min-h-[44px]">
+    <div className="flex items-center justify-between pl-4 pr-3 min-h-[44px] ios-row">
       <span className="text-[13px] text-foreground shrink-0">{label}</span>
       <div className="flex items-center justify-end min-w-0 ml-3">{children}</div>
     </div>

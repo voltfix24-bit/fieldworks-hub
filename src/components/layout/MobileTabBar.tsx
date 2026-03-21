@@ -59,21 +59,26 @@ export function MobileTabBar() {
       {/* Overlay */}
       {sheetOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md md:hidden animate-in fade-in duration-200"
           onClick={() => setSheetOpen(false)}
         />
       )}
 
       {/* Action Sheet */}
       {sheetOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden animate-in slide-in-from-bottom-2 duration-300">
-          <div className="mx-3 mb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] rounded-2xl bg-card shadow-2xl overflow-hidden">
-            <div className="px-5 pt-5 pb-3">
-              <h3 className="text-[17px] font-bold text-foreground tracking-tight">Start meting</h3>
-              <p className="text-[13px] text-muted-foreground/60 mt-0.5">Kies hoe je verder wilt gaan</p>
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden sheet-enter">
+          <div className="mx-3 mb-[calc(5rem+env(safe-area-inset-bottom,0px))] rounded-2xl glass-surface-elevated overflow-hidden">
+            {/* Handle */}
+            <div className="flex justify-center pt-2.5 pb-1">
+              <div className="w-9 h-[3px] rounded-full bg-foreground/10" />
             </div>
 
-            <div className="px-3 pb-3 space-y-0.5">
+            <div className="px-5 pt-1 pb-2">
+              <h3 className="text-[16px] font-semibold text-foreground tracking-tight">Start meting</h3>
+              <p className="text-[12px] text-muted-foreground/50 mt-0.5">Kies hoe je verder wilt gaan</p>
+            </div>
+
+            <div className="px-2 pb-2.5 space-y-px">
               <SheetAction
                 icon={Plus}
                 label="Nieuw project"
@@ -88,7 +93,7 @@ export function MobileTabBar() {
               />
               {lastProjectId && (
                 <>
-                  <div className="h-px bg-border/30 mx-3 my-1.5" />
+                  <div className="h-px bg-border/20 mx-3 my-1" />
                   <SheetAction
                     icon={RotateCcw}
                     label="Hervatten"
@@ -107,14 +112,12 @@ export function MobileTabBar() {
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         <nav
           className={cn(
-            'mx-2 mb-2 rounded-2xl',
-            'bg-card/95 backdrop-blur-2xl',
-            'shadow-[0_-2px_20px_-4px_hsl(var(--foreground)/0.06)]',
-            'safe-bottom',
-            sheetOpen && 'opacity-50 pointer-events-none'
+            'mx-2 mb-2 rounded-[22px]',
+            'glass-surface',
+            sheetOpen && 'opacity-40 pointer-events-none'
           )}
         >
-          <div className="flex items-end justify-around px-1 pt-1 pb-1.5">
+          <div className="flex items-end justify-around px-1 pt-1 pb-1.5 safe-bottom">
             {TAB_ITEMS.map((tab) => {
               const isCenter = tab.key === 'meten';
               const isActive = activeKey === tab.key;
@@ -136,20 +139,20 @@ export function MobileTabBar() {
                   key={tab.key}
                   onClick={() => { setSheetOpen(false); navigate(tab.path!); }}
                   className={cn(
-                    'relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl',
+                    'relative flex flex-col items-center justify-center gap-[3px] py-1.5 px-3 rounded-xl',
                     'transition-all duration-200 min-w-[52px]',
                     'active:scale-[0.92]',
                     isActive
                       ? 'text-foreground'
-                      : 'text-muted-foreground/40'
+                      : 'text-muted-foreground/35'
                   )}
                 >
                   <Icon className={cn(
-                    'h-[18px] w-[18px] transition-all duration-200',
-                    isActive ? 'stroke-[2.2]' : ''
+                    'h-[19px] w-[19px] transition-all duration-200',
+                    isActive ? 'stroke-[2.2]' : 'stroke-[1.6]'
                   )} />
                   <span className={cn(
-                    'text-[10px] leading-tight transition-all duration-200',
+                    'text-[10px] leading-none transition-all duration-200',
                     isActive ? 'font-semibold' : 'font-medium'
                   )}>
                     {tab.label}
@@ -175,27 +178,27 @@ function CenterAction({ isActive, onTap }: { isActive: boolean; onTap: () => voi
   };
 
   return (
-    <div className="flex flex-col items-center -mt-3 px-1 z-[60]">
+    <div className="flex flex-col items-center -mt-3.5 px-1 z-[60]">
       <button
         onClick={handleTap}
         className={cn(
-          'relative w-[44px] h-[44px] rounded-full',
+          'relative w-[46px] h-[46px] rounded-full',
           'flex items-center justify-center',
           'bg-[hsl(var(--tenant-primary))] text-white',
-          'shadow-[0_2px_12px_-2px_hsl(var(--tenant-primary)/0.4)]',
-          'transition-all duration-150',
+          'shadow-[0_2px_16px_-2px_hsl(var(--tenant-primary)/0.35)]',
+          'transition-all duration-200',
           'active:scale-[0.88]',
-          isActive && 'ring-2 ring-[hsl(var(--tenant-primary)/0.25)] ring-offset-2 ring-offset-card'
+          isActive && 'ring-[2.5px] ring-[hsl(var(--tenant-primary)/0.2)] ring-offset-2 ring-offset-transparent'
         )}
       >
         {pulse && (
-          <span className="absolute inset-0 rounded-full animate-[ping_0.4s_ease-out_forwards] bg-[hsl(var(--tenant-primary)/0.2)]" />
+          <span className="absolute inset-0 rounded-full animate-[ping_0.4s_ease-out_forwards] bg-[hsl(var(--tenant-primary)/0.15)]" />
         )}
-        <GroundingIcon size={18} />
+        <GroundingIcon size={19} />
       </button>
       <span className={cn(
-        'text-[10px] leading-tight mt-0.5 font-medium transition-colors duration-150',
-        isActive ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/40'
+        'text-[10px] leading-none mt-[3px] font-medium transition-colors duration-150',
+        isActive ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/35'
       )}>
         Meten
       </span>
@@ -210,28 +213,28 @@ function SheetAction({ icon: Icon, label, sublabel, highlight, onClick }: {
     <button
       onClick={onClick}
       className={cn(
-        'w-full flex items-center gap-3.5 px-3 py-3.5 rounded-xl active:bg-muted/60 transition-colors text-left group',
+        'w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl active:bg-foreground/[0.04] transition-colors text-left',
       )}
     >
       <div className={cn(
-        'h-9 w-9 rounded-xl flex items-center justify-center shrink-0',
-        highlight ? 'bg-[hsl(var(--tenant-primary)/0.1)]' : 'bg-muted/50'
+        'h-9 w-9 rounded-[11px] flex items-center justify-center shrink-0',
+        highlight ? 'bg-[hsl(var(--tenant-primary)/0.1)]' : 'bg-foreground/[0.04]'
       )}>
         <Icon className={cn(
-          'h-[17px] w-[17px]',
-          highlight ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/70'
+          'h-[16px] w-[16px]',
+          highlight ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/60'
         )} />
       </div>
       <div className="flex-1 min-w-0">
         <p className={cn(
-          'text-[14px] font-semibold',
+          'text-[14px] font-semibold leading-snug',
           highlight ? 'text-[hsl(var(--tenant-primary))]' : 'text-foreground'
         )}>{label}</p>
         {sublabel && (
-          <p className="text-[12px] text-muted-foreground/50 truncate mt-0.5">{sublabel}</p>
+          <p className="text-[11px] text-muted-foreground/45 truncate mt-0.5">{sublabel}</p>
         )}
       </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+      <ChevronRight className="h-4 w-4 text-muted-foreground/15 shrink-0" />
     </button>
   );
 }

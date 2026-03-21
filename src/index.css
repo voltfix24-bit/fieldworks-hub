@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=SF+Pro+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 220 8% 96%;
     --foreground: 220 14% 10%;
 
     --card: 0 0% 100%;
@@ -18,10 +18,10 @@
     --primary: 220 60% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 10% 46%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 220 8% 90%;
+    --secondary-foreground: 220 14% 10%;
 
-    --muted: 220 10% 94%;
+    --muted: 220 8% 93%;
     --muted-foreground: 220 10% 44%;
 
     --accent: 210 60% 50%;
@@ -30,11 +30,11 @@
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 91%;
-    --input: 220 10% 91%;
+    --border: 220 10% 89%;
+    --input: 220 10% 89%;
     --ring: 220 60% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
     --sidebar-background: 220 14% 10%;
     --sidebar-foreground: 220 10% 80%;
@@ -63,7 +63,19 @@
     --measure-lowest: 152 60% 42%;
     --measure-depth-bg: 220 8% 94%;
 
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    /* iOS 26 Glass tokens */
+    --glass-bg: 0 0% 100% / 0.72;
+    --glass-border: 0 0% 100% / 0.45;
+    --glass-blur: 24px;
+    --glass-shadow: 0 1px 3px 0 hsl(220 14% 10% / 0.04), 0 8px 24px -4px hsl(220 14% 10% / 0.08);
+    --glass-shadow-elevated: 0 2px 8px 0 hsl(220 14% 10% / 0.06), 0 16px 48px -8px hsl(220 14% 10% / 0.12);
+
+    /* Surface hierarchy */
+    --surface-primary: 0 0% 100%;
+    --surface-secondary: 220 8% 97%;
+    --surface-grouped: 220 8% 96%;
+
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -71,13 +83,13 @@
   .dark {
     --background: 220 14% 7%;
     --foreground: 220 8% 93%;
-    --card: 220 14% 10%;
+    --card: 220 14% 11%;
     --card-foreground: 220 8% 93%;
-    --popover: 220 14% 10%;
+    --popover: 220 14% 11%;
     --popover-foreground: 220 8% 93%;
     --primary: 220 60% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 30%;
+    --secondary: 220 10% 18%;
     --secondary-foreground: 220 8% 93%;
     --muted: 220 12% 17%;
     --muted-foreground: 220 10% 52%;
@@ -94,6 +106,12 @@
     --measure-highlight: 210 60% 50%;
     --measure-lowest: 152 60% 42%;
     --measure-depth-bg: 220 12% 17%;
+
+    --glass-bg: 220 14% 12% / 0.72;
+    --glass-border: 220 14% 20% / 0.45;
+    --surface-primary: 220 14% 11%;
+    --surface-secondary: 220 14% 9%;
+    --surface-grouped: 220 14% 7%;
   }
 }
 
@@ -142,6 +160,35 @@
     page-break-inside: avoid;
     break-inside: avoid;
   }
+
+  /* iOS 26 Glass surface */
+  .glass-surface {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+    border: 0.5px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-surface-elevated {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+    border: 0.5px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow-elevated);
+  }
+
+  /* iOS-style grouped surface */
+  .ios-group {
+    background: hsl(var(--surface-primary));
+    border-radius: var(--radius);
+  }
+
+  .ios-row {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
 }
 
 /* Grounding icon pulse */
@@ -173,11 +220,20 @@
 
 /* Wizard step transition */
 @keyframes step-fade-in {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .wizard-step-enter {
-  animation: step-fade-in 0.2s ease-out;
+  animation: step-fade-in 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Sheet slide up */
+@keyframes sheet-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.sheet-enter {
+  animation: sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* Scrollbar hide */
