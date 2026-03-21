@@ -27,12 +27,18 @@ export default function TenantOverview() {
   const save = async () => {
     if (!tenant || !name.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from('tenants').update({ company_name: name.trim() }).eq('id', tenant.id);
+    const { data, error } = await supabase
+      .from('tenants')
+      .update({ company_name: name.trim() })
+      .eq('id', tenant.id)
+      .select()
+      .single();
     if (error) {
       toast({ title: 'Opslaan mislukt', description: error.message, variant: 'destructive' });
+    } else if (!data) {
+      toast({ title: 'Opslaan mislukt', description: 'Geen wijziging doorgevoerd. Mogelijk ontbreken de juiste rechten.', variant: 'destructive' });
     } else {
       toast({ title: 'Bedrijfsnaam bijgewerkt' });
-      // Refetch tenant data to update the context
       await refetchBranding();
       setEditing(false);
     }
