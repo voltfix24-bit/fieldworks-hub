@@ -18,17 +18,23 @@ interface MeasurementStepProps {
   initializeDepthRows: (penId: string, pen: any) => void;
   compact?: boolean;
   onWarningCountChange?: (count: number) => void;
+  onRvMissingChange?: (missing: boolean) => void;
 }
 
 export function MeasurementStep({
   electrode, pens, tenantId,
   onUpdateElectrode, onAddPen, recalcRa,
   depthsInitRef, initializeDepthRows, compact,
-  onWarningCountChange,
+  onWarningCountChange, onRvMissingChange,
 }: MeasurementStepProps) {
   const showRv = pens.length > 1;
   const hasTarget = electrode.target_value != null;
-  const targetMet = hasTarget && electrode.ra_value != null && electrode.ra_value <= electrode.target_value;
+  const targetMet = hasTarget && (
+    showRv
+      ? electrode.rv_value != null && electrode.rv_value <= electrode.target_value
+      : electrode.ra_value != null && electrode.ra_value <= electrode.target_value
+  );
+  const rvMissing = showRv && (electrode.rv_value == null || electrode.rv_value === 0);
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
@@ -47,6 +53,11 @@ export function MeasurementStep({
     onWarningCountChange?.(totalWarnings);
   }, [totalWarnings, onWarningCountChange]);
 
+  // Report RV missing state to parent
+  useEffect(() => {
+    onRvMissingChange?.(rvMissing);
+  }, [rvMissing, onRvMissingChange]);
+
   useEffect(() => {
     if (pens.length > 0) {
       setExpandedPenId(pens[pens.length - 1].id);
@@ -61,48 +72,87 @@ export function MeasurementStep({
   const handleRvBlur = () => {
     const parsed = parseNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
-      onUpdateElectrode({ rv_value: parsed });
+      onUpdateElectrode({ rv_value: parsed, ra_value: null });
     }
   };
 
   return (
     <div className={cn(compact ? 'space-y-2 pb-2' : 'space-y-4 pb-24')}>
-      {/* ─── RA insight bar ─── */}
-      <div className={cn(
-        'flex items-center gap-2.5 rounded-lg border overflow-hidden',
-        compact ? 'px-3 py-2' : 'px-3.5 py-2.5',
-        electrode.ra_value != null
-          ? 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
-          : 'border-border/30 bg-card'
-      )}>
-        <GroundingIcon size={compact ? 14 : 15} className="text-[hsl(var(--tenant-primary,var(--primary))/0.7)] shrink-0" />
-        <span className={cn(
-          'uppercase tracking-widest font-bold shrink-0',
-          compact ? 'text-[10px]' : 'text-[10px]',
-          'text-muted-foreground/60'
-        )}>RA</span>
-        <span className={cn(
-          'font-bold tabular-nums leading-none',
-          compact ? 'text-[16px]' : 'text-[17px]',
-          electrode.ra_value != null ? 'text-[hsl(var(--tenant-primary,var(--primary)))]' : 'text-muted-foreground/25'
+      {/* ─── Status bar: RA or RV ─── */}
+      {!showRv ? (
+        <div className={cn(
+          'flex items-center gap-2.5 rounded-lg border overflow-hidden',
+          compact ? 'px-3 py-2' : 'px-3.5 py-2.5',
+          electrode.ra_value != null
+            ? hasTarget
+              ? targetMet
+                ? 'border-[hsl(var(--status-completed)/0.3)] bg-[hsl(var(--status-completed)/0.04)]'
+                : 'border-destructive/20 bg-destructive/[0.04]'
+              : 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
+            : 'border-border/30 bg-card'
         )}>
-          {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
-        </span>
-        {electrode.ra_value != null && (
-          <span className="text-[10px] text-muted-foreground/60 font-semibold">laagst</span>
-        )}
-        {hasTarget && (
+          <GroundingIcon size={compact ? 14 : 15} className="text-[hsl(var(--tenant-primary,var(--primary))/0.7)] shrink-0" />
+          <span className="uppercase tracking-widest font-bold shrink-0 text-[10px] text-muted-foreground/60">RA</span>
           <span className={cn(
-            'ml-auto shrink-0 px-2 py-0.5 rounded-md tabular-nums font-bold',
-            compact ? 'text-[10px]' : 'text-[12px]',
-            targetMet
-              ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
-              : 'bg-muted/30 text-muted-foreground/60'
+            'font-bold tabular-nums leading-none',
+            compact ? 'text-[16px]' : 'text-[17px]',
+            electrode.ra_value != null
+              ? hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--tenant-primary,var(--primary)))]'
+              : 'text-muted-foreground/25'
           )}>
-            ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            {electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '—'}
           </span>
-        )}
-      </div>
+          {electrode.ra_value != null && (
+            <span className="text-[10px] text-muted-foreground/60 font-semibold">laagst</span>
+          )}
+          {hasTarget && (
+            <span className={cn(
+              'ml-auto shrink-0 px-2 py-0.5 rounded-md tabular-nums font-bold',
+              compact ? 'text-[10px]' : 'text-[12px]',
+              targetMet
+                ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                : 'bg-muted/30 text-muted-foreground/60'
+            )}>
+              ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className={cn(
+          'flex items-center gap-2.5 rounded-lg border overflow-hidden',
+          compact ? 'px-3 py-2' : 'px-3.5 py-2.5',
+          rvMissing
+            ? 'border-amber-400/30 bg-amber-500/[0.04]'
+            : hasTarget
+              ? targetMet
+                ? 'border-[hsl(var(--status-completed)/0.3)] bg-[hsl(var(--status-completed)/0.04)]'
+                : 'border-destructive/20 bg-destructive/[0.04]'
+              : 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]'
+        )}>
+          <GroundingIcon size={compact ? 14 : 15} className={cn('shrink-0', rvMissing ? 'text-amber-500/70' : 'text-[hsl(var(--tenant-primary,var(--primary))/0.7)]')} />
+          <span className={cn('uppercase tracking-widest font-bold shrink-0 text-[10px]', rvMissing ? 'text-amber-600/60' : 'text-muted-foreground/60')}>RV</span>
+          <span className={cn(
+            'font-bold tabular-nums leading-none',
+            compact ? 'text-[16px]' : 'text-[17px]',
+            rvMissing
+              ? 'text-amber-600/70'
+              : hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--tenant-primary,var(--primary)))]'
+          )}>
+            {rvMissing ? 'Vul waarde in' : `${formatNlNumber(Number(electrode.rv_value))} Ω`}
+          </span>
+          {hasTarget && !rvMissing && (
+            <span className={cn(
+              'ml-auto shrink-0 px-2 py-0.5 rounded-md tabular-nums font-bold',
+              compact ? 'text-[10px]' : 'text-[12px]',
+              targetMet
+                ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                : 'bg-muted/30 text-muted-foreground/60'
+            )}>
+              ≤ {formatNlNumber(Number(electrode.target_value))} Ω
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ─── Per-pen measurement sections ─── */}
       {pens.map((pen: any, idx: number) => {
@@ -136,28 +186,35 @@ export function MeasurementStep({
 
             {isLast && showRv && (
               <div className={cn(
-                'mt-1.5 rounded-lg border border-border/30 bg-muted/8 flex items-center gap-2.5 transition-all duration-200',
-                compact ? 'px-3 py-2' : 'px-3.5 py-3'
+                'mt-2 rounded-xl border bg-card overflow-hidden',
+                compact ? 'p-3' : 'p-4',
+                rvMissing ? 'border-amber-400/30' : 'border-border/30'
               )}>
-                <GroundingIcon size={13} className="text-muted-foreground/60 shrink-0" />
-                <div className="flex flex-col gap-0 shrink-0">
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold leading-none">RV</span>
-                  <span className="text-[8px] text-muted-foreground/45 font-medium leading-tight">gekoppeld</span>
+                <label className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/60 mb-1.5 block">
+                  RV-waarde (Ω)
+                </label>
+                <div className="flex items-center gap-2">
+                  <GroundingIcon size={13} className={cn('shrink-0', rvMissing ? 'text-amber-500/60' : 'text-muted-foreground/60')} />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={rvInput}
+                    onChange={e => setRvInput(e.target.value)}
+                    onBlur={handleRvBlur}
+                    placeholder="Bijv. 1,82"
+                    className={cn(
+                      'flex-1 bg-transparent outline-none border-0 font-bold tabular-nums text-foreground',
+                      compact ? 'h-9 text-[15px]' : 'h-10 text-[16px]',
+                      'placeholder:text-muted-foreground/30'
+                    )}
+                  />
+                  <span className="text-[12px] text-muted-foreground/45 font-semibold">Ω</span>
                 </div>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={rvInput}
-                  onChange={e => setRvInput(e.target.value)}
-                  onBlur={handleRvBlur}
-                  placeholder="0,00"
-                  className={cn(
-                    'bg-transparent outline-none border-0 font-bold tabular-nums max-w-[100px] text-foreground',
-                    compact ? 'h-7 text-[14px]' : 'h-9 text-[15px]',
-                    'placeholder:text-muted-foreground/30'
-                  )}
-                />
-                <span className="text-[10px] text-muted-foreground/45 font-semibold">Ω</span>
+                {rvMissing && (
+                  <p className="text-[11px] text-amber-600 font-medium mt-1.5">
+                    Vul de RV-waarde in om door te gaan
+                  </p>
+                )}
               </div>
             )}
           </div>

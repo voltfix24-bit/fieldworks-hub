@@ -48,7 +48,7 @@ export function PenSection({ pen, electrode, onUpdate, onDelete }: PenSectionPro
   const recalcRa = useCallback((updatedMeasurements: any[]) => {
     const validValues = updatedMeasurements.filter((m: any) => m.resistance_value > 0).map((m: any) => m.resistance_value);
     const lowestResistance = validValues.length > 0 ? Math.min(...validValues) : null;
-    updateElectrode.mutate({ id: electrode.id, ra_value: lowestResistance });
+    updateElectrode.mutate({ id: electrode.id, ra_value: lowestResistance, rv_value: null });
   }, [electrode.id, updateElectrode]);
 
   const handleAddMeasurement = (depth: number, resistance: number) => {

@@ -40,7 +40,7 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
   const handleRvBlur = () => {
     const parsed = parseNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
-      onUpdate({ rv_value: parsed });
+      onUpdate({ rv_value: parsed, ra_value: null });
     }
   };
 

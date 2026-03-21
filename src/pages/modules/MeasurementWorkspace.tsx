@@ -65,6 +65,7 @@ export default function MeasurementWorkspace() {
 
   // Warning count from MeasurementStep (reported via callback)
   const [warningCount, setWarningCount] = useState(0);
+  const [rvMissing, setRvMissing] = useState(false);
 
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
@@ -236,7 +237,7 @@ export default function MeasurementWorkspace() {
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
     const validValues = updatedMeasurements.filter((m: any) => m.resistance_value > 0).map((m: any) => m.resistance_value);
     const lowestResistance = validValues.length > 0 ? Math.min(...validValues) : null;
-    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance });
+    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance, rv_value: null });
   }, [updateElectrode]);
 
   if (projectLoading || sessionLoading) return (
@@ -338,6 +339,7 @@ export default function MeasurementWorkspace() {
                 depthsInitRef={depthsInitRef}
                 initializeDepthRows={initializeDepthRows}
                 onWarningCountChange={setWarningCount}
+                onRvMissingChange={setRvMissing}
                 compact
               />
             )}
@@ -393,9 +395,10 @@ export default function MeasurementWorkspace() {
                 </button>
               ) : <div />}
               <button
-                className="ios-wizard-btn-next"
+                className={cn('ios-wizard-btn-next', rvMissing && step === 0 && 'opacity-40 pointer-events-none')}
                 onClick={() => {
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
+                  if (step === 0 && rvMissing) return;
                   setProgressionWarningDismissed(false);
                   setStep(step + 1);
                 }}
@@ -482,6 +485,7 @@ export default function MeasurementWorkspace() {
             recalcRa={recalcRa}
             depthsInitRef={depthsInitRef}
             initializeDepthRows={initializeDepthRows}
+            onRvMissingChange={setRvMissing}
           />
         )}
 
@@ -515,8 +519,9 @@ export default function MeasurementWorkspace() {
         <StickyActionBar
           showPrev={step >= 0}
           onPrev={() => setStep(step - 1)}
-          onNext={step === -1 ? handleSaveContext : () => setStep(step + 1)}
+          onNext={step === -1 ? handleSaveContext : () => { if (step === 0 && rvMissing) return; setStep(step + 1); }}
           nextLabel={step === -1 ? 'Opslaan & verder' : 'Volgende'}
+          nextDisabled={step === 0 && rvMissing}
           nextLoading={updateSession.isPending || createSession.isPending}
         />
       )}
