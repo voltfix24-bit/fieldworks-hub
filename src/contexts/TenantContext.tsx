@@ -55,15 +55,16 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   };
 
   const refetchBranding = async () => {
-    if (tenant?.id) {
-      const { data } = await supabase
-        .from('tenant_branding')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .single();
-      if (data) {
-        setBranding(data);
-        const b = data as any;
+    const tid = tenant?.id || profile?.tenant_id;
+    if (tid) {
+      const [tenantRes, brandingRes] = await Promise.all([
+        supabase.from('tenants').select('*').eq('id', tid).single(),
+        supabase.from('tenant_branding').select('*').eq('tenant_id', tid).single(),
+      ]);
+      if (tenantRes.data) setTenant(tenantRes.data);
+      if (brandingRes.data) {
+        setBranding(brandingRes.data);
+        const b = brandingRes.data as any;
         applyTenantBranding(b.primary_color, b.secondary_color, b.accent_color, b.border_radius, b.interface_density);
       }
     }
