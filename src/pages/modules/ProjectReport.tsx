@@ -123,9 +123,12 @@ export default function ProjectReport() {
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
           {isReady && (
-            <Button size="sm" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" /> Rapport exporteren
-            </Button>
+            <>
+              <RapportDownloadButton projectId={id!} />
+              <Button size="sm" onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" /> Print / PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
