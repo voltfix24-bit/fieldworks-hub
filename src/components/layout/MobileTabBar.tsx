@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, CalendarDays, FolderOpen, MoreHorizontal, Plus, RotateCcw, Search } from 'lucide-react';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 const TAB_ITEMS = [
   { key: 'start', label: 'Start', icon: Home, path: '/dashboard' },
