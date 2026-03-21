@@ -15,6 +15,7 @@ interface RapportDownloadButtonProps {
 
 export function RapportDownloadButton({
   projectId,
+  handtekeningB64,
   disabled = false,
   variant = 'default',
   size = 'sm',
