@@ -138,7 +138,7 @@ export function useRapportGenerator() {
    * Genereer PDF client-side. Data wordt opgehaald via de edge function,
    * maar de PDF wordt lokaal gebouwd met jsPDF.
    */
-  const genereerViaEdge = useCallback(async (projectId: string): Promise<void> => {
+  const genereerViaEdge = useCallback(async (projectId: string, handtekeningB64?: string): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
