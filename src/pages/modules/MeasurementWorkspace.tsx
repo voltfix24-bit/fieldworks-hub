@@ -86,16 +86,7 @@ export default function MeasurementWorkspace() {
   const [autoInitDone, setAutoInitDone] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
-  const [elektrodeFotos, setElektrodeFotos] = useState<Record<string, { foto_display_b64: string | null; foto_overzicht_b64: string | null }>>({});
   const depthsInitRef = useRef<Set<string>>(new Set());
-
-  const getElektrodeFoto = (electrodeId: string) => elektrodeFotos[electrodeId] || { foto_display_b64: null, foto_overzicht_b64: null };
-  const setElektrodeFoto = (electrodeId: string, field: 'foto_display_b64' | 'foto_overzicht_b64', value: string | null) => {
-    setElektrodeFotos(prev => ({
-      ...prev,
-      [electrodeId]: { ...getElektrodeFoto(electrodeId), ...prev[electrodeId], [field]: value },
-    }));
-  };
 
   // Sync form fields from session or project
   useEffect(() => {
