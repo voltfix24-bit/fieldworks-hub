@@ -220,17 +220,19 @@ export default function MeasurementWorkspace() {
   };
 
   const handlePhotoUpload = async (type: 'display_photo_url' | 'overview_photo_url', file: File) => {
-    if (!activePen) return;
+    // Koppel altijd aan de EERSTE pen van de actieve elektrode
+    const firstPen = pens[0];
+    if (!firstPen) return;
     setUploading(true);
     try {
-      const url = await uploadMeasurementPhoto(file, tenantId, activePen.project_id);
+      const url = await uploadMeasurementPhoto(file, tenantId, firstPen.project_id);
       try {
-        await updatePen.mutateAsync({ id: activePen.id, [type]: url });
+        await updatePen.mutateAsync({ id: firstPen.id, [type]: url });
       } catch (dbErr: any) {
-        toast({ variant: 'destructive', title: 'Database-update mislukt', description: dbErr?.message || 'Foto is geüpload maar kon niet aan de pen worden gekoppeld.' });
+        toast({ variant: 'destructive', title: 'Database-update mislukt', description: dbErr?.message || 'Foto geüpload maar koppeling mislukt.' });
       }
     } catch (uploadErr: any) {
-      toast({ variant: 'destructive', title: 'Upload mislukt', description: uploadErr?.message || 'Het bestand kon niet worden opgeslagen. Controleer je verbinding en probeer opnieuw.' });
+      toast({ variant: 'destructive', title: 'Upload mislukt', description: uploadErr?.message || 'Controleer je verbinding en probeer opnieuw.' });
     } finally { setUploading(false); }
   };
 
