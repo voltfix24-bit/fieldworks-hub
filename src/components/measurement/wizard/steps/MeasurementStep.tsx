@@ -38,6 +38,7 @@ export function MeasurementStep({
 
   const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
+  const [targetInput, setTargetInput] = useState('');
   const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
 
   const handlePenWarnings = useCallback((penId: string, count: number) => {
