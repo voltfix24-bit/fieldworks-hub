@@ -10,6 +10,7 @@ interface PhotoStepProps {
   onRemoveOverview: () => void;
   uploading: boolean;
   penCode: string;
+  electrodeCode?: string;
   compact?: boolean;
 }
 
