@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Upload, Trash2, Loader2 } from 'lucide-react';
+import { Building2, Upload, Trash2, Loader2, Sparkles } from 'lucide-react';
 
 interface LogoFieldProps {
   label: string;
@@ -14,9 +14,11 @@ interface LogoFieldProps {
   onChange: (url: string) => void;
   tenantId: string;
   storagePath: string;
+  /** If true, show as derived/auto-filled */
+  isDerived?: boolean;
 }
 
-function LogoField({ label, hint, value, onChange, tenantId, storagePath }: LogoFieldProps) {
+function LogoField({ label, hint, value, onChange, tenantId, storagePath, isDerived }: LogoFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -58,13 +60,20 @@ function LogoField({ label, hint, value, onChange, tenantId, storagePath }: Logo
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground">{label}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-medium text-foreground">{label}</p>
+          {isDerived && value && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] text-[hsl(var(--tenant-primary,var(--primary))/0.6)] font-medium">
+              Auto
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">{hint}</p>
         <div className="flex gap-2 mt-1.5">
           <Label htmlFor={`logo-${storagePath}`}
             className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-md text-xs font-medium transition-colors">
             {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
-            {uploading ? 'Uploaden...' : 'Uploaden'}
+            {uploading ? 'Uploaden...' : isDerived && !value ? 'Eigen uploaden' : 'Uploaden'}
           </Label>
           {value && (
             <Button variant="ghost" size="sm" className="h-7 px-2 text-destructive hover:text-destructive" onClick={() => onChange('')}>
@@ -85,6 +94,22 @@ interface BrandTabMerkProps {
 }
 
 export function BrandTabMerk({ form, updateField, tenantId }: BrandTabMerkProps) {
+  /** When main logo changes, auto-fill empty variant slots */
+  const handleMainLogoChange = (url: string) => {
+    updateField('logo_url', url);
+    if (url) {
+      // Auto-fill other logo fields if they are empty
+      if (!form.compact_logo_url) updateField('compact_logo_url', url);
+      if (!form.dark_logo_url) updateField('dark_logo_url', url);
+      if (!form.light_logo_url) updateField('light_logo_url', url);
+    }
+  };
+
+  /** Check if a variant is using the main logo (auto-derived) */
+  const isDerived = (field: string) => {
+    return form[field] === form.logo_url && !!form.logo_url;
+  };
+
   return (
     <div className="space-y-6">
       {/* Company names */}
@@ -104,13 +129,58 @@ export function BrandTabMerk({ form, updateField, tenantId }: BrandTabMerkProps)
 
       {/* Logos */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">Logo's</h3>
-        <p className="text-xs text-muted-foreground -mt-2">PNG, JPG of SVG. Max 10MB per bestand.</p>
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Logo's</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Upload je hoofdlogo — de andere varianten worden automatisch ingevuld.
+          </p>
+        </div>
+
         <div className="space-y-4">
-          <LogoField label="Hoofdlogo" hint="Gebruikt in rapport en app" value={form.logo_url || ''} onChange={v => updateField('logo_url', v)} tenantId={tenantId} storagePath="logo" />
-          <LogoField label="Compact logo / icoon" hint="Optioneel — voor mobiele weergave" value={form.compact_logo_url || ''} onChange={v => updateField('compact_logo_url', v)} tenantId={tenantId} storagePath="compact_logo" />
-          <LogoField label="Donkere variant" hint="Optioneel — voor donkere achtergronden" value={form.dark_logo_url || ''} onChange={v => updateField('dark_logo_url', v)} tenantId={tenantId} storagePath="dark_logo" />
-          <LogoField label="Lichte variant" hint="Optioneel — voor lichte achtergronden" value={form.light_logo_url || ''} onChange={v => updateField('light_logo_url', v)} tenantId={tenantId} storagePath="light_logo" />
+          <LogoField
+            label="Hoofdlogo"
+            hint="Gebruikt in rapport en app — vult overige automatisch in"
+            value={form.logo_url || ''}
+            onChange={handleMainLogoChange}
+            tenantId={tenantId}
+            storagePath="logo"
+          />
+
+          {/* Show variant fields only after main logo is set, or if they have custom values */}
+          {(form.logo_url || form.compact_logo_url || form.dark_logo_url || form.light_logo_url) && (
+            <div className="space-y-3 pl-3 border-l-2 border-border/40">
+              <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">
+                Varianten — optioneel aanpasbaar
+              </p>
+              <LogoField
+                label="Compact logo / icoon"
+                hint="Mobiele header en kleine weergaves"
+                value={form.compact_logo_url || ''}
+                onChange={v => updateField('compact_logo_url', v)}
+                tenantId={tenantId}
+                storagePath="compact_logo"
+                isDerived={isDerived('compact_logo_url')}
+              />
+              <LogoField
+                label="Donkere variant"
+                hint="Voor donkere achtergronden"
+                value={form.dark_logo_url || ''}
+                onChange={v => updateField('dark_logo_url', v)}
+                tenantId={tenantId}
+                storagePath="dark_logo"
+                isDerived={isDerived('dark_logo_url')}
+              />
+              <LogoField
+                label="Lichte variant"
+                hint="Voor lichte achtergronden"
+                value={form.light_logo_url || ''}
+                onChange={v => updateField('light_logo_url', v)}
+                tenantId={tenantId}
+                storagePath="light_logo"
+                isDerived={isDerived('light_logo_url')}
+              />
+            </div>
+          )}
         </div>
       </div>
 
