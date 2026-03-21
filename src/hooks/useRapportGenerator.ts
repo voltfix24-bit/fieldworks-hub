@@ -161,6 +161,11 @@ export function useRapportGenerator() {
         throw new Error("Geen rapportdata ontvangen");
       }
 
+      // Attach signature if provided
+      if (handtekeningB64) {
+        rapportData.handtekening_b64 = handtekeningB64;
+      }
+
       // Fetch photo URLs and convert to base64 for PDF embedding
       await laadFotosVoorElektrodes(rapportData.elektrodes);
 
