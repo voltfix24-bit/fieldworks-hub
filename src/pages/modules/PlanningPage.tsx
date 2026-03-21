@@ -5,12 +5,12 @@ import { useProjects } from '@/hooks/use-projects';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Calendar as CalendarIcon, MapPin, FolderOpen, ChevronRight,
-  List, ChevronLeft, LayoutGrid,
+  List, ChevronLeft, LayoutGrid, Clock,
 } from 'lucide-react';
 import {
   format, parseISO, isToday, isThisWeek,
   startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay,
-  addMonths, subMonths, isSameMonth,
+  addMonths, subMonths, isSameMonth, isPast, isTomorrow,
 } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,7 @@ export default function PlanningPage() {
   const isMobile = useIsMobile();
   const [view, setView] = useState<ViewMode>('list');
   const [calMonth, setCalMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   /* ── Planned projects sorted ascending ── */
   const planned = useMemo(() =>
@@ -70,6 +71,17 @@ export default function PlanningPage() {
 
   /* offset for first day of month (Monday = 0) */
   const firstDayOffset = (getDay(startOfMonth(calMonth)) + 6) % 7;
+
+  /* Selected date projects */
+  const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+  const selectedProjects = projectsByDate.get(selectedDateKey) || [];
+
+  /* Format selected date label */
+  const getSelectedDateLabel = () => {
+    if (isToday(selectedDate)) return 'Vandaag';
+    if (isTomorrow(selectedDate)) return 'Morgen';
+    return format(selectedDate, 'EEEE d MMMM', { locale: nl });
+  };
 
   /* ── Render helpers ── */
   const renderGroup = (title: string, items: typeof planned, highlight?: boolean) => {
@@ -130,105 +142,141 @@ export default function PlanningPage() {
 
       {/* ── CALENDAR VIEW ── */}
       {view === 'calendar' && (
-        <div className="space-y-3">
-          {/* Month navigation */}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalMonth(m => subMonths(m, 1))}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h3 className="text-[14px] font-semibold text-foreground capitalize">
-              {format(calMonth, 'MMMM yyyy', { locale: nl })}
-            </h3>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalMonth(m => addMonths(m, 1))}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="space-y-4">
+          {/* Calendar card */}
+          <div className="bg-card rounded-2xl border border-border/40 shadow-sm overflow-hidden">
+            {/* Month navigation */}
+            <div className="flex items-center justify-between px-4 py-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hover:bg-muted/60"
+                onClick={() => setCalMonth(m => subMonths(m, 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <button
+                onClick={() => { setCalMonth(new Date()); setSelectedDate(new Date()); }}
+                className="text-[15px] font-semibold text-foreground capitalize hover:text-[hsl(var(--tenant-primary,var(--primary)))] transition-colors"
+              >
+                {format(calMonth, 'MMMM yyyy', { locale: nl })}
+              </button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hover:bg-muted/60"
+                onClick={() => setCalMonth(m => addMonths(m, 1))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
 
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-px">
-            {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(d => (
-              <div key={d} className="text-center text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50 py-1.5">
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Day cells */}
-          <div className="grid grid-cols-7 gap-px rounded-xl overflow-hidden border border-border/40 bg-border/30">
-            {/* Empty cells for offset */}
-            {Array.from({ length: firstDayOffset }).map((_, i) => (
-              <div key={`empty-${i}`} className="bg-muted/20 min-h-[60px] md:min-h-[80px]" />
-            ))}
-
-            {calDays.map(day => {
-              const dateKey = format(day, 'yyyy-MM-dd');
-              const dayProjects = projectsByDate.get(dateKey) || [];
-              const today = isToday(day);
-
-              return (
-                <div
-                  key={dateKey}
-                  className={cn(
-                    'bg-card min-h-[60px] md:min-h-[80px] p-1 md:p-1.5 flex flex-col transition-colors',
-                    today && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)]',
-                  )}
-                >
-                  {/* Day number */}
-                  <span className={cn(
-                    'text-[11px] font-semibold self-end rounded-full w-5 h-5 flex items-center justify-center mb-0.5',
-                    today
-                      ? 'bg-[hsl(var(--tenant-primary,var(--primary)))] text-primary-foreground'
-                      : 'text-muted-foreground/70'
-                  )}>
-                    {format(day, 'd')}
-                  </span>
-
-                  {/* Project dots / pills */}
-                  <div className="flex-1 space-y-0.5 overflow-hidden">
-                    {dayProjects.slice(0, isMobile ? 2 : 3).map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => navigate(`/projects/${p.id}`)}
-                        className={cn(
-                          'w-full text-left rounded px-1 py-0.5 truncate transition-colors',
-                          'bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] hover:bg-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
-                          'text-[hsl(var(--tenant-primary,var(--primary))/0.8)]',
-                          isMobile ? 'text-[8px] leading-tight' : 'text-[10px] leading-tight font-medium'
-                        )}
-                      >
-                        {p.project_name}
-                      </button>
-                    ))}
-                    {dayProjects.length > (isMobile ? 2 : 3) && (
-                      <span className="text-[8px] text-muted-foreground/50 px-1">
-                        +{dayProjects.length - (isMobile ? 2 : 3)} meer
-                      </span>
-                    )}
-                  </div>
+            {/* Day headers */}
+            <div className="grid grid-cols-7 px-2">
+              {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(d => (
+                <div key={d} className="text-center text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/40 py-2">
+                  {d}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Day grid */}
+            <div className="grid grid-cols-7 px-2 pb-3">
+              {/* Empty cells for offset */}
+              {Array.from({ length: firstDayOffset }).map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square" />
+              ))}
+
+              {calDays.map(day => {
+                const dateKey = format(day, 'yyyy-MM-dd');
+                const dayProjects = projectsByDate.get(dateKey) || [];
+                const today = isToday(day);
+                const selected = isSameDay(day, selectedDate);
+                const hasProjects = dayProjects.length > 0;
+                const inCurrentMonth = isSameMonth(day, calMonth);
+                const past = isPast(day) && !today;
+
+                return (
+                  <button
+                    key={dateKey}
+                    onClick={() => setSelectedDate(day)}
+                    className={cn(
+                      'aspect-square flex flex-col items-center justify-center relative rounded-xl transition-all mx-0.5 my-0.5',
+                      'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      selected && !today && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.08)]',
+                      selected && today && 'bg-[hsl(var(--tenant-primary,var(--primary)))]',
+                      !selected && 'hover:bg-muted/40 active:scale-95',
+                    )}
+                  >
+                    {/* Day number */}
+                    <span className={cn(
+                      'text-[13px] font-medium leading-none',
+                      selected && today && 'text-primary-foreground font-semibold',
+                      !selected && today && 'text-[hsl(var(--tenant-primary,var(--primary)))] font-semibold',
+                      !today && !selected && past && 'text-muted-foreground/40',
+                      !today && !selected && !past && 'text-foreground',
+                      selected && !today && 'text-[hsl(var(--tenant-primary,var(--primary)))] font-semibold',
+                    )}>
+                      {format(day, 'd')}
+                    </span>
+
+                    {/* Indicator dots */}
+                    {hasProjects && (
+                      <div className="flex items-center gap-[3px] mt-1">
+                        {dayProjects.slice(0, 3).map((_, i) => (
+                          <div
+                            key={i}
+                            className={cn(
+                              'w-[4px] h-[4px] rounded-full transition-colors',
+                              selected && today
+                                ? 'bg-primary-foreground/70'
+                                : 'bg-[hsl(var(--tenant-primary,var(--primary))/0.5)]',
+                            )}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Upcoming list below calendar for context */}
-          <div className="pt-2 space-y-2">
-            <h3 className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/60 px-0.5">
-              Komende afspraken
-            </h3>
-            {planned.length === 0 && <EmptyState />}
-            <div className="space-y-1.5">
-              {planned.slice(0, 5).map(p => (
-                <ProjectRow key={p.id} project={p} isMobile={isMobile} onClick={() => navigate(`/projects/${p.id}`)} showFullDate />
-              ))}
-              {planned.length > 5 && (
-                <button
-                  onClick={() => setView('list')}
-                  className="w-full text-center py-2 text-[11px] font-semibold text-[hsl(var(--tenant-primary,var(--primary))/0.6)] hover:text-[hsl(var(--tenant-primary,var(--primary)))] transition-colors"
-                >
-                  Bekijk alle {planned.length} projecten →
-                </button>
+          {/* ── Selected date detail panel ── */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-0.5">
+              <h3 className="text-[13px] font-semibold text-foreground capitalize">
+                {getSelectedDateLabel()}
+              </h3>
+              {selectedProjects.length > 0 && (
+                <span className="text-[11px] text-muted-foreground/50 font-medium">
+                  {selectedProjects.length} {selectedProjects.length === 1 ? 'project' : 'projecten'}
+                </span>
               )}
             </div>
+
+            {selectedProjects.length === 0 ? (
+              <div className="bg-card rounded-xl border border-border/30 py-8 flex flex-col items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground/30" />
+                </div>
+                <p className="text-[12px] text-muted-foreground/50">
+                  Geen projecten op deze dag
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {selectedProjects.map(p => (
+                  <ProjectRow
+                    key={p.id}
+                    project={p}
+                    isMobile={isMobile}
+                    onClick={() => navigate(`/projects/${p.id}`)}
+                    showFullDate={false}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
