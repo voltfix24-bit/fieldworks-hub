@@ -168,6 +168,13 @@ Deno.serve(async (req) => {
       };
     }));
 
+    // Use project target_value first, then electrode, then fallback 3.00
+    const projectTargetValue = (project as any).target_value
+      ? Number((project as any).target_value)
+      : electrodes[0]?.target_value
+        ? Number(electrodes[0].target_value)
+        : 3.0;
+
     const rapportData = {
       company_name: branding?.footer_company_name || branding?.official_company_name || "Aardpen-slaan.nl",
       company_address: [branding?.footer_address, branding?.footer_postal_code, branding?.footer_city]
@@ -186,13 +193,6 @@ Deno.serve(async (req) => {
       project_naam: project.project_name,
       project_adres: adres,
       meetdatum,
-
-      // Use project target_value first, then electrode, then fallback 3.00
-      const projectTargetValue = (project as any).target_value
-        ? Number((project as any).target_value)
-        : electrodes[0]?.target_value
-          ? Number(electrodes[0].target_value)
-          : 3.0;
 
       toetswaarde: `${projectTargetValue.toFixed(2).replace(".", ",")} Ω`,
 
