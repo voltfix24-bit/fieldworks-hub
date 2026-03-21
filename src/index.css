@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=SF+Pro+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,92 +6,94 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 20% 10%;
+    --background: 0 0% 98%;
+    --foreground: 220 14% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 220 14% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 220 14% 10%;
 
-    --primary: 220 70% 45%;
+    --primary: 220 60% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 16% 47%;
+    --secondary: 220 10% 46%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 14% 93%;
-    --muted-foreground: 215 14% 46%;
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 10% 44%;
 
-    --accent: 199 89% 48%;
+    --accent: 210 60% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 89%;
-    --input: 214 20% 89%;
-    --ring: 220 70% 45%;
+    --border: 220 10% 91%;
+    --input: 220 10% 91%;
+    --ring: 220 60% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 220 20% 10%;
-    --sidebar-foreground: 210 14% 83%;
-    --sidebar-primary: 220 70% 55%;
+    --sidebar-background: 220 14% 10%;
+    --sidebar-foreground: 220 10% 80%;
+    --sidebar-primary: 220 60% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 18% 16%;
-    --sidebar-accent-foreground: 210 14% 93%;
-    --sidebar-border: 220 16% 18%;
-    --sidebar-ring: 220 70% 55%;
+    --sidebar-accent: 220 12% 16%;
+    --sidebar-accent-foreground: 220 10% 92%;
+    --sidebar-border: 220 12% 18%;
+    --sidebar-ring: 220 60% 55%;
 
-    /* Tenant-overridable CSS variables */
-    --tenant-primary: 220 70% 45%;
-    --tenant-secondary: 215 16% 47%;
-    --tenant-accent: 199 89% 48%;
+    /* Tenant-overridable */
+    --tenant-primary: 220 60% 50%;
+    --tenant-secondary: 220 10% 46%;
+    --tenant-accent: 210 60% 50%;
 
-    /* Status colors */
-    --status-planned: 215 16% 47%;
-    --status-in-progress: 199 89% 48%;
-    --status-completed: 142 71% 45%;
-    --status-archived: 215 14% 34%;
+    /* Status — muted, understated */
+    --status-planned: 220 10% 52%;
+    --status-in-progress: 210 60% 50%;
+    --status-completed: 152 60% 42%;
+    --status-archived: 220 10% 38%;
 
-    /* Measurement-specific tokens */
-    --measure-surface: 210 18% 96%;
-    --measure-row-hover: 210 16% 94%;
-    --measure-highlight: 199 89% 48%;
-    --measure-lowest: 160 84% 39%;
-    --measure-depth-bg: 210 14% 93%;
+    /* Measurement tokens */
+    --measure-surface: 220 8% 97%;
+    --measure-row-hover: 220 8% 95%;
+    --measure-highlight: 210 60% 50%;
+    --measure-lowest: 152 60% 42%;
+    --measure-depth-bg: 220 8% 94%;
 
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .dark {
-    --background: 220 20% 7%;
-    --foreground: 210 14% 93%;
-    --card: 220 18% 11%;
-    --card-foreground: 210 14% 93%;
-    --popover: 220 18% 11%;
-    --popover-foreground: 210 14% 93%;
-    --primary: 220 70% 55%;
+    --background: 220 14% 7%;
+    --foreground: 220 8% 93%;
+    --card: 220 14% 10%;
+    --card-foreground: 220 8% 93%;
+    --popover: 220 14% 10%;
+    --popover-foreground: 220 8% 93%;
+    --primary: 220 60% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 16% 30%;
-    --secondary-foreground: 210 14% 93%;
-    --muted: 220 16% 18%;
-    --muted-foreground: 215 14% 55%;
-    --accent: 199 89% 48%;
+    --secondary: 220 10% 30%;
+    --secondary-foreground: 220 8% 93%;
+    --muted: 220 12% 17%;
+    --muted-foreground: 220 10% 52%;
+    --accent: 210 60% 50%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 30%;
+    --destructive: 0 55% 35%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 16% 18%;
-    --input: 220 16% 18%;
-    --ring: 220 70% 55%;
+    --border: 220 12% 17%;
+    --input: 220 12% 17%;
+    --ring: 220 60% 58%;
 
-    --measure-surface: 220 18% 13%;
-    --measure-row-hover: 220 16% 16%;
-    --measure-highlight: 199 89% 48%;
-    --measure-lowest: 160 84% 39%;
-    --measure-depth-bg: 220 16% 18%;
+    --measure-surface: 220 14% 12%;
+    --measure-row-hover: 220 12% 15%;
+    --measure-highlight: 210 60% 50%;
+    --measure-lowest: 152 60% 42%;
+    --measure-depth-bg: 220 12% 17%;
   }
 }
 
@@ -100,7 +102,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -121,19 +123,19 @@
     color: hsl(var(--tenant-accent));
   }
   .status-planned {
-    background-color: hsl(var(--status-planned) / 0.1);
+    background-color: hsl(var(--status-planned) / 0.08);
     color: hsl(var(--status-planned));
   }
   .status-in-progress {
-    background-color: hsl(var(--status-in-progress) / 0.1);
+    background-color: hsl(var(--status-in-progress) / 0.08);
     color: hsl(var(--status-in-progress));
   }
   .status-completed {
-    background-color: hsl(var(--status-completed) / 0.1);
+    background-color: hsl(var(--status-completed) / 0.08);
     color: hsl(var(--status-completed));
   }
   .status-archived {
-    background-color: hsl(var(--status-archived) / 0.1);
+    background-color: hsl(var(--status-archived) / 0.08);
     color: hsl(var(--status-archived));
   }
   .page-break-inside-avoid {
@@ -142,47 +144,43 @@
   }
 }
 
-/* Grounding icon pulse animation */
+/* Grounding icon pulse */
 @keyframes grounding-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
-
 .grounding-pulse {
   animation: grounding-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Grounding ripple for loader */
+/* Grounding ripple loader */
 @keyframes grounding-ripple {
-  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.25); }
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.2); }
   100% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0); }
 }
-
 .grounding-ripple {
   animation: grounding-ripple 1.8s ease-out infinite;
 }
 
-/* Depth row enter animation */
+/* Depth row animation */
 @keyframes depth-row-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 .depth-row-enter {
   animation: depth-row-in 0.2s ease-out;
 }
 
-/* Step fade transition */
+/* Wizard step transition */
 @keyframes step-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 .wizard-step-enter {
-  animation: step-fade-in 0.25s ease-out;
+  animation: step-fade-in 0.2s ease-out;
 }
 
-/* Scrollbar hide utility */
+/* Scrollbar hide */
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -191,39 +189,25 @@
   display: none;
 }
 
-/* Print stylesheet for reports */
+/* Print stylesheet */
 @media print {
-  /* Reset everything */
   html, body {
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    font-size: 10.5pt !important;
+    font-size: 10pt !important;
     overflow: visible !important;
   }
 
-  /* Hide ALL app chrome aggressively */
-  [data-sidebar],
-  header,
-  nav,
-  .print\:hidden,
-  .mobile-tab-bar,
-  [role="banner"],
-  [role="navigation"],
-  .animate-fade-in > .print\\:hidden,
-  button,
-  [data-radix-popper-content-wrapper] {
+  [data-sidebar], header, nav, .print\:hidden, .mobile-tab-bar,
+  [role="banner"], [role="navigation"],
+  button, [data-radix-popper-content-wrapper] {
     display: none !important;
   }
 
-  /* Reset layout containers — eliminate min-height that causes empty pages */
-  main,
-  #root,
-  #root > div,
-  #root > div > div,
-  .animate-fade-in {
+  main, #root, #root > div, #root > div > div, .animate-fade-in {
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
@@ -233,13 +217,11 @@
     overflow: visible !important;
   }
 
-  /* A4 page setup — zero browser header/footer margins */
   @page {
     size: A4 portrait;
-    margin: 15mm 18mm 18mm 18mm;
+    margin: 14mm 16mm 16mm 16mm;
   }
 
-  /* Document container */
   .report-document {
     box-shadow: none !important;
     border: none !important;
@@ -252,62 +234,24 @@
     overflow: visible !important;
   }
 
-  /* Page break control */
-  .report-info-section,
-  .report-summary {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  /* Allow electrode sections to break if they're long (multi-pen tables) */
-  .report-electrode {
-    page-break-inside: auto;
-    break-inside: auto;
-  }
-
-  table {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  h2, h3 {
-    page-break-after: avoid;
-    break-after: avoid;
-  }
-
-  img {
-    max-width: 100% !important;
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  /* Footer stays at bottom of content, not fixed */
-  .report-footer {
-    margin-top: 24pt;
-  }
+  .report-info-section, .report-summary { page-break-inside: avoid; break-inside: avoid; }
+  .report-electrode { page-break-inside: auto; break-inside: auto; }
+  table { page-break-inside: avoid; break-inside: avoid; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  img { max-width: 100% !important; page-break-inside: avoid; break-inside: avoid; }
+  .report-footer { margin-top: 20pt; }
 }
 
-/* Safe area bottom for sticky bars on mobile */
+/* Safe area */
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Animate-in utilities */
-.animate-in {
-  animation-fill-mode: both;
-  animation-duration: 300ms;
-}
-.fade-in {
-  animation-name: fadeIn;
-}
-.slide-in-from-bottom-2 {
-  --tw-translate-y: 0.5rem;
-  animation-name: slideInFromBottom;
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* Generic animations */
+.animate-in { animation-fill-mode: both; animation-duration: 250ms; }
+.fade-in { animation-name: fadeIn; }
+.slide-in-from-bottom-2 { --tw-translate-y: 0.5rem; animation-name: slideInFromBottom; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideInFromBottom {
   from { opacity: 0; transform: translateY(var(--tw-translate-y, 0.5rem)); }
   to { opacity: 1; transform: translateY(0); }
