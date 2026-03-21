@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, CalendarDays, FolderOpen, MoreHorizontal, Plus, RotateCcw, Search } from 'lucide-react';
+import { Home, CalendarDays, FolderOpen, MoreHorizontal, Plus, RotateCcw, Search, ChevronRight } from 'lucide-react';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
+import { nl } from 'date-fns/locale';
 
 const TAB_ITEMS = [
   { key: 'start', label: 'Start', icon: Home, path: '/dashboard' },
@@ -26,12 +28,12 @@ export function MobileTabBar() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lastProjectId, setLastProjectId] = useState<string | null>(null);
   const [lastProjectName, setLastProjectName] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
 
-  // Fetch most recent project with a measurement session
   useEffect(() => {
     supabase
       .from('project_measurement_sessions')
-      .select('project_id, projects!inner(id, project_name)')
+      .select('project_id, updated_at, projects!inner(id, project_name)')
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -39,6 +41,7 @@ export function MobileTabBar() {
         if (data) {
           setLastProjectId(data.project_id);
           setLastProjectName((data as any).projects?.project_name || null);
+          setLastUpdatedAt(data.updated_at);
         }
       });
   }, [location.pathname]);
@@ -48,42 +51,61 @@ export function MobileTabBar() {
 
   const activeKey = getActiveKey(location.pathname);
 
+  const timeAgo = lastUpdatedAt
+    ? formatDistanceToNow(new Date(lastUpdatedAt), { addSuffix: true, locale: nl })
+    : null;
+
   return (
     <>
       {/* Overlay */}
       {sheetOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] md:hidden animate-in fade-in duration-200"
+          className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[3px] md:hidden animate-in fade-in duration-200"
           onClick={() => setSheetOpen(false)}
         />
       )}
 
       {/* Action Sheet */}
       {sheetOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden animate-in slide-in-from-bottom duration-250">
-          <div className="mx-3 mb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] rounded-2xl bg-card border border-border/40 shadow-xl overflow-hidden">
-            <div className="px-4 pt-3.5 pb-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Snelle actie</p>
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden animate-in slide-in-from-bottom duration-300">
+          <div className="mx-3 mb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] rounded-2xl bg-card border border-border/30 shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="px-5 pt-4 pb-3 border-b border-border/30">
+              <div className="flex items-center gap-2.5 mb-0.5">
+                <div className="h-7 w-7 rounded-lg bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center">
+                  <GroundingIcon size={14} className="text-[hsl(var(--tenant-primary))]" />
+                </div>
+                <h3 className="text-[15px] font-semibold text-foreground">Start meting</h3>
+              </div>
+              <p className="text-xs text-muted-foreground ml-[38px]">Kies hoe je verder wilt gaan</p>
             </div>
-            <div className="px-2 pb-2 space-y-0.5">
+
+            {/* Actions */}
+            <div className="p-2 space-y-0.5">
               <ActionSheetItem
                 icon={Plus}
                 label="Nieuw project aanmaken"
+                sublabel="Start een nieuw meetproject"
                 onClick={() => { setSheetOpen(false); navigate('/projects/new'); }}
               />
               <ActionSheetItem
                 icon={Search}
                 label="Bestaand project openen"
+                sublabel="Zoek en open een project"
                 onClick={() => { setSheetOpen(false); navigate('/projects'); }}
               />
-              {lastProjectId ? (
-                <ActionSheetItem
-                  icon={RotateCcw}
-                  label="Laatste meting hervatten"
-                  sublabel={lastProjectName || undefined}
-                  onClick={() => { setSheetOpen(false); navigate(`/projects/${lastProjectId}/measurements`); }}
-                />
-              ) : null}
+              {lastProjectId && (
+                <>
+                  <div className="h-px bg-border/40 mx-3 my-1" />
+                  <ActionSheetItem
+                    icon={RotateCcw}
+                    label="Laatste meting hervatten"
+                    sublabel={[lastProjectName, timeAgo].filter(Boolean).join(' · ')}
+                    highlight
+                    onClick={() => { setSheetOpen(false); navigate(`/projects/${lastProjectId}/measurements`); }}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -97,7 +119,8 @@ export function MobileTabBar() {
             'bg-card/98 backdrop-blur-2xl',
             'border border-border/30',
             'shadow-[0_-4px_24px_-6px_hsl(var(--foreground)/0.06),0_-1px_4px_-1px_hsl(var(--foreground)/0.03)]',
-            'safe-bottom'
+            'safe-bottom',
+            sheetOpen && 'opacity-60 pointer-events-none'
           )}
         >
           <div className="flex items-end justify-around px-1.5 pt-1 pb-1.5">
@@ -130,7 +153,6 @@ export function MobileTabBar() {
                       : 'text-muted-foreground/50'
                   )}
                 >
-                  {/* Active indicator dot */}
                   <span className={cn(
                     'absolute -top-0.5 left-1/2 -translate-x-1/2 h-[3px] rounded-full bg-[hsl(var(--tenant-primary))]',
                     'transition-all duration-300 ease-out',
@@ -161,14 +183,13 @@ function CenterAction({ isActive, onTap }: { isActive: boolean; onTap: () => voi
 
   const handleTap = () => {
     setPulse(true);
-    // Trigger haptic feedback if available
     if (navigator.vibrate) navigator.vibrate(8);
     onTap();
     setTimeout(() => setPulse(false), 400);
   };
 
   return (
-    <div className="flex flex-col items-center -mt-3 px-1">
+    <div className="flex flex-col items-center -mt-3 px-1 z-[60]">
       <button
         onClick={handleTap}
         className={cn(
@@ -181,7 +202,6 @@ function CenterAction({ isActive, onTap }: { isActive: boolean; onTap: () => voi
           isActive && 'ring-2 ring-[hsl(var(--tenant-primary)/0.3)] ring-offset-2 ring-offset-card'
         )}
       >
-        {/* Ripple pulse */}
         {pulse && (
           <span className="absolute inset-0 rounded-[16px] animate-[ping_0.4s_ease-out_forwards] bg-[hsl(var(--tenant-primary)/0.25)]" />
         )}
@@ -197,24 +217,42 @@ function CenterAction({ isActive, onTap }: { isActive: boolean; onTap: () => voi
   );
 }
 
-function ActionSheetItem({ icon: Icon, label, sublabel, onClick }: {
+function ActionSheetItem({ icon: Icon, label, sublabel, highlight, onClick }: {
   icon: React.ElementType;
   label: string;
   sublabel?: string;
+  highlight?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors text-left"
+      className={cn(
+        'w-full flex items-center gap-3 px-3 py-3 rounded-xl active:bg-muted/80 transition-colors text-left group',
+        highlight ? 'bg-[hsl(var(--tenant-primary)/0.04)]' : 'hover:bg-muted/50'
+      )}
     >
-      <div className="h-9 w-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center shrink-0">
-        <Icon className="h-4.5 w-4.5 text-[hsl(var(--tenant-primary))]" />
+      <div className={cn(
+        'h-10 w-10 rounded-xl flex items-center justify-center shrink-0',
+        highlight
+          ? 'bg-[hsl(var(--tenant-primary)/0.12)]'
+          : 'bg-muted/60'
+      )}>
+        <Icon className={cn(
+          'h-[18px] w-[18px]',
+          highlight ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground'
+        )} />
       </div>
-      <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
+      <div className="flex-1 min-w-0">
+        <p className={cn(
+          'text-[14px] font-medium text-foreground',
+          highlight && 'text-[hsl(var(--tenant-primary))]'
+        )}>{label}</p>
+        {sublabel && (
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{sublabel}</p>
+        )}
       </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground/30 shrink-0 group-active:translate-x-0.5 transition-transform" />
     </button>
   );
 }
