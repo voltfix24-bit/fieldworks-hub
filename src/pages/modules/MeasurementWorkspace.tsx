@@ -237,7 +237,7 @@ export default function MeasurementWorkspace() {
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
     const validValues = updatedMeasurements.filter((m: any) => m.resistance_value > 0).map((m: any) => m.resistance_value);
     const lowestResistance = validValues.length > 0 ? Math.min(...validValues) : null;
-    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance });
+    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance, rv_value: null });
   }, [updateElectrode]);
 
   if (projectLoading || sessionLoading) return (
