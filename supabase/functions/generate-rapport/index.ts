@@ -168,6 +168,13 @@ Deno.serve(async (req) => {
       };
     }));
 
+    // Use project target_value first, then electrode, then fallback 3.00
+    const projectTargetValue = (project as any).target_value
+      ? Number((project as any).target_value)
+      : electrodes[0]?.target_value
+        ? Number(electrodes[0].target_value)
+        : 3.0;
+
     const rapportData = {
       company_name: branding?.footer_company_name || branding?.official_company_name || "Aardpen-slaan.nl",
       company_address: [branding?.footer_address, branding?.footer_postal_code, branding?.footer_city]
@@ -187,26 +194,29 @@ Deno.serve(async (req) => {
       project_adres: adres,
       meetdatum,
 
-      toetswaarde: electrodes[0]?.target_value
-        ? `${Number(electrodes[0].target_value).toFixed(2).replace(".", ",")} Ω`
-        : "3,00 Ω",
+      toetswaarde: `${projectTargetValue.toFixed(2).replace(".", ",")} Ω`,
 
-      opdrachtgever_bedrijf: (client?.company_name as string) || "—",
-      opdrachtgever_contact: (client?.contact_name as string) || undefined,
+      locatienaam: project.site_name || null,
+      behuizingsnummer: (project as any).housing_number || null,
+      leidingmateriaal: (project as any).cable_material || null,
+      meetnotities: session?.measurement_notes || null,
+
+      opdrachtgever_bedrijf: (client?.company_name as string) || null,
+      opdrachtgever_contact: (client?.contact_name as string) || null,
 
       monteur: (tech?.full_name as string) || "—",
 
       apparaat_naam: equip
         ? [equip.brand, equip.device_name].filter(Boolean).join(" ")
         : "—",
-      apparaat_serie: (equip?.serial_number as string) || "—",
+      apparaat_serie: (equip?.serial_number as string) || null,
       meetmethode: "3-punts aardverspreidingsweerstand",
       kalibratie_datum: equip?.calibration_date
         ? new Date(equip.calibration_date as string).toLocaleDateString("nl-NL")
-        : "—",
+        : null,
       kalibratie_volgende: equip?.next_calibration_date
         ? new Date(equip.next_calibration_date as string).toLocaleDateString("nl-NL")
-        : undefined,
+        : null,
 
       handtekening_b64: handtekening_b64 || undefined,
 

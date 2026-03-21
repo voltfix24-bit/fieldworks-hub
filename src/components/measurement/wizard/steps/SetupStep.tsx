@@ -15,6 +15,8 @@ interface SetupStepProps {
   setSelectedEquipment: (v: string) => void;
   notes: string;
   setNotes: (v: string) => void;
+  targetValue: string;
+  onTargetValueChange: (v: string) => void;
   clients: any[];
   technicians: any[];
   equipment: any[];
@@ -27,6 +29,7 @@ export function SetupStep({
   selectedTechnician, setSelectedTechnician,
   selectedEquipment, setSelectedEquipment,
   notes, setNotes,
+  targetValue, onTargetValueChange,
   clients, technicians, equipment, compact,
 }: SetupStepProps) {
   const fieldH = compact ? 'h-8' : 'h-11';
@@ -82,6 +85,16 @@ export function SetupStep({
               {equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}{e.is_default ? ' ★' : ''}</SelectItem>)}
             </SelectContent>
           </Select>
+        </FieldGroup>
+
+        <FieldGroup label="Toetswaarde (Ω)" compact={compact}>
+          <Input
+            inputMode="decimal"
+            value={targetValue}
+            onChange={e => onTargetValueChange(e.target.value)}
+            placeholder="3.00"
+            className={cn(fieldH, fieldText)}
+          />
         </FieldGroup>
 
         <FieldGroup label="Notities" optional compact={compact}>

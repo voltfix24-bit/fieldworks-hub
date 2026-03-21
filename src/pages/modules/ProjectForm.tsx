@@ -41,6 +41,7 @@ export default function ProjectForm() {
     project_number: '', project_name: '', site_name: '',
     address_line_1: '', postal_code: '', city: '',
     planned_date: '', client_id: '', technician_id: '', equipment_id: '', notes: '',
+    target_value: '', housing_number: '', cable_material: '',
   });
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
@@ -60,6 +61,7 @@ export default function ProjectForm() {
 
   useEffect(() => {
     if (existing) {
+      const ex = existing as any;
       setForm({
         project_number: existing.project_number, project_name: existing.project_name,
         site_name: existing.site_name || '', address_line_1: existing.address_line_1 || '',
@@ -67,8 +69,11 @@ export default function ProjectForm() {
         planned_date: existing.planned_date || '', client_id: existing.client_id || '',
         technician_id: existing.technician_id || '', equipment_id: existing.equipment_id || '',
         notes: existing.notes || '',
+        target_value: ex.target_value ? String(ex.target_value) : '',
+        housing_number: ex.housing_number || '',
+        cable_material: ex.cable_material || '',
       });
-      if (existing.site_name || existing.notes) setShowExtra(true);
+      if (existing.site_name || existing.notes || ex.target_value || ex.housing_number || ex.cable_material) setShowExtra(true);
     }
   }, [existing]);
 
@@ -76,7 +81,7 @@ export default function ProjectForm() {
 
   const handleSubmit = async () => {
     if (!profile?.tenant_id) return;
-    const payload = {
+    const payload: any = {
       tenant_id: profile.tenant_id, project_number: form.project_number,
       project_name: form.project_name, site_name: form.site_name || null,
       address_line_1: form.address_line_1 || null, address_line_2: null,
@@ -84,6 +89,9 @@ export default function ProjectForm() {
       planned_date: form.planned_date || null, status: 'planned' as const,
       client_id: form.client_id || null, technician_id: form.technician_id || null,
       equipment_id: form.equipment_id || null, notes: form.notes || null,
+      target_value: parseFloat(form.target_value) || null,
+      housing_number: form.housing_number || null,
+      cable_material: form.cable_material || null,
     };
     try {
       if (isEdit) {
@@ -296,6 +304,38 @@ export default function ProjectForm() {
                   value={form.site_name}
                   onChange={e => set('site_name', e.target.value)}
                   placeholder="Gebouw of terrein"
+                />
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Toetswaarde (Ω)</span>
+                <input
+                  className="ios-form-input"
+                  inputMode="decimal"
+                  value={form.target_value}
+                  onChange={e => set('target_value', e.target.value)}
+                  placeholder="Bijv. 3.00"
+                />
+                <span className="ios-form-field-hint">Maximaal toegestane aardingsweerstand</span>
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Behuizingsnummer</span>
+                <input
+                  className="ios-form-input"
+                  value={form.housing_number}
+                  onChange={e => set('housing_number', e.target.value)}
+                  placeholder="Bijv. 7 002 525"
+                />
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Leidingmateriaal</span>
+                <input
+                  className="ios-form-input"
+                  value={form.cable_material}
+                  onChange={e => set('cable_material', e.target.value)}
+                  placeholder="Bijv. Cu 25mm²"
                 />
               </div>
               <div className="ios-form-divider" />

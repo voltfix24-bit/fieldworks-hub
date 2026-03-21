@@ -84,6 +84,7 @@ export default function MeasurementWorkspace() {
   const [selectedTechnician, setSelectedTechnician] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState('');
   const [notes, setNotes] = useState('');
+  const [targetValue, setTargetValue] = useState('3.00');
 
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
@@ -105,6 +106,7 @@ export default function MeasurementWorkspace() {
       setSelectedClient(project.client_id || '');
       setSelectedTechnician(project.technician_id || '');
       setSelectedEquipment(project.equipment_id || '');
+      setTargetValue(String((project as any).target_value || '3.00'));
     }
   }, [session?.id, project?.id]);
 
@@ -534,6 +536,7 @@ export default function MeasurementWorkspace() {
             selectedTechnician={selectedTechnician} setSelectedTechnician={setSelectedTechnician}
             selectedEquipment={selectedEquipment} setSelectedEquipment={setSelectedEquipment}
             notes={notes} setNotes={setNotes}
+            targetValue={targetValue} onTargetValueChange={setTargetValue}
             clients={clients} technicians={technicians} equipment={equipment}
           />
         )}
