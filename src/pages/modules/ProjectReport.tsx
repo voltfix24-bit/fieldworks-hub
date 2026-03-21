@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download } from 'lucide-react';
@@ -6,6 +6,7 @@ import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
 import { useTenant } from '@/contexts/TenantContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { ReportHeader } from '@/components/report/ReportHeader';
 import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
@@ -18,6 +19,7 @@ import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
+  const { user } = useAuth();
   const [handtekening, setHandtekening] = useState<string | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,10 +27,17 @@ export default function ProjectReport() {
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
-  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening();
+  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening(user?.id);
   const { toast } = useToast();
   const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
   const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>('nieuw');
+
+  // Auto-select saved signature when available
+  useEffect(() => {
+    if (heeftOpgeslagen && !handtekening) {
+      setGebruikOpgeslagen(true);
+    }
+  }, [heeftOpgeslagen]);
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
