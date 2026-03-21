@@ -186,28 +186,35 @@ export function MeasurementStep({
 
             {isLast && showRv && (
               <div className={cn(
-                'mt-1.5 rounded-lg border border-border/30 bg-muted/8 flex items-center gap-2.5 transition-all duration-200',
-                compact ? 'px-3 py-2' : 'px-3.5 py-3'
+                'mt-2 rounded-xl border bg-card overflow-hidden',
+                compact ? 'p-3' : 'p-4',
+                rvMissing ? 'border-amber-400/30' : 'border-border/30'
               )}>
-                <GroundingIcon size={13} className="text-muted-foreground/60 shrink-0" />
-                <div className="flex flex-col gap-0 shrink-0">
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold leading-none">RV</span>
-                  <span className="text-[8px] text-muted-foreground/45 font-medium leading-tight">gekoppeld</span>
+                <label className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/60 mb-1.5 block">
+                  RV-waarde (Ω)
+                </label>
+                <div className="flex items-center gap-2">
+                  <GroundingIcon size={13} className={cn('shrink-0', rvMissing ? 'text-amber-500/60' : 'text-muted-foreground/60')} />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={rvInput}
+                    onChange={e => setRvInput(e.target.value)}
+                    onBlur={handleRvBlur}
+                    placeholder="Bijv. 1,82"
+                    className={cn(
+                      'flex-1 bg-transparent outline-none border-0 font-bold tabular-nums text-foreground',
+                      compact ? 'h-9 text-[15px]' : 'h-10 text-[16px]',
+                      'placeholder:text-muted-foreground/30'
+                    )}
+                  />
+                  <span className="text-[12px] text-muted-foreground/45 font-semibold">Ω</span>
                 </div>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={rvInput}
-                  onChange={e => setRvInput(e.target.value)}
-                  onBlur={handleRvBlur}
-                  placeholder="0,00"
-                  className={cn(
-                    'bg-transparent outline-none border-0 font-bold tabular-nums max-w-[100px] text-foreground',
-                    compact ? 'h-7 text-[14px]' : 'h-9 text-[15px]',
-                    'placeholder:text-muted-foreground/30'
-                  )}
-                />
-                <span className="text-[10px] text-muted-foreground/45 font-semibold">Ω</span>
+                {rvMissing && (
+                  <p className="text-[11px] text-amber-600 font-medium mt-1.5">
+                    Vul de RV-waarde in om door te gaan
+                  </p>
+                )}
               </div>
             )}
           </div>
