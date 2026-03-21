@@ -41,27 +41,27 @@ export function AppLayout() {
   );
 }
 
-/** Slim mobile top bar with tenant logo + name */
+/** Premium mobile brand header */
 function MobileContextBar() {
   const { tenant, branding } = useTenant();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/50 bg-background shrink-0">
+    <div className="flex items-center gap-3 px-4 py-3 bg-background shrink-0 border-b border-border/30">
       {logoUrl ? (
         <img
           src={logoUrl}
           alt={tenant?.company_name || 'Logo'}
-          className="h-8 w-auto max-w-[40px] object-contain shrink-0"
+          className="h-9 w-auto max-w-[44px] object-contain shrink-0"
         />
       ) : (
-        <div className="h-8 w-8 rounded-lg bg-[hsl(var(--tenant-primary,var(--primary))/0.12)] flex items-center justify-center shrink-0">
-          <span className="text-sm font-bold text-[hsl(var(--tenant-primary,var(--primary)))]">
+        <div className="h-9 w-9 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] flex items-center justify-center shrink-0">
+          <span className="text-base font-semibold text-[hsl(var(--tenant-primary,var(--primary)))]">
             {(tenant?.company_name || '?')[0].toUpperCase()}
           </span>
         </div>
       )}
-      <span className="text-[13px] font-semibold text-[hsl(var(--tenant-primary,var(--primary)))] truncate">
+      <span className="text-sm font-medium tracking-tight text-[hsl(var(--tenant-primary,var(--primary)))] truncate">
         {tenant?.company_name || ''}
       </span>
     </div>
