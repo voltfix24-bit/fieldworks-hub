@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react';
-import { Camera, Image as ImageIcon, X, Loader2, AlertCircle } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { uploadMeasurementPhoto } from '@/hooks/use-attachments';
-import { toast } from '@/hooks/use-toast';
 
 interface PhotoStepProps {
   electrodeCode: string;
@@ -70,6 +68,7 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [localUploading, setLocalUploading] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,11 +94,17 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
           compact ? 'text-[10px]' : 'text-[11px]'
         )}>{label}</p>
         <div className="relative inline-block">
-          <img
-            src={currentUrl}
-            alt={label}
-            className="w-20 h-20 rounded-xl object-cover"
-          />
+          <button
+            type="button"
+            onClick={() => setFullscreen(true)}
+            className="rounded-xl overflow-hidden active:scale-[0.97] transition-transform"
+          >
+            <img
+              src={currentUrl}
+              alt={label}
+              className="w-20 h-20 rounded-xl object-cover"
+            />
+          </button>
           <button
             onClick={onRemove}
             disabled={isLoading}
@@ -108,6 +113,27 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
             <X className="h-3 w-3" />
           </button>
         </div>
+
+        {/* Fullscreen modal */}
+        {fullscreen && (
+          <div
+            className="fixed inset-0 z-[500] bg-black/90 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-200"
+            onClick={() => setFullscreen(false)}
+          >
+            <img
+              src={currentUrl}
+              alt={label}
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setFullscreen(false)}
+              className="absolute top-[max(16px,env(safe-area-inset-top))] right-4 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -139,8 +165,8 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
             disabled={isLoading}
             className={cn(
               'flex items-center gap-1.5 rounded-xl font-medium transition-all active:scale-[0.96]',
-              'bg-[#F4896B]/10 text-[#F4896B]',
-              compact ? 'px-3 py-2 text-[11px]' : 'px-3.5 py-2.5 text-[12px]'
+              'bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] text-[hsl(var(--tenant-primary,var(--primary)))]',
+              compact ? 'px-3 py-2 text-[11px] min-h-[44px]' : 'px-3.5 py-2.5 text-[12px] min-h-[44px]'
             )}
           >
             <Camera className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
@@ -152,8 +178,8 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
             disabled={isLoading}
             className={cn(
               'flex items-center gap-1.5 rounded-xl font-medium transition-all active:scale-[0.96]',
-              'bg-[#F4896B]/10 text-[#F4896B]',
-              compact ? 'px-3 py-2 text-[11px]' : 'px-3.5 py-2.5 text-[12px]'
+              'bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] text-[hsl(var(--tenant-primary,var(--primary)))]',
+              compact ? 'px-3 py-2 text-[11px] min-h-[44px]' : 'px-3.5 py-2.5 text-[12px] min-h-[44px]'
             )}
           >
             <ImageIcon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
