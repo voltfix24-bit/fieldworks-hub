@@ -97,4 +97,4 @@ export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(func
       <input ref={filesRef} type="file" accept="image/*,.pdf,.heic,.webp" onChange={handleFile} className="hidden" />
     </div>
   );
-}
+});
