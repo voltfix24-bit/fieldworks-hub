@@ -146,6 +146,34 @@ export default function ProjectReport() {
     }
   };
 
+  // Email state
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState(client?.email || '');
+  const [emailNaam, setEmailNaam] = useState(client?.contact_name || '');
+  const [emailSending, setEmailSending] = useState(false);
+
+  const handleSendEmail = async () => {
+    if (!emailTo) return;
+    setEmailSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-rapport', {
+        body: {
+          project_id: id,
+          handtekening_b64: actieveHandtekening ?? undefined,
+          recipient_email: emailTo,
+          recipient_name: emailNaam,
+        },
+      });
+      if (error) throw error;
+      toast({ title: 'Rapport verstuurd', description: `Verzonden naar ${emailTo}` });
+      setEmailOpen(false);
+    } catch (err) {
+      toast({ title: 'Versturen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Toolbar — hidden in print */}
