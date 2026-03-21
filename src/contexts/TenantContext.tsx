@@ -36,16 +36,19 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (tenantRes.data) setTenant(tenantRes.data);
     if (brandingRes.data) {
       setBranding(brandingRes.data);
+      const b = brandingRes.data as any;
       applyTenantBranding(
-        brandingRes.data.primary_color,
-        brandingRes.data.secondary_color,
-        brandingRes.data.accent_color
+        b.primary_color,
+        b.secondary_color,
+        b.accent_color,
+        b.border_radius,
+        b.interface_density,
       );
     } else {
       applyTenantBranding(
         DEFAULT_BRANDING.primary_color,
         DEFAULT_BRANDING.secondary_color,
-        DEFAULT_BRANDING.accent_color
+        DEFAULT_BRANDING.accent_color,
       );
     }
     setLoading(false);
