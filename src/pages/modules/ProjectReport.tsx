@@ -117,6 +117,26 @@ export default function ProjectReport() {
 
   const showSignBlock = rs.report_sign_block === true && sec('ondertekening');
 
+  const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
+  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening();
+  const { toast } = useToast();
+  const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
+  const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>(
+    heeftOpgeslagen ? 'keuze' : 'nieuw'
+  );
+
+  // Determine active signature
+  const actieveHandtekening = gebruikOpgeslagen ? opgeslagenHandtekening : handtekening;
+
+  const handleDownload = async () => {
+    try {
+      await genereerViaEdge(id!, actieveHandtekening ?? undefined);
+      toast({ title: 'Rapport gedownload', description: 'Het PDF rapport is succesvol gegenereerd.' });
+    } catch (err) {
+      toast({ title: 'Rapport generatie mislukt', description: err instanceof Error ? err.message : 'Onbekende fout', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Toolbar — hidden in print */}
@@ -129,12 +149,9 @@ export default function ProjectReport() {
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
           {isReady && (
-            <>
-              <RapportDownloadButton projectId={id!} handtekeningB64={handtekening} />
-              <Button size="sm" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" /> Print / PDF
-              </Button>
-            </>
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" /> Print / PDF
+            </Button>
           )}
         </div>
       </div>
