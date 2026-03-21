@@ -19,6 +19,8 @@ const TAB_ITEMS = [
 const HIDDEN_ROUTE_PATTERNS = [
   /\/projects\/[^/]+\/measurements/,
   /\/projects\/[^/]+\/report/,
+  /\/projects\/new$/,
+  /\/projects\/[^/]+\/edit$/,
 ];
 
 export function MobileTabBar() {

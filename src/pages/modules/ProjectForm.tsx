@@ -294,7 +294,7 @@ export default function ProjectForm() {
       )}
 
       {/* ───── 4. STICKY BOTTOM CTA ───── */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-4">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pt-4">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
         <Button
           type="button"
