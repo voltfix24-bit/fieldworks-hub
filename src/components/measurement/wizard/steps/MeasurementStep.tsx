@@ -152,7 +152,7 @@ export function MeasurementStep({
             </span>
           )}
         </div>
-      )
+      )}
 
       {/* ─── Per-pen measurement sections ─── */}
       {pens.map((pen: any, idx: number) => {
