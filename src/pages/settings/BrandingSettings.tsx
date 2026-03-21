@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTenant } from '@/contexts/TenantContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { BrandTabMerk } from '@/components/settings/BrandTabMerk';
@@ -10,13 +12,25 @@ import { BrandTabApp } from '@/components/settings/BrandTabApp';
 import { BrandTabRapport } from '@/components/settings/BrandTabRapport';
 import { BrandTabBedrijf } from '@/components/settings/BrandTabBedrijf';
 import { BrandTabExport } from '@/components/settings/BrandTabExport';
-import { Palette, Monitor, FileText, Building2, Download } from 'lucide-react';
+import { Palette, Monitor, FileText, Building2, Download, ChevronLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const SUB_TABS = [
+  { key: 'merk', label: 'Merk' },
+  { key: 'app', label: 'App' },
+  { key: 'rapport', label: 'Rapport' },
+  { key: 'bedrijf', label: 'Bedrijf' },
+  { key: 'export', label: 'Export' },
+];
 
 export default function BrandingSettings() {
   const { tenant, branding, refetchBranding } = useTenant();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Record<string, any>>({});
+  const [activeSubTab, setActiveSubTab] = useState('merk');
 
   useEffect(() => {
     if (branding) {
@@ -86,7 +100,6 @@ export default function BrandingSettings() {
     if (!tenant) return;
     setSaving(true);
 
-    // Build payload: convert empty strings to null for optional text fields
     const textNullable = [
       'logo_url', 'compact_logo_url', 'dark_logo_url', 'light_logo_url',
       'official_company_name', 'report_subtitle', 'report_header_color', 'report_footer_color',
@@ -118,6 +131,45 @@ export default function BrandingSettings() {
     }
     setSaving(false);
   };
+
+  if (isMobile) {
+    return (
+      <div className="ios-settings-page animate-fade-in">
+        {/* Sticky top nav */}
+        <div className="ios-settings-topnav">
+          <button onClick={() => navigate('/meer')} className="ios-settings-nav-back">
+            <ChevronLeft className="h-5 w-5" style={{ color: 'hsl(var(--tenant-primary))' }} />
+            <span>Meer</span>
+          </button>
+          <span className="ios-settings-nav-title">Huisstijl</span>
+          <button onClick={handleSave} disabled={saving} className="ios-settings-nav-save">
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+        </div>
+
+        {/* Sub tabs — segmented control */}
+        <div className="ios-settings-sub-tabs">
+          {SUB_TABS.map(t => (
+            <button
+              key={t.key}
+              className={cn('ios-settings-sub-tab', activeSubTab === t.key && 'active')}
+              onClick={() => setActiveSubTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="ios-settings-scroll">
+          {activeSubTab === 'merk' && <BrandTabMerk form={form} updateField={updateField} tenantId={tenant?.id || ''} />}
+          {activeSubTab === 'app' && <BrandTabApp form={form} updateField={updateField} />}
+          {activeSubTab === 'rapport' && <BrandTabRapport form={form} updateField={updateField} />}
+          {activeSubTab === 'bedrijf' && <BrandTabBedrijf form={form} updateField={updateField} />}
+          {activeSubTab === 'export' && <BrandTabExport form={form} updateField={updateField} />}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in max-w-3xl">
