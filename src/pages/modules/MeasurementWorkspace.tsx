@@ -491,13 +491,13 @@ export default function MeasurementWorkspace() {
           />
         )}
 
-        {step === 1 && !showSketch && activeElectrode && activePen && (
+        {step === 1 && !showSketch && activeElectrode && pens.length > 0 && (
           <PhotoStep
             electrodeCode={activeElectrode.electrode_code}
-            displayPhotoUrl={activePen.display_photo_url}
-            overviewPhotoUrl={activePen.overview_photo_url}
+            displayPhotoUrl={pens[0]?.display_photo_url ?? null}
+            overviewPhotoUrl={pens[0]?.overview_photo_url ?? null}
             onUpload={(type, file) => handlePhotoUpload(type, file)}
-            onRemove={(type) => updatePen.mutate({ id: activePen.id, [type]: null })}
+            onRemove={(type) => updatePen.mutate({ id: pens[0].id, [type]: null })}
             uploading={uploading}
           />
         )}
