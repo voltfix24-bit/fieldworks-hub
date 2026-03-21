@@ -18,7 +18,7 @@ export function PhotoStep({
   displayPhotoUrl, overviewPhotoUrl,
   onUploadDisplay, onUploadOverview,
   onRemoveDisplay, onRemoveOverview,
-  uploading, penCode, compact,
+  uploading, penCode, electrodeCode, compact,
 }: PhotoStepProps) {
   return (
     <div>
