@@ -28,7 +28,7 @@ export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(func
   const displayUrl = preview || currentUrl;
 
   return (
-    <div>
+    <div ref={ref}>
       <p className={cn(
         'uppercase tracking-widest font-semibold text-muted-foreground/70',
         compact ? 'text-[9px] mb-1' : 'text-[11px] mb-2'
