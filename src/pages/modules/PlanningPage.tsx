@@ -39,6 +39,18 @@ export default function PlanningPage() {
   const weekProjects = planned.filter(p => { try { const d = parseISO(p.planned_date!); return !isToday(d) && isThisWeek(d, { weekStartsOn: 1 }); } catch { return false; } });
   const laterProjects = planned.filter(p => { try { const d = parseISO(p.planned_date!); return !isToday(d) && !isThisWeek(d, { weekStartsOn: 1 }); } catch { return false; } });
 
+  const projectenPerMonteur = useMemo(() => {
+    const map = new Map<string, { tech: any; projecten: typeof planned }>();
+    planned.forEach(p => {
+      if (!p.technician_id) return;
+      if (!map.has(p.technician_id)) {
+        map.set(p.technician_id, { tech: p.technicians, projecten: [] });
+      }
+      map.get(p.technician_id)!.projecten.push(p);
+    });
+    return Array.from(map.values());
+  }, [planned]);
+
   const calDays = useMemo(() => eachDayOfInterval({ start: startOfMonth(calMonth), end: endOfMonth(calMonth) }), [calMonth]);
   const projectsByDate = useMemo(() => {
     const map = new Map<string, typeof planned>();
