@@ -156,7 +156,11 @@ export default function MeasurementWorkspace() {
           });
           setActivePenId(newPen.id);
           initializeDepthRows(newPen.id, newPen);
-        } catch (e) { console.error('Auto-init failed', e); }
+        } catch (e) {
+          console.error('Auto-init failed', e);
+          setAutoInitError(true);
+          setAutoInitDone(false);
+        }
       })();
     }
   }, [project, session, sessionLoading, projectLoading, autoInitDone]);
