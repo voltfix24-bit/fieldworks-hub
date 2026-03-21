@@ -85,6 +85,7 @@ export default function MeasurementWorkspace() {
   const [uploading, setUploading] = useState(false);
   const [autoInitDone, setAutoInitDone] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
+  const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // Sync form fields from session or project
