@@ -536,6 +536,7 @@ export default function MeasurementWorkspace() {
             selectedTechnician={selectedTechnician} setSelectedTechnician={setSelectedTechnician}
             selectedEquipment={selectedEquipment} setSelectedEquipment={setSelectedEquipment}
             notes={notes} setNotes={setNotes}
+            targetValue={targetValue} onTargetValueChange={setTargetValue}
             clients={clients} technicians={technicians} equipment={equipment}
           />
         )}
