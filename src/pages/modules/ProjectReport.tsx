@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
 import { useReportData } from '@/hooks/use-report-data';
