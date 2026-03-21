@@ -42,12 +42,7 @@ export default function Dashboard() {
       <div className="animate-fade-in">
         {/* Welcome section */}
         <div className="mb-5">
-          <div className="flex items-center gap-2 mb-1">
-            {logoUrl && (
-              <img src={logoUrl} alt="" className="h-5 w-auto max-w-[24px] object-contain opacity-60" />
-            )}
-            <span className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">
-              {tenant?.company_name}
+          <div className="mb-1">
             </span>
           </div>
           <h1 className="text-[20px] font-bold text-foreground leading-tight">
