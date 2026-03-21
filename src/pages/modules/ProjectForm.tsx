@@ -61,6 +61,7 @@ export default function ProjectForm() {
 
   useEffect(() => {
     if (existing) {
+      const ex = existing as any;
       setForm({
         project_number: existing.project_number, project_name: existing.project_name,
         site_name: existing.site_name || '', address_line_1: existing.address_line_1 || '',
@@ -68,8 +69,11 @@ export default function ProjectForm() {
         planned_date: existing.planned_date || '', client_id: existing.client_id || '',
         technician_id: existing.technician_id || '', equipment_id: existing.equipment_id || '',
         notes: existing.notes || '',
+        target_value: ex.target_value ? String(ex.target_value) : '',
+        housing_number: ex.housing_number || '',
+        cable_material: ex.cable_material || '',
       });
-      if (existing.site_name || existing.notes) setShowExtra(true);
+      if (existing.site_name || existing.notes || ex.target_value || ex.housing_number || ex.cable_material) setShowExtra(true);
     }
   }, [existing]);
 
