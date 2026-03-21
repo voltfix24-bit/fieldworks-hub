@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, FileText, AlertCircle } from 'lucide-react';
@@ -11,6 +12,7 @@ import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSecti
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { RapportDownloadButton } from '@/components/report/RapportDownloadButton';
+import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 
 export default function ProjectReport() {
   const { id } = useParams();
