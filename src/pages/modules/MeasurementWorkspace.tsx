@@ -485,6 +485,7 @@ export default function MeasurementWorkspace() {
             recalcRa={recalcRa}
             depthsInitRef={depthsInitRef}
             initializeDepthRows={initializeDepthRows}
+            onRvMissingChange={setRvMissing}
           />
         )}
 
