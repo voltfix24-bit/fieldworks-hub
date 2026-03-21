@@ -112,7 +112,7 @@ export default function ProjectDetail() {
               onClick={() => navigate(`/projects/${id}/measurements`)}
             >
               <div className="ios-detail-hero-icon">
-                <GroundingIcon size={22} color="white" />
+                <GroundingIcon size={22} />
               </div>
               <div className="ios-detail-hero-text">
                 <span className="ios-detail-hero-title">{hasSession ? 'Metingen' : 'Meten starten'}</span>
