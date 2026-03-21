@@ -117,21 +117,34 @@ Deno.serve(async (req) => {
         return { diepte: depth, waarden };
       });
 
-      // Calculate min value (RA or RV depending on pen setup)
-      const allValues = elDepths
-        .map((d) => Number(d.resistance_value))
-        .filter((v) => v > 0);
-      const minValue = allValues.length > 0 ? Math.min(...allValues) : null;
       const targetValue = el.target_value ? Number(el.target_value) : 3.0;
-      const rvOk = minValue !== null && minValue <= targetValue;
 
       // Per-electrode RA/RV: 1 pen → RA, 2+ coupled pens → RV
       const aantalPennen = elPens.length;
       const gekoppeld = el.is_coupled ?? (aantalPennen >= 2);
       const isRv = aantalPennen >= 2 && gekoppeld;
-      const eindwaarde = minValue !== null
-        ? `${minValue.toFixed(2).replace(".", ",")} Ω`
-        : "— Ω";
+
+      let eindwaarde: string;
+      let rvOk: boolean;
+
+      if (isRv) {
+        // RV — handmatig ingevuld door monteur
+        const rvVal = el.rv_value ? Number(el.rv_value) : null;
+        eindwaarde = rvVal !== null
+          ? `${rvVal.toFixed(2).replace(".", ",")} Ω`
+          : "— Ω";
+        rvOk = rvVal !== null && rvVal <= targetValue;
+      } else {
+        // RA — laagste gemeten weerstand
+        const allValues = elDepths
+          .map((d) => Number(d.resistance_value))
+          .filter((v) => v > 0);
+        const minValue = allValues.length > 0 ? Math.min(...allValues) : null;
+        eindwaarde = minValue !== null
+          ? `${minValue.toFixed(2).replace(".", ",")} Ω`
+          : "— Ω";
+        rvOk = minValue !== null && minValue <= targetValue;
+      }
 
       // Convert photo URLs to base64 (parallel)
       const fotoDisplayUrl = elPens.find((p) => p.display_photo_url)?.display_photo_url || null;
@@ -144,8 +157,7 @@ Deno.serve(async (req) => {
 
       return {
         nummer: idx + 1,
-        rv: eindwaarde,
-        ...(isRv ? {} : { ra: eindwaarde }),
+        ...(isRv ? { rv: eindwaarde } : { ra: eindwaarde }),
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
