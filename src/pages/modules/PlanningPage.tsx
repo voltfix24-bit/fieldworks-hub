@@ -401,6 +401,34 @@ export default function PlanningPage() {
           </div>
         </div>
       )}
+
+      {view === 'monteurs' && (
+        <div className="space-y-4">
+          {projectenPerMonteur.length === 0 ? (
+            <div className="text-center py-16">
+              <Users className="h-6 w-6 text-muted-foreground/15 mx-auto mb-2" />
+              <p className="text-[13px] text-muted-foreground/40">Geen geplande projecten per monteur</p>
+            </div>
+          ) : (
+            projectenPerMonteur.map(({ tech, projecten }) => (
+              <div key={tech?.full_name || 'unknown'}>
+                <div className="flex items-center gap-3 px-1 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center">
+                    <span className="text-[12px] font-bold text-[hsl(var(--tenant-primary))]">{tech?.full_name?.[0] || '?'}</span>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-foreground">{tech?.full_name || 'Onbekend'}</p>
+                    <p className="text-[11px] text-muted-foreground/40">{projecten.length} project{projecten.length !== 1 ? 'en' : ''}</p>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  {projecten.map(p => <DesktopProjectRow key={p.id} project={p} onClick={() => navigate(`/projects/${p.id}`)} />)}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
