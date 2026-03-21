@@ -1,14 +1,21 @@
 /**
- * useRapportGenerator.ts
- * React hook — genereert PDF client-side met jsPDF.
- * Fallback via edge function als RAPPORT_API_URL is geconfigureerd.
+ * useRapportGenerator.ts — v2
+ * RA/RV logica correct verwerkt:
+ * - 1 pen               → RA automatisch
+ * - 2+ gekoppelde pennen → RV automatisch
+ * - Nooit beide tegelijk per elektrode
+ * - Geen globale gebruik_rv vlag meer
  */
 
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateRapportPdf } from "@/lib/rapport-pdf-generator";
 
-// ── Types ──────────────────────────────────────────────
+// ══════════════════════════════════════════
+// TYPES
+// ══════════════════════════════════════════
+
+export type EindType = "RA" | "RV";
 
 export interface Meting {
   diepte: number;
@@ -17,10 +24,12 @@ export interface Meting {
 
 export interface Elektrode {
   nummer: number;
-  rv: string;
+  ra?: string;                  // alleen invullen als 1 pen
+  rv?: string;                  // alleen invullen als 2+ gekoppelde pennen
   norm: string;
   rv_ok: boolean;
   pen_labels: string[];
+  pennen_gekoppeld?: boolean;
   metingen: Meting[];
   foto_display_b64?: string;
   foto_overzicht_b64?: string;
@@ -34,33 +43,89 @@ export interface RapportData {
   kvk?: string;
   certificaten?: string;
   brand_color_hex?: string;
-
   doc_nummer: string;
   doc_revisie?: string;
-
   project_nr: string;
   project_naam: string;
   project_adres: string;
   meetdatum: string;
-
   toetswaarde?: string;
-  gebruik_rv?: boolean;
-
   opdrachtgever_bedrijf: string;
   opdrachtgever_contact?: string;
-
+  behuizingsnummer?: string;
+  leidingmateriaal?: string;
   monteur: string;
-
   apparaat_naam: string;
   apparaat_serie: string;
   meetmethode?: string;
   kalibratie_datum: string;
   kalibratie_volgende?: string;
-
+  kalibratie_instituut?: string;
+  situatieschets_b64?: string;
   elektrodes: Elektrode[];
 }
 
-// ── Hook ──────────────────────────────────────────────
+// ══════════════════════════════════════════
+// RA/RV BUSINESSLOGICA
+// ══════════════════════════════════════════
+
+export function leidEindTypeAf(elektrode: Elektrode): EindType {
+  const aantalPennen = elektrode.pen_labels.length;
+  const gekoppeld = elektrode.pennen_gekoppeld ?? (aantalPennen >= 2);
+  if (aantalPennen >= 2 && gekoppeld) return "RV";
+  return "RA";
+}
+
+export function getEindwaarde(elektrode: Elektrode): string {
+  const type = leidEindTypeAf(elektrode);
+  if (type === "RV") return elektrode.rv ?? "—";
+  return elektrode.ra ?? elektrode.rv ?? "—";
+}
+
+export interface ValidatieFout {
+  elektrodeNummer: number;
+  fout: string;
+}
+
+export function valideerRaRvLogica(elektrodes: Elektrode[]): ValidatieFout[] {
+  const fouten: ValidatieFout[] = [];
+
+  for (const e of elektrodes) {
+    const nr = e.nummer;
+    const type = leidEindTypeAf(e);
+
+    if (e.ra && e.rv) {
+      fouten.push({
+        elektrodeNummer: nr,
+        fout: `Elektrode ${nr}: ra én rv zijn beide ingevuld — vul slechts één in.`,
+      });
+    }
+    if (type === "RV" && !e.rv) {
+      fouten.push({
+        elektrodeNummer: nr,
+        fout: `Elektrode ${nr}: 2+ gekoppelde pennen maar geen rv-waarde ingevuld.`,
+      });
+    }
+    if (type === "RA" && !e.ra && !e.rv) {
+      fouten.push({
+        elektrodeNummer: nr,
+        fout: `Elektrode ${nr}: geen ra-waarde ingevuld.`,
+      });
+    }
+    const heeftWaarden = e.metingen.some((m) => m.waarden.some((w) => w !== null));
+    if (!heeftWaarden) {
+      fouten.push({
+        elektrodeNummer: nr,
+        fout: `Elektrode ${nr}: geen ingevulde meetwaarden.`,
+      });
+    }
+  }
+  return fouten;
+}
+
+// ══════════════════════════════════════════
+// HOOK
+// ══════════════════════════════════════════
 
 export function useRapportGenerator() {
   const [isLoading, setIsLoading] = useState(false);
@@ -75,8 +140,7 @@ export function useRapportGenerator() {
     setError(null);
 
     try {
-      // Call edge function to gather data
-      const { data, error: fnError } = await supabase.functions.invoke('generate-rapport', {
+      const { data, error: fnError } = await supabase.functions.invoke("generate-rapport", {
         body: { project_id: projectId },
       });
 
@@ -112,7 +176,9 @@ export function useRapportGenerator() {
   return { genereerViaEdge, isLoading, error };
 }
 
-// ── Helpers ──
+// ══════════════════════════════════════════
+// HULPFUNCTIES
+// ══════════════════════════════════════════
 
 function downloadBase64Pdf(b64: string, filename: string) {
   const byteChars = atob(b64);
@@ -134,18 +200,13 @@ function downloadBase64Pdf(b64: string, filename: string) {
 
 export function fotoNaarBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1]);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const r = new FileReader();
+    r.onload = () => resolve((r.result as string).split(",")[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
   });
 }
 
 export function genereerDocNummer(projectNr: string): string {
-  const jaar = new Date().getFullYear();
-  const nr = projectNr.replace(/\D/g, "").padStart(5, "0");
-  return `RPT-${jaar}-${nr}`;
+  return `RPT-${new Date().getFullYear()}-${projectNr.replace(/\D/g, "").padStart(5, "0")}`;
 }
