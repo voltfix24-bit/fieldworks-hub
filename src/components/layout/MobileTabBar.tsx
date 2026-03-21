@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
