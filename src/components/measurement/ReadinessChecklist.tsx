@@ -1,4 +1,5 @@
-import { CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Circle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ReadinessItem {
   label: string;
@@ -16,10 +17,13 @@ export function ReadinessChecklist({ items }: ReadinessChecklistProps) {
   const allMet = metCount === requiredItems.length;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+    <div className="rounded-2xl bg-card p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Gereedheid</h3>
-        <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${allMet ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+        <h3 className="text-[11px] uppercase tracking-[0.08em] font-semibold text-muted-foreground/40">Gereedheid</h3>
+        <span className={cn(
+          'text-[11px] font-semibold tabular-nums',
+          allMet ? 'text-[hsl(var(--status-completed))]' : 'text-muted-foreground/50'
+        )}>
           {allMet ? 'Gereed' : `${metCount}/${requiredItems.length}`}
         </span>
       </div>
@@ -27,15 +31,19 @@ export function ReadinessChecklist({ items }: ReadinessChecklistProps) {
         {items.map((item) => (
           <div key={item.label} className="flex items-center gap-2.5">
             {item.met ? (
-              <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-            ) : item.optional ? (
-              <Circle className="h-4 w-4 text-muted-foreground/30 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))] shrink-0" />
             ) : (
-              <AlertCircle className="h-4 w-4 text-orange-500 shrink-0" />
+              <Circle className={cn(
+                'h-4 w-4 shrink-0',
+                item.optional ? 'text-muted-foreground/20' : 'text-muted-foreground/30'
+              )} />
             )}
-            <span className={`text-sm ${item.met ? 'text-foreground' : item.optional ? 'text-muted-foreground' : 'text-foreground'}`}>
+            <span className={cn(
+              'text-[13px]',
+              item.met ? 'text-foreground' : 'text-muted-foreground/50'
+            )}>
               {item.label}
-              {item.optional && <span className="text-muted-foreground ml-1 text-xs">(optioneel)</span>}
+              {item.optional && <span className="text-muted-foreground/30 ml-1 text-[11px]">(optioneel)</span>}
             </span>
           </div>
         ))}

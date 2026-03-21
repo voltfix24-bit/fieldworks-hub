@@ -23,57 +23,44 @@ export function StickyActionBar({
 }: StickyActionBarProps) {
   if (compact) {
     return (
-      <div className={cn(
-        'shrink-0 border-t border-border/30',
-        'bg-background/95 backdrop-blur-lg',
-        'safe-bottom',
-        className
-      )}>
+      <div className={cn('shrink-0 bg-background safe-bottom', className)}>
         {warningMessage && (
-          <div className="flex items-start gap-2 px-3 py-2 bg-amber-500/5 border-b border-amber-500/15">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-500/[0.04]">
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-500/70 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold leading-snug">{warningMessage}</p>
-              <p className="text-[9px] text-amber-600/60 dark:text-amber-500/60 mt-0.5">Controleer de gemarkeerde waarden</p>
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-snug">{warningMessage}</p>
             </div>
             {onConfirmWarning && (
-              <button
-                onClick={onConfirmWarning}
-                className="text-[10px] font-bold text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded hover:bg-amber-500/10 transition-colors shrink-0"
-              >
-                Toch doorgaan
+              <button onClick={onConfirmWarning} className="text-[11px] font-semibold text-amber-600 px-2 py-0.5 rounded-lg active:bg-amber-500/10 transition-colors shrink-0">
+                Doorgaan
               </button>
             )}
           </div>
         )}
         <div className={cn(
-          'flex items-center gap-2 px-3 py-2',
+          'flex items-center gap-2 px-4 py-2.5',
           showPrev ? 'justify-between' : 'justify-end',
         )}>
           {showPrev && onPrev && (
-            <button
-              onClick={onPrev}
-              className="h-9 flex items-center gap-0.5 px-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition-colors active:scale-95 rounded-md"
-            >
+            <button onClick={onPrev} className="h-10 flex items-center gap-0.5 px-2 text-[13px] font-medium text-muted-foreground active:opacity-60 transition-opacity rounded-lg">
               <ChevronLeft className="h-4 w-4" />
               {prevLabel}
             </button>
           )}
           {onNext && (
-            <Button
+            <button
               onClick={onNext}
               disabled={nextDisabled || nextLoading}
-              size="sm"
               className={cn(
-                'h-9 px-5 text-[12px] font-bold min-w-[100px] shadow-sm',
-                'bg-[hsl(var(--tenant-primary,var(--primary)))] hover:bg-[hsl(var(--tenant-primary,var(--primary))/0.9)]',
-                'text-white'
+                'h-10 px-6 rounded-xl text-[13px] font-semibold min-w-[100px]',
+                'bg-[hsl(var(--tenant-primary))] text-white',
+                'active:scale-[0.96] transition-all disabled:opacity-40',
               )}
             >
-              {nextLoading && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
+              {nextLoading && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin inline" />}
               {nextLoading ? 'Bezig…' : nextLabel}
-              {!nextLoading && <ChevronRight className="h-3.5 w-3.5 ml-0.5" />}
-            </Button>
+              {!nextLoading && <ChevronRight className="h-3.5 w-3.5 ml-0.5 inline" />}
+            </button>
           )}
         </div>
       </div>
@@ -83,30 +70,19 @@ export function StickyActionBar({
   // Desktop
   return (
     <div className={cn(
-      'sticky bottom-0 z-30',
-      'bg-background/90 backdrop-blur-xl',
-      'border-t border-border/40',
-      '-mx-2 sm:-mx-4',
+      'sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl',
+      'border-t border-border/30 -mx-2 sm:-mx-4',
       'flex items-center gap-2 px-4 py-3 mt-6',
       showPrev ? 'justify-between' : 'justify-end',
       className
     )}>
       {showPrev && onPrev && (
-        <Button
-          variant="ghost"
-          onClick={onPrev}
-          className="h-11 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          {prevLabel}
+        <Button variant="ghost" onClick={onPrev} className="h-10 px-4 text-[13px] font-medium text-muted-foreground">
+          <ChevronLeft className="h-4 w-4 mr-1" /> {prevLabel}
         </Button>
       )}
       {onNext && (
-        <Button
-          onClick={onNext}
-          disabled={nextDisabled || nextLoading}
-          className="h-11 px-6 text-[13px] font-semibold shadow-sm min-w-[120px]"
-        >
+        <Button onClick={onNext} disabled={nextDisabled || nextLoading} className="h-10 px-6 text-[13px] font-semibold min-w-[120px]">
           {nextLoading && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
           {nextLoading ? 'Bezig…' : nextLabel}
           {!nextLoading && <ChevronRight className="h-4 w-4 ml-1" />}

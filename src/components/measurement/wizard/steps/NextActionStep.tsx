@@ -13,22 +13,22 @@ interface NextActionStepProps {
 export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact }: NextActionStepProps) {
   return (
     <div>
-      <div className={compact ? 'mb-2' : 'mb-4'}>
+      <div className={compact ? 'mb-3' : 'mb-5'}>
         <h2 className={cn(
           'font-bold text-foreground tracking-tight',
-          compact ? 'text-[14px]' : 'text-[15px]'
+          compact ? 'text-[16px]' : 'text-[17px]'
         )}>
           Volgende actie
         </h2>
         <p className={cn(
-          'text-muted-foreground/70 mt-0.5 font-medium',
-          compact ? 'text-[11px]' : 'text-[13px]'
+          'text-muted-foreground/50 mt-0.5',
+          compact ? 'text-[12px]' : 'text-[13px]'
         )}>
           Kies hoe je verder wilt gaan
         </p>
       </div>
 
-      <div className={compact ? 'space-y-1.5' : 'space-y-2'}>
+      <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
         <ActionCard
           icon={<GroundingIcon size={compact ? 16 : 18} />}
           label={`Elektrode ${nextElectrodeNumber} starten`}
@@ -64,36 +64,36 @@ function ActionCard({ icon, label, description, onClick, muted, compact, primary
     <button
       onClick={onClick}
       className={cn(
-        'w-full flex items-center gap-3 rounded-lg border transition-all duration-150',
-        'active:scale-[0.995] text-left',
-        compact ? 'p-3' : 'p-4',
+        'w-full flex items-center gap-3.5 rounded-2xl transition-all duration-150',
+        'active:scale-[0.98] text-left',
+        compact ? 'p-3.5' : 'p-4',
         muted
-          ? 'border-border/20 bg-muted/5 hover:bg-muted/15 text-muted-foreground'
+          ? 'bg-muted/20'
           : primary
-            ? 'border-[hsl(var(--tenant-primary,var(--primary))/0.2)] bg-[hsl(var(--tenant-primary,var(--primary))/0.03)] hover:bg-[hsl(var(--tenant-primary,var(--primary))/0.06)]'
-            : 'border-border/30 bg-card hover:bg-muted/15'
+            ? 'bg-[hsl(var(--tenant-primary)/0.04)]'
+            : 'bg-card'
       )}
     >
       <div className={cn(
-        'rounded-lg flex items-center justify-center shrink-0',
-        compact ? 'w-8 h-8' : 'w-10 h-10',
+        'rounded-xl flex items-center justify-center shrink-0',
+        compact ? 'w-9 h-9' : 'w-10 h-10',
         muted
-          ? 'bg-muted/30 text-muted-foreground/50'
+          ? 'bg-muted/30 text-muted-foreground/40'
           : primary
-            ? 'bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] text-[hsl(var(--tenant-primary,var(--primary)))]'
-            : 'bg-muted/20 text-foreground/60'
+            ? 'bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))]'
+            : 'bg-muted/30 text-foreground/50'
       )}>
         {icon}
       </div>
       <div className="min-w-0">
         <p className={cn(
-          'font-bold leading-snug',
-          compact ? 'text-[13px]' : 'text-[14px]',
-          muted ? 'text-muted-foreground' : 'text-foreground'
+          'font-semibold leading-snug',
+          compact ? 'text-[14px]' : 'text-[15px]',
+          muted ? 'text-muted-foreground/60' : primary ? 'text-foreground' : 'text-foreground'
         )}>{label}</p>
         <p className={cn(
-          'text-muted-foreground/50 leading-snug font-medium',
-          compact ? 'text-[10px] mt-0.5' : 'text-[11px] mt-0.5'
+          'text-muted-foreground/40 leading-snug',
+          compact ? 'text-[11px] mt-0.5' : 'text-[12px] mt-0.5'
         )}>{description}</p>
       </div>
     </button>

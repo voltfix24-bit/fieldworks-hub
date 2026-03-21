@@ -2,12 +2,8 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
@@ -23,28 +19,22 @@ export function AppHeader() {
     : user?.email?.[0]?.toUpperCase() || '?';
 
   return (
-    <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 shrink-0">
+    <header className="h-12 border-b border-border/30 bg-background flex items-center justify-between px-4 shrink-0">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-        <span className="text-sm text-muted-foreground hidden sm:inline">
-          {tenant?.company_name}
-        </span>
+        <SidebarTrigger className="text-muted-foreground/50 hover:text-foreground" />
       </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+          <button className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted/30 transition-colors">
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-muted text-foreground text-[10px] font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="hidden sm:block text-left">
-              <p className="text-sm font-medium text-foreground leading-tight">
+              <p className="text-[13px] font-medium text-foreground leading-tight">
                 {profile?.full_name || 'Gebruiker'}
-              </p>
-              <p className="text-xs text-muted-foreground leading-tight capitalize">
-                {profile?.role?.replace('_', ' ') || 'Gebruiker'}
               </p>
             </div>
           </button>
@@ -52,7 +42,7 @@ export function AppHeader() {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
             <p className="font-medium">{profile?.full_name || user?.email}</p>
-            <p className="text-xs text-muted-foreground font-normal">{user?.email}</p>
+            <p className="text-xs text-muted-foreground/50 font-normal">{user?.email}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate('/settings/profile')}>
