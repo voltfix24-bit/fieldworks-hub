@@ -22,22 +22,22 @@ export function PhotoStep({
 }: PhotoStepProps) {
   return (
     <div>
-      <div className={compact ? 'mb-2' : 'mb-4'}>
+      <div className={compact ? 'mb-3' : 'mb-5'}>
         <h2 className={cn(
           'font-bold text-foreground tracking-tight',
-          compact ? 'text-[14px]' : 'text-[15px]'
+          compact ? 'text-[16px]' : 'text-[17px]'
         )}>
-          Foto's — {electrodeCode ? `${electrodeCode} · ${penCode}` : penCode}
+          Foto's
         </h2>
         <p className={cn(
-          'text-muted-foreground/70 mt-0.5 font-medium',
-          compact ? 'text-[11px]' : 'text-[13px]'
+          'text-muted-foreground/50 mt-0.5',
+          compact ? 'text-[12px]' : 'text-[13px]'
         )}>
-          Detail- en overzichtsfoto
+          {electrodeCode ? `${electrodeCode} · ${penCode}` : penCode}
         </p>
       </div>
 
-      <div className={compact ? 'grid grid-cols-2 gap-2' : 'space-y-5'}>
+      <div className={compact ? 'grid grid-cols-2 gap-3' : 'space-y-5'}>
         <PhotoUploader
           label="Detailfoto"
           currentUrl={displayPhotoUrl}
