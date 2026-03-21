@@ -42,9 +42,6 @@ export default function Dashboard() {
       <div className="animate-fade-in">
         {/* Welcome section */}
         <div className="mb-5">
-          <div className="mb-1">
-            </span>
-          </div>
           <h1 className="text-[20px] font-bold text-foreground leading-tight">
             {greeting}{firstName ? `, ${firstName}` : ''}
           </h1>
