@@ -91,9 +91,10 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           Optioneel — wordt opgenomen in het rapport
         </p>
         <HandtekeningPad
-          onChange={onHandtekeningChange}
+          onChange={handleHandtekeningChange}
           breedte={compact ? 400 : 500}
           hoogte={compact ? 140 : 180}
+          monteurId={user?.id}
         />
       </div>
     </div>
