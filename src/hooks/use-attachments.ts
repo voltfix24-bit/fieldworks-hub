@@ -42,8 +42,10 @@ export function useDeleteAttachment() {
 }
 
 export async function uploadMeasurementPhoto(file: File, tenantId: string, projectId: string): Promise<string> {
-  const ext = file.name.split('.').pop();
-  const path = `${tenantId}/${projectId}/${crypto.randomUUID()}.${ext}`;
+  const ext = file.name.split('.').pop() || 'jpg';
+  const safeTenantId = tenantId || 'algemeen';
+  const safeProjectId = projectId || 'algemeen';
+  const path = `${safeTenantId}/${safeProjectId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from('measurement-photos').upload(path, file);
   if (error) throw error;
   const { data } = supabase.storage.from('measurement-photos').getPublicUrl(path);

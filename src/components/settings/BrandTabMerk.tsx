@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -29,16 +29,23 @@ function LogoField({ label, hint, value, onChange, tenantId, storagePath }: Logo
       return;
     }
     setUploading(true);
-    const ext = file.name.split('.').pop();
-    const path = `${tenantId}/${storagePath}_${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('tenant-assets').upload(path, file, { upsert: true });
-    if (error) {
-      toast({ title: 'Upload mislukt', description: error.message, variant: 'destructive' });
-    } else {
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const safeTenantId = tenantId || 'algemeen';
+      const path = `${safeTenantId}/${storagePath}_${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from('tenant-assets').upload(path, file);
+
+      if (error) throw error;
+
       const { data: { publicUrl } } = supabase.storage.from('tenant-assets').getPublicUrl(path);
       onChange(publicUrl);
+      toast({ title: 'Logo geüpload' });
+    } catch (error: any) {
+      toast({ title: 'Upload mislukt', description: error?.message || 'Onbekende fout bij uploaden.', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
     }
-    setUploading(false);
   };
 
   return (
