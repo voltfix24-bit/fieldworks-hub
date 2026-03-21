@@ -127,7 +127,7 @@ export default function ProjectReport() {
           </Button>
           {isReady && (
             <>
-              <RapportDownloadButton projectId={id!} />
+              <RapportDownloadButton projectId={id!} handtekeningB64={handtekening} />
               <Button size="sm" onClick={handlePrint}>
                 <Printer className="mr-2 h-4 w-4" /> Print / PDF
               </Button>
