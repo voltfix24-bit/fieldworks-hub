@@ -167,6 +167,91 @@ export default function ProjectReport() {
         </div>
       )}
 
+      {/* ─── ONDERTEKENING STAP ─── */}
+      {isReady && (
+        <div className="print:hidden max-w-lg mx-auto mb-8">
+          <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
+            <div className="flex items-center gap-2.5 mb-1">
+              <PenTool className="h-4 w-4 text-muted-foreground/50" />
+              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Ondertekening</h2>
+            </div>
+            <p className="text-[12px] text-muted-foreground/50 mb-5">Teken hieronder ter bevestiging</p>
+
+            {/* Saved signature notice */}
+            {heeftOpgeslagen && !gebruikOpgeslagen && !handtekening && (
+              <div className="rounded-xl bg-muted/20 p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium text-foreground">Opgeslagen handtekening beschikbaar</p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">Eerder opgeslagen door deze monteur</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => setGebruikOpgeslagen(true)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#F4896B]/10 text-[#F4896B] active:scale-[0.96] transition-all"
+                  >
+                    Gebruik opgeslagen
+                  </button>
+                  <button
+                    onClick={() => setGebruikOpgeslagen(false)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-muted/30 text-muted-foreground active:scale-[0.96] transition-all"
+                  >
+                    Opnieuw tekenen
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Show saved signature preview */}
+            {gebruikOpgeslagen && opgeslagenHandtekening && (
+              <div className="mb-4">
+                <div className="rounded-xl border border-border bg-white p-3">
+                  <img
+                    src={`data:image/png;base64,${opgeslagenHandtekening}`}
+                    alt="Opgeslagen handtekening"
+                    className="w-full h-28 object-contain"
+                  />
+                </div>
+                <button
+                  onClick={() => { setGebruikOpgeslagen(false); setHandtekening(null); }}
+                  className="mt-2 text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Opnieuw tekenen
+                </button>
+              </div>
+            )}
+
+            {/* Draw new signature */}
+            {!gebruikOpgeslagen && (
+              <HandtekeningPad
+                onChange={setHandtekening}
+                breedte={460}
+                hoogte={160}
+              />
+            )}
+
+            {/* Generate button */}
+            <button
+              onClick={handleDownload}
+              disabled={!actieveHandtekening || rapportLoading}
+              className={cn(
+                'w-full mt-5 flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 transition-all active:scale-[0.98]',
+                actieveHandtekening
+                  ? 'bg-[#F4896B] text-white shadow-sm'
+                  : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+              )}
+            >
+              {rapportLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {rapportLoading ? 'Genereren…' : 'Rapport genereren'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ─── REPORT DOCUMENT ─── */}
       <div className={`${!isReady ? 'print:hidden opacity-30 pointer-events-none' : ''}`}>
         <div className="report-document max-w-[210mm] mx-auto bg-white px-10 py-10 sm:px-14 sm:py-12 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
