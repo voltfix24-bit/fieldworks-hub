@@ -58,29 +58,42 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   // Depth progression validation
   const warningIds = getDepthProgressionWarnings(measurements);
 
+  // Sort measurements by depth for sequential validation
+  const sortedMeasurements = [...measurements].sort((a, b) => a.depth_meters - b.depth_meters);
+
   return (
     <div className="space-y-0 overflow-x-hidden max-w-full">
       {/* Measurement rows */}
       <div className="rounded-lg overflow-hidden border border-border/30">
-        {measurements.map((m, idx) => (
-          <DepthRowComponent
-            key={m.id}
-            row={m}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            isLowest={lowestIsValid && m.resistance_value === lowestResistance && m.resistance_value > 0}
-            disabled={disabled}
-            isEven={idx % 2 === 0}
-            compact={compact}
-            isPreset={PRESET_DEPTHS.has(m.depth_meters)}
-            hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
-          />
-        ))}
+        {sortedMeasurements.map((m, idx) => {
+          const vorigeRij = idx > 0 ? sortedMeasurements[idx - 1] : null;
+          const vorigeHeeftWaarde = idx === 0 || (vorigeRij?.resistance_value ?? 0) > 0;
+
+          return (
+            <DepthRowComponent
+              key={m.id}
+              row={m}
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+              isLowest={lowestIsValid && m.resistance_value === lowestResistance && m.resistance_value > 0}
+              disabled={disabled}
+              isEven={idx % 2 === 0}
+              compact={compact}
+              isPreset={PRESET_DEPTHS.has(m.depth_meters)}
+              hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
+              vorigeHeeftWaarde={vorigeHeeftWaarde}
+            />
+          );
+        })}
       </div>
 
       {/* Add deeper action */}
       <button
-        onClick={() => onAdd(nextDepth, 0)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          (document.activeElement as HTMLElement)?.blur();
+          onAdd(nextDepth, 0);
+        }}
         disabled={disabled}
         className={cn(
           'w-full flex items-center justify-center gap-1.5',
@@ -136,7 +149,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, hasProgressionWarning }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, hasProgressionWarning, vorigeHeeftWaarde }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
@@ -146,11 +159,14 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   compact?: boolean;
   isPreset?: boolean;
   hasProgressionWarning?: boolean;
+  vorigeHeeftWaarde: boolean;
 }) {
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
   const [isFocused, setIsFocused] = useState(false);
   const [saved, setSaved] = useState(false);
   const resistanceRef = useRef<HTMLInputElement>(null);
+
+  const isGeblokkeerd = !vorigeHeeftWaarde && row.resistance_value === 0;
 
   // Smart number suggestion: if user types e.g. "182" suggest "1,82"
   const toonSuggestie = (() => {
@@ -210,6 +226,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
           hasProgressionWarning && 'bg-amber-500/[0.04]',
           isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
           saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
+          isGeblokkeerd && 'opacity-30',
         )}
         style={canSwipe ? {
           transform: `translateX(-${swipeX}px)`,
@@ -270,7 +287,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
                 if (next) { next.focus(); next.select(); }
               }
             }}
-            placeholder="—"
+            placeholder={isGeblokkeerd ? "Vul eerst vorige in" : "—"}
             className={cn(
               'w-full bg-transparent outline-none border-0 depth-input',
               compact ? 'h-10 text-[15px] pr-4 px-3' : 'h-11 text-[16px] pr-5 px-3.5',
@@ -279,7 +296,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
               'placeholder:text-muted-foreground/25'
             )}
-            disabled={disabled}
+            disabled={disabled || isGeblokkeerd}
           />
           <span className={cn(
             'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',

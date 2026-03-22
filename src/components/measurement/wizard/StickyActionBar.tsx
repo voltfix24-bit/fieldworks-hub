@@ -43,14 +43,27 @@ export function StickyActionBar({
           showPrev ? 'justify-between' : 'justify-end',
         )}>
           {showPrev && onPrev && (
-            <button onClick={onPrev} className="h-10 flex items-center gap-0.5 px-2 text-[13px] font-medium text-muted-foreground active:opacity-60 transition-opacity rounded-lg">
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                (document.activeElement as HTMLElement)?.blur();
+                setTimeout(() => onPrev(), 50);
+              }}
+              className="h-10 flex items-center gap-0.5 px-2 text-[13px] font-medium text-muted-foreground active:opacity-60 transition-opacity rounded-lg"
+            >
               <ChevronLeft className="h-4 w-4" />
               {prevLabel}
             </button>
           )}
           {onNext && (
             <button
-              onClick={onNext}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                (document.activeElement as HTMLElement)?.blur();
+                if (!nextDisabled && !nextLoading) {
+                  setTimeout(() => onNext(), 50);
+                }
+              }}
               disabled={nextDisabled || nextLoading}
               className={cn(
                 'h-10 px-6 rounded-xl text-[13px] font-semibold min-w-[100px]',

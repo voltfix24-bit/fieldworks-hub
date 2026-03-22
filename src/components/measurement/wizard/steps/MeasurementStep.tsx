@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getDepthProgressionWarnings } from '../../DepthMeasurementTable';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { GroundingIcon } from '../../GroundingIcon';
-import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
@@ -13,6 +13,7 @@ interface MeasurementStepProps {
   tenantId: string;
   onUpdateElectrode: (updates: any) => void;
   onAddPen: () => void;
+  onDeletePen?: (penId: string) => void;
   recalcRa: (electrodeId: string, measurements: any[]) => void;
   depthsInitRef: React.MutableRefObject<Set<string>>;
   initializeDepthRows: (penId: string, pen: any) => void;
@@ -23,7 +24,7 @@ interface MeasurementStepProps {
 
 export function MeasurementStep({
   electrode, pens, tenantId,
-  onUpdateElectrode, onAddPen, recalcRa,
+  onUpdateElectrode, onAddPen, onDeletePen, recalcRa,
   depthsInitRef, initializeDepthRows, compact,
   onWarningCountChange, onRvMissingChange,
 }: MeasurementStepProps) {
@@ -185,6 +186,8 @@ export function MeasurementStep({
                 initializeDepthRows={initializeDepthRows}
                 onWarningCount={(count) => handlePenWarnings(pen.id, count)}
                 compact={compact}
+                canDelete={pens.length > 1}
+                onDeletePen={onDeletePen}
               />
             ) : (
               <CollapsedPenSummary
@@ -237,7 +240,11 @@ export function MeasurementStep({
 
       {/* ─── Add pen ─── */}
       <button
-        onClick={onAddPen}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          (document.activeElement as HTMLElement)?.blur();
+          setTimeout(onAddPen, 50);
+        }}
         className={cn(
           'w-full flex items-center justify-center gap-1.5',
           'rounded-lg border border-dashed border-[hsl(var(--tenant-primary,var(--primary))/0.2)]',
@@ -292,13 +299,15 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
   );
 }
 
-function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitRef, initializeDepthRows, onWarningCount, compact }: {
+function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitRef, initializeDepthRows, onWarningCount, compact, canDelete, onDeletePen }: {
   pen: any; electrode: any; tenantId: string;
   recalcRa: (electrodeId: string, measurements: any[]) => void;
   depthsInitRef: React.MutableRefObject<Set<string>>;
   initializeDepthRows: (penId: string, pen: any) => void;
   onWarningCount?: (count: number) => void;
   compact?: boolean;
+  canDelete?: boolean;
+  onDeletePen?: (penId: string) => void;
 }) {
   const { data: measurements = [] } = useDepthMeasurements(pen.id);
   const createMeasurement = useCreateDepthMeasurement();
@@ -348,6 +357,21 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
         <ChevronDown className="h-3.5 w-3.5 text-[hsl(var(--tenant-primary,var(--primary))/0.5)] shrink-0" />
         <span className={cn('font-bold text-foreground', compact ? 'text-[13px]' : 'text-[14px]')}>{pen.pen_code}</span>
         {pen.label && <span className="text-[10px] text-muted-foreground/60 font-medium">· {pen.label}</span>}
+        {canDelete && onDeletePen && (
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.confirm(`${pen.pen_code} verwijderen? Alle metingen van deze pen gaan verloren.`)) {
+                onDeletePen(pen.id);
+              }
+            }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-destructive/60 hover:bg-destructive/8 active:scale-95 transition-all ml-auto shrink-0"
+          >
+            <Trash2 className="h-3 w-3" />
+            Verwijderen
+          </button>
+        )}
       </div>
 
       <DepthMeasurementTable
