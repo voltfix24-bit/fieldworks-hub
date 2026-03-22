@@ -617,12 +617,11 @@ export default function MeasurementWorkspace() {
                 </button>
               ) : <div />}
               <button
-                className={cn('ios-wizard-btn-next', rvMissing && step === 0 && 'opacity-40 pointer-events-none')}
+                className="ios-wizard-btn-next"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   (document.activeElement as HTMLElement)?.blur();
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
-                  if (step === 0 && rvMissing) return;
                   if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
                   setTimeout(() => { setProgressionWarningDismissed(false); handleStapWissel(step + 1); }, 50);
                 }}
