@@ -76,6 +76,7 @@ export default function MeasurementWorkspace() {
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const [elektrodesAanmaken, setElektrodesAanmaken] = useState(false);
+  const [elektrodeTeVerwijderen, setElektrodeTeVerwijderen] = useState<any>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // DEEL 1 — Battery warning

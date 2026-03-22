@@ -140,14 +140,6 @@ export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningCh
 
       <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
         <ActionCard
-          icon={<GroundingIcon size={compact ? 16 : 18} />}
-          label={`Elektrode ${nextElectrodeNumber} starten`}
-          description="Nieuwe elektrode met nieuwe pennen"
-          onClick={onAddElectrode}
-          compact={compact}
-          primary
-        />
-        <ActionCard
           icon={<Paperclip className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
           label="Schets en bijlagen"
           description="Schetsen, foto's en bestanden"
