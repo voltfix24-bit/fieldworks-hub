@@ -225,7 +225,7 @@ export function ClientCombobox({ value, onChange, clients, onClientAangemaakt, c
           {/* Sheet */}
           <div
             className="absolute bottom-0 left-0 right-0 bg-background rounded-t-3xl shadow-2xl"
-            style={{ animation: 'slide-up 400ms cubic-bezier(0.32, 0.72, 0, 1) forwards' }}
+            style={{ animation: 'sheet-up 400ms cubic-bezier(0.32, 0.72, 0, 1) forwards' }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-2.5 pb-1">
