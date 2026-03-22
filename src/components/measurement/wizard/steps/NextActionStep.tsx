@@ -18,10 +18,8 @@ interface ElektrodeSamenvatting {
 }
 
 interface NextActionStepProps {
-  onAddElectrode: () => void;
   onGoToSketch: () => void;
   onSave: () => void;
-  nextElectrodeNumber: number;
   compact?: boolean;
   onHandtekeningChange?: (base64: string | null) => void;
   elektrodes?: ElektrodeSamenvatting[];
