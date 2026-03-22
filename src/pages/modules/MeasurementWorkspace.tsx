@@ -522,31 +522,45 @@ export default function MeasurementWorkspace() {
         const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
         const actief = e.id === activeElectrodeId;
         return (
-          <button
-            key={e.id}
-            onMouseDown={(ev) => {
-              ev.preventDefault();
-              (document.activeElement as HTMLElement)?.blur();
-              handleElectrodeWissel(e.id);
-            }}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.96] min-h-[34px]',
-              actief
-                ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
-                : klaar && voldoet
-                  ? 'bg-green-500/10 text-green-600 border border-green-500/20'
-                  : klaar && !voldoet
-                    ? 'bg-destructive/8 text-destructive border border-destructive/20'
-                    : 'bg-card text-foreground border border-border/40'
+          <div key={e.id} className="relative shrink-0">
+            <button
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                (document.activeElement as HTMLElement)?.blur();
+                handleElectrodeWissel(e.id);
+              }}
+              className={cn(
+                'flex items-center gap-1.5 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all duration-150 active:scale-[0.96] min-h-[34px]',
+                !actief && electrodes.length > 1 ? 'pl-3 pr-6' : 'px-3',
+                actief
+                  ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                  : klaar && voldoet
+                    ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                    : klaar && !voldoet
+                      ? 'bg-destructive/8 text-destructive border border-destructive/20'
+                      : 'bg-card text-foreground border border-border/40'
+              )}
+            >
+              {klaar && voldoet && !actief && (
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {e.electrode_code}
+            </button>
+            {!actief && electrodes.length > 1 && (
+              <button
+                onMouseDown={(ev) => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setElektrodeTeVerwijderen(e);
+                }}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center bg-foreground/10 text-muted-foreground/60 active:bg-foreground/20 transition-all"
+              >
+                <XIcon className="h-2.5 w-2.5" />
+              </button>
             )}
-          >
-            {klaar && voldoet && !actief && (
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-            {e.electrode_code}
-          </button>
+          </div>
         );
       })}
 
