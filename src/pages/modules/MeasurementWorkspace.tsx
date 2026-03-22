@@ -47,6 +47,7 @@ export default function MeasurementWorkspace() {
   const { data: electrodes = [] } = useElectrodes(session?.id);
   const createElectrode = useCreateElectrode();
   const updateElectrode = useUpdateElectrode();
+  const deleteElectrode = useDeleteElectrode();
 
   const [activeElectrodeId, setActiveElectrodeId] = useState<string | null>(null);
   const activeElectrode = electrodes.find((e: any) => e.id === activeElectrodeId);
