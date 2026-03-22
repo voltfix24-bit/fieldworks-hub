@@ -6,6 +6,7 @@ import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
+import { Textarea } from '@/components/ui/textarea';
 
 interface MeasurementStepProps {
   electrode: any;
@@ -258,6 +259,13 @@ export function MeasurementStep({
         <Plus className="h-3.5 w-3.5" />
         Pen toevoegen
       </button>
+
+      {/* DEEL 6 — Notitie per elektrode */}
+      <ElectrodeNoteSection
+        notes={electrode.notes}
+        onSave={(notes) => onUpdateElectrode({ notes })}
+        compact={compact}
+      />
     </div>
   );
 }
@@ -387,6 +395,67 @@ function PenMeasurementSection({ pen, electrode, tenantId, recalcRa, depthsInitR
         onDelete={handleDelete}
         compact={compact}
       />
+    </div>
+  );
+}
+
+/* ── Electrode note section ── */
+function ElectrodeNoteSection({ notes, onSave, compact }: {
+  notes: string | null;
+  onSave: (notes: string | null) => void;
+  compact?: boolean;
+}) {
+  const [notitie, setNotitie] = useState(notes || '');
+  const [notitieOpen, setNotitieOpen] = useState(!!notes);
+
+  return (
+    <div className="mt-2">
+      {!notitieOpen ? (
+        <button
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setNotitieOpen(true);
+          }}
+          className={cn(
+            'flex items-center gap-1.5 text-muted-foreground/40 active:text-muted-foreground/70 transition-colors',
+            compact ? 'text-[11px]' : 'text-[12px]'
+          )}
+        >
+          <Plus className="h-3 w-3" />
+          Notitie toevoegen
+        </button>
+      ) : (
+        <div className="rounded-xl border border-border/30 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-border/20">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M11 4H4C3.45 4 3 4.45 3 5V19C3 19.55 3.45 20 4 20H18C18.55 20 19 19.55 19 19V12" stroke="hsl(var(--muted-foreground))" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M17.5 2.5L21.5 6.5L12 16L8 17L9 13L17.5 2.5Z" stroke="hsl(var(--muted-foreground))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className={cn('font-semibold text-muted-foreground/60', compact ? 'text-[11px]' : 'text-[12px]')}>
+              Notitie
+            </span>
+            {notitie && (
+              <span className="ml-auto text-[10px] text-muted-foreground/30">Opgeslagen</span>
+            )}
+          </div>
+          <textarea
+            value={notitie}
+            onChange={(e) => setNotitie(e.target.value)}
+            onBlur={() => {
+              if (notitie !== (notes || '')) {
+                onSave(notitie || null);
+              }
+            }}
+            placeholder="Bijv. grond erg droog, kabel beschadigd..."
+            autoFocus={!notes}
+            rows={2}
+            className={cn(
+              'w-full bg-transparent resize-none outline-none px-3 py-2.5 text-foreground placeholder:text-muted-foreground/30',
+              compact ? 'text-[12px]' : 'text-[13px]'
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Loader2, AlertTriangle } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
 
@@ -84,6 +84,54 @@ export function PhotoStep({ elektrodes, onUpload, onRemove, compact }: PhotoStep
   );
 }
 
+/* ── Photo quality check ── */
+function controleerFotoKwaliteit(file: File): Promise<{ ok: boolean; reden?: string }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.min(img.width, 200);
+        canvas.height = Math.min(img.height, 200);
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        let totalHelderheid = 0;
+        const aantalPixels = pixels.length / 4;
+
+        for (let i = 0; i < pixels.length; i += 4) {
+          totalHelderheid += (pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
+        }
+
+        const gemHelderheid = totalHelderheid / aantalPixels;
+        URL.revokeObjectURL(url);
+
+        if (gemHelderheid < 40) {
+          resolve({ ok: false, reden: 'te donker' });
+        } else if (gemHelderheid > 240) {
+          resolve({ ok: false, reden: 'overbelicht' });
+        } else {
+          resolve({ ok: true });
+        }
+      } catch {
+        URL.revokeObjectURL(url);
+        resolve({ ok: true });
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ ok: true });
+    };
+
+    img.src = url;
+  });
+}
+
 /* ── Individual photo slot ── */
 
 function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploading, compact }: {
@@ -99,11 +147,22 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
   const galleryRef = useRef<HTMLInputElement>(null);
   const [localUploading, setLocalUploading] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [kwaliteitsWaarschuwing, setKwaliteitsWaarschuwing] = useState<string | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setLocalUploading(true);
+
+    // DEEL 7 — Photo quality check
+    const kwaliteit = await controleerFotoKwaliteit(file);
+    if (!kwaliteit.ok) {
+      setKwaliteitsWaarschuwing(kwaliteit.reden!);
+      setTimeout(() => setKwaliteitsWaarschuwing(null), 4000);
+    } else {
+      setKwaliteitsWaarschuwing(null);
+    }
+
     try {
       await onUpload(file);
     } catch {
@@ -144,6 +203,22 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
           </button>
         </div>
 
+        {/* Quality warning */}
+        {kwaliteitsWaarschuwing && (
+          <div className="flex items-center gap-1.5 mt-2 px-2.5 py-1.5 rounded-lg bg-amber-500/[0.08] border border-amber-500/20">
+            <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
+            <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
+              Foto lijkt {kwaliteitsWaarschuwing} — opnieuw proberen?
+            </span>
+            <button
+              onClick={() => cameraRef.current?.click()}
+              className="ml-auto text-[10px] font-bold text-amber-600 shrink-0"
+            >
+              Opnieuw
+            </button>
+          </div>
+        )}
+
         {/* Fullscreen modal */}
         {fullscreen && (
           <div
@@ -164,6 +239,9 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
             </button>
           </div>
         )}
+
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+        <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
       </div>
     );
   }

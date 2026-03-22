@@ -303,6 +303,23 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* DEEL 4 — High contrast mode for outdoor use */
+.hoog-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --muted-foreground: 0 0% 20%;
+  --border: 0 0% 70%;
+  --card: 0 0% 100%;
+  --muted: 0 0% 90%;
+}
+
+/* iOS keyboard padding */
+@supports (-webkit-touch-callout: none) {
+  .measurement-scroll-container {
+    padding-bottom: 320px;
+  }
+}
+
 /* Generic animations */
 .animate-in { animation-fill-mode: both; animation-duration: 250ms; }
 .fade-in { animation-name: fadeIn; }

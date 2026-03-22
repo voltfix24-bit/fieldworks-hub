@@ -257,8 +257,8 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         className={cn(
           'grid items-center relative',
           compact
-            ? 'grid-cols-[40px_1fr_24px] gap-0 px-1 min-h-[48px]'
-            : 'grid-cols-[52px_1fr_36px] sm:grid-cols-[64px_1fr_36px] gap-1.5 px-1.5 min-h-[52px]',
+            ? 'grid-cols-[52px_1fr_32px] gap-0 px-1 min-h-[52px]'
+            : 'grid-cols-[64px_1fr_40px] gap-2 px-2 min-h-[56px]',
           isEven ? 'bg-card' : 'bg-muted/20',
           isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
           hasProgressionWarning && 'bg-amber-500/[0.04]',
@@ -290,15 +290,15 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         {/* Depth — static display */}
         <div className="relative">
           <span className={cn(
-            'block text-center tabular-nums font-semibold leading-none',
-            compact ? 'text-[12px] py-2' : 'text-[13px] py-2.5',
+            'block text-center tabular-nums leading-none',
+            compact ? 'text-[15px] font-bold py-3' : 'text-[16px] font-bold py-3',
             isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/80' : 'text-muted-foreground/45'
           )}>
             {row.depth_meters}
           </span>
           <span className={cn(
-            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
-            compact ? 'text-[9px]' : 'text-[9px]'
+            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none',
+            compact ? 'text-[10px] font-semibold' : 'text-[10px] font-semibold'
           )}>m</span>
         </div>
 
@@ -339,7 +339,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0 depth-measurement-input',
-              compact ? 'h-10 text-[15px] pr-4 px-3' : 'h-11 text-[16px] pr-5 px-3.5',
+              compact ? 'h-12 text-[16px] pr-4 px-3' : 'h-12 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',

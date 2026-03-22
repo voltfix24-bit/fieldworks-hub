@@ -77,6 +77,17 @@ export default function MeasurementWorkspace() {
   const [elektrodesAanmaken, setElektrodesAanmaken] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
+  // DEEL 1 — Battery warning
+  const [batterijLaag, setBatterijLaag] = useState(false);
+
+  // DEEL 3 — Swipe between steps
+  const swipeStartX = useRef(0);
+  const swipeStartY = useRef(0);
+  const SWIPE_DREMPEL = 60;
+
+  // DEEL 4 — High contrast mode
+  const [hoogContrast, setHoogContrast] = useState(false);
+
   // Photo upload state per electrode
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
@@ -99,6 +110,37 @@ export default function MeasurementWorkspace() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, []);
+
+  // Battery check
+  useEffect(() => {
+    if (!('getBattery' in navigator)) return;
+    let battery: any = null;
+    const checkBatterij = () => {
+      if (!battery) return;
+      const pct = Math.round(battery.level * 100);
+      const laden = battery.charging;
+      setBatterijLaag(pct <= 20 && !laden);
+      if (pct <= 20 && !laden) {
+        toast({
+          title: `Batterij ${pct}%`,
+          description: 'Laad je telefoon op — niet opgeslagen data kan verloren gaan bij uitschakelen.',
+          duration: 8000,
+        });
+      }
+    };
+    (navigator as any).getBattery().then((bat: any) => {
+      battery = bat;
+      checkBatterij();
+      bat.addEventListener('levelchange', checkBatterij);
+      bat.addEventListener('chargingchange', checkBatterij);
+    }).catch(() => {});
+    return () => {
+      if (battery) {
+        battery.removeEventListener('levelchange', checkBatterij);
+        battery.removeEventListener('chargingchange', checkBatterij);
+      }
     };
   }, []);
 
@@ -378,6 +420,42 @@ export default function MeasurementWorkspace() {
   });
 
 
+  // Summary data for NextActionStep
+  const elektrodesVoorSamenvatting = electrodes.map((e: any) => {
+    const eerstePen = allePens.find((p: any) => p.electrode_id === e.id);
+    const isRv = (allePens.filter((p: any) => p.electrode_id === e.id).length >= 2);
+    return {
+      id: e.id,
+      code: e.electrode_code,
+      eindtype: (isRv ? 'RV' : 'RA') as 'RA' | 'RV',
+      eindwaarde: isRv ? e.rv_value : e.ra_value,
+      targetValue: e.target_value,
+      heeftDisplayFoto: !!eerstePen?.display_photo_url,
+      heeftOverzichtFoto: !!eerstePen?.overview_photo_url,
+    };
+  });
+
+  // Swipe handlers for mobile step navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    swipeStartX.current = e.touches[0].clientX;
+    swipeStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = swipeStartX.current - e.changedTouches[0].clientX;
+    const dy = Math.abs(swipeStartY.current - e.changedTouches[0].clientY);
+    if (dy > 40) return;
+    if (Math.abs(dx) < SWIPE_DREMPEL) return;
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+    if (dx > 0 && step < 2) {
+      if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
+      handleStapWissel(step + 1);
+      if (navigator.vibrate) navigator.vibrate(6);
+    } else if (dx < 0 && step > 0) {
+      handleStapWissel(step - 1);
+      if (navigator.vibrate) navigator.vibrate(6);
+    }
+  };
+
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
     // Bij 2+ pennen is RV leidend — recalcRa NIET uitvoeren
     const aantalPennen = pens.filter((p: any) => p.electrode_id === electrodeId).length;
@@ -497,7 +575,7 @@ export default function MeasurementWorkspace() {
   // ═══════════════════════════════════════════════
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in overflow-x-hidden max-w-full">
+      <div className={cn("fixed inset-0 z-50 flex flex-col animate-fade-in overflow-x-hidden max-w-full", hoogContrast ? 'hoog-contrast bg-white' : 'bg-background')}>
         {/* ─── iOS sticky top nav ─── */}
         <div className="ios-wizard-topnav shrink-0">
           <div className="ios-wizard-nav-row">
@@ -508,12 +586,33 @@ export default function MeasurementWorkspace() {
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <span>{project.project_name}</span>
             </button>
-            {activeElectrode && !showSketch && (
-              <span className="ios-wizard-nav-badge max-w-[160px] truncate bg-[hsl(var(--tenant-primary)/0.12)] text-[hsl(var(--tenant-primary))] font-bold px-2.5 py-1 rounded-lg text-[11px]">
-                {activeElectrode.electrode_code}
-                {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* DEEL 4 — High contrast toggle */}
+              <button
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setHoogContrast(prev => !prev);
+                  if (navigator.vibrate) navigator.vibrate(8);
+                }}
+                className={cn(
+                  'w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-90',
+                  hoogContrast
+                    ? 'bg-foreground text-background'
+                    : 'bg-muted/30 text-muted-foreground/50'
+                )}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M12 2V4M12 20V22M2 12H4M20 12H22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+              {activeElectrode && !showSketch && (
+                <span className="ios-wizard-nav-badge max-w-[160px] truncate bg-[hsl(var(--tenant-primary)/0.12)] text-[hsl(var(--tenant-primary))] font-bold px-2.5 py-1 rounded-lg text-[11px]">
+                  {activeElectrode.electrode_code}
+                  {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Step tabs */}
@@ -546,6 +645,20 @@ export default function MeasurementWorkspace() {
         {/* Electrode switcher */}
         {!showSketch && electrodes.length > 0 && renderElectrodeSwitcher()}
 
+        {/* DEEL 1 — Battery warning banner */}
+        {batterijLaag && (
+          <div className="flex items-center gap-2 px-4 py-2 shrink-0 bg-amber-500/10 border-b border-amber-500/20">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="7" width="18" height="11" rx="2" stroke="hsl(40 90% 50%)" strokeWidth="2"/>
+              <path d="M20 11V13" stroke="hsl(40 90% 50%)" strokeWidth="2" strokeLinecap="round"/>
+              <rect x="4" y="9" width="7" height="7" rx="1" fill="hsl(40 90% 50%)"/>
+            </svg>
+            <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 flex-1">
+              Batterij laag — sla regelmatig op
+            </span>
+          </div>
+        )}
+
         {/* ─── Offline banner ─── */}
         {!isOnline && (
           <div className="shrink-0 flex items-center gap-2 px-4 py-2 bg-amber-500/10 border-b border-amber-400/20">
@@ -554,8 +667,14 @@ export default function MeasurementWorkspace() {
           </div>
         )}
 
-        {/* ─── Scrollable content ─── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2 overflow-x-hidden measurement-scroll-container" style={{ maxWidth: '100vw' }} key={showSketch ? 'sketch' : step}>
+        {/* ─── Scrollable content with swipe ─── */}
+        <div
+          className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2 overflow-x-hidden measurement-scroll-container"
+          style={{ maxWidth: '100vw' }}
+          key={showSketch ? 'sketch' : step}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="wizard-step-enter">
 
             {step === 0 && !showSketch && activeElectrode && (
@@ -591,6 +710,7 @@ export default function MeasurementWorkspace() {
                 onSave={() => navigate(`/projects/${id}`)}
                 nextElectrodeNumber={electrodes.length + 1}
                 onHandtekeningChange={setHandtekeningB64}
+                elektrodes={elektrodesVoorSamenvatting}
                 compact
               />
             )}
@@ -796,6 +916,7 @@ export default function MeasurementWorkspace() {
             onSave={() => navigate(`/projects/${id}`)}
             nextElectrodeNumber={electrodes.length + 1}
             onHandtekeningChange={setHandtekeningB64}
+            elektrodes={elektrodesVoorSamenvatting}
           />
         )}
 
