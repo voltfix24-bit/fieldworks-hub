@@ -221,6 +221,22 @@ export default function MeasurementWorkspace() {
     }, 300);
   };
 
+  const handleDeletePen = async (penId: string) => {
+    await deletePen.mutateAsync({ id: penId, electrodeId: activeElectrodeId! });
+    if (activePenId === penId) {
+      const overige = pens.filter((p: any) => p.id !== penId);
+      if (overige.length > 0) setActivePenId(overige[0].id);
+    }
+    toast({ description: 'Pen verwijderd' });
+  };
+
+  const handlePenToevoegenMetCheck = () => {
+    // Check if we need to show a warning
+    // We'll just proceed since we can't access measurements here directly
+    // The warning is best shown in the MeasurementStep itself
+    handleAddNewPen();
+  };
+
   const handleAddNewElectrode = async () => {
     if (!session) return;
     const newElectrode = await createElectrode.mutateAsync({
