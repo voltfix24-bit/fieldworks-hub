@@ -865,8 +865,15 @@
   text-transform: uppercase;
   margin-bottom: 4px;
 }
+.ios-form-field-hint {
+  display: block;
+  font-size: 11px;
+  color: hsl(var(--muted-foreground) / 0.4);
+  margin-top: 3px;
+  font-weight: 400;
+  line-height: 1.4;
+}
 
-/* Native-feeling input */
 .ios-form-input {
   background: transparent;
   border: none;

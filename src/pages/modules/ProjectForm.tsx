@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProject, useCreateProject, useUpdateProject, useProjects } from '@/hooks/use-projects';
@@ -8,17 +8,13 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ChevronRight, ChevronDown, Loader2, AlertTriangle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, ChevronRight, ChevronDown, Loader2, AlertTriangle, Upload, X, FileIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 const MONTEUR_KEY = 'aardpen_laatste_monteur';
-
-function genProjectNumber(): string {
-  const y = new Date().getFullYear();
-  return `P-${y}-${String(Math.floor(Math.random() * 900) + 100)}`;
-}
 
 export default function ProjectForm() {
   const { id } = useParams();
@@ -39,8 +35,9 @@ export default function ProjectForm() {
   const activeTechs = technicians?.filter(t => t.is_active) ?? [];
   const activeEquip = equipment?.filter(e => e.is_active) ?? [];
   const defaultTech = activeTechs.find(t => t.is_default);
-  const autoNumber = useMemo(genProjectNumber, []);
   const [duplicaatProject, setDuplicaatProject] = useState<any>(null);
+  const [projectBestanden, setProjectBestanden] = useState<File[]>([]);
+  const [uploadende, setUploadende] = useState(false);
 
   const [form, setForm] = useState({
     project_number: '', project_name: '', site_name: '',
@@ -58,14 +55,13 @@ export default function ProjectForm() {
       const equipId = defaultEquipment?.id || (activeEquip.length === 1 ? activeEquip[0].id : '');
       setForm(prev => ({
         ...prev,
-        project_number: autoNumber,
         planned_date: format(new Date(), 'yyyy-MM-dd'),
         equipment_id: equipId,
         technician_id: techId,
       }));
       setDefaultsApplied(true);
     }
-  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber, activeTechs, activeEquip]);
+  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, activeTechs, activeEquip]);
 
   // Remember last used technician
   useEffect(() => {
@@ -134,21 +130,48 @@ export default function ProjectForm() {
       cable_material: form.cable_material || null,
     };
     try {
+      let savedProject: any;
       if (isEdit) {
-        await updateMut.mutateAsync({ id, ...payload, status: existing?.status || 'planned' });
+        savedProject = await updateMut.mutateAsync({ id, ...payload, status: existing?.status || 'planned' });
         toast({ title: 'Project bijgewerkt' });
       } else {
-        await createMut.mutateAsync(payload);
+        savedProject = await createMut.mutateAsync(payload);
         toast({ title: 'Project aangemaakt' });
       }
+
+      // Upload project files
+      const projectId = savedProject?.id || id;
+      if (projectBestanden.length > 0 && projectId && profile?.tenant_id) {
+        setUploadende(true);
+        try {
+          for (const bestand of projectBestanden) {
+            const pad = `${profile.tenant_id}/${projectId}/bestanden/${Date.now()}_${bestand.name}`;
+            const { data: uploadData, error } = await supabase.storage
+              .from('project-files')
+              .upload(pad, bestand, { contentType: bestand.type, upsert: false });
+            if (!error && uploadData) {
+              await supabase.from('project_attachments').insert({
+                tenant_id: profile.tenant_id,
+                project_id: projectId,
+                file_url: uploadData.path,
+                attachment_type: 'project_bestand',
+                caption: bestand.name,
+              });
+            }
+          }
+        } finally {
+          setUploadende(false);
+        }
+      }
+
       navigate('/projects');
     } catch (err: any) {
       toast({ title: 'Fout', description: err.message, variant: 'destructive' });
     }
   };
 
-  const saving = createMut.isPending || updateMut.isPending;
-  const canSubmit = form.project_number.trim() && form.project_name.trim();
+  const saving = createMut.isPending || updateMut.isPending || uploadende;
+  const canSubmit = form.project_name.trim();
 
   const clientName = activeClients.find(c => c.id === form.client_id)?.company_name;
   const techName = activeTechs.find(t => t.id === form.technician_id)?.full_name;
@@ -193,7 +216,7 @@ export default function ProjectForm() {
                 className="ios-form-input ios-font-mono"
                 value={form.project_number}
                 onChange={e => set('project_number', e.target.value)}
-                placeholder="P-2026-001"
+                placeholder="Bijv. P-2026-001"
               />
             </div>
             <div className="ios-form-field-divider" />
@@ -400,6 +423,44 @@ export default function ProjectForm() {
                   placeholder="Eventuele opmerkingen…"
                   rows={3}
                 />
+              </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Projectbestanden</span>
+                <span className="ios-form-field-hint">Werktekeningen, instructies of situatieschetsen voor de monteur</span>
+                <label className="flex items-center gap-2.5 mt-2 px-4 py-3 rounded-xl border border-dashed border-border/40 bg-muted/10 cursor-pointer active:bg-muted/20 transition-colors">
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.png,.jpg,.jpeg,.dwg,.dxf,.doc,.docx"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setProjectBestanden(prev => [...prev, ...files]);
+                      e.target.value = '';
+                    }}
+                    className="hidden"
+                  />
+                  <Upload className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                  <span className="text-[13px] text-muted-foreground/50">Bestand toevoegen</span>
+                </label>
+                {projectBestanden.length > 0 && (
+                  <div className="mt-2 space-y-1.5">
+                    {projectBestanden.map((file, i) => (
+                      <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card border border-border/30">
+                        <FileIcon className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                        <span className="text-[13px] text-foreground flex-1 truncate">{file.name}</span>
+                        <span className="text-[11px] text-muted-foreground/30 shrink-0">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                        <button
+                          type="button"
+                          onClick={() => setProjectBestanden(prev => prev.filter((_, j) => j !== i))}
+                          className="w-5 h-5 rounded-full bg-muted/30 flex items-center justify-center shrink-0 active:bg-muted/60 transition-colors"
+                        >
+                          <X className="h-3 w-3 text-muted-foreground/50" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

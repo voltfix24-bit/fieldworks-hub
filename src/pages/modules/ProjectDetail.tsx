@@ -15,8 +15,9 @@ import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
-  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar
+  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -244,6 +245,40 @@ export default function ProjectDetail() {
               ))}
             </div>
 
+            {/* Projectbestanden */}
+            {(() => {
+              const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
+              if (projectBestanden.length === 0) return null;
+              return (
+                <div className="mt-4">
+                  <p className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/40 mb-2 px-1">Projectbestanden</p>
+                  <div className="ios-dash-card">
+                    {projectBestanden.map((bestand: any, i: number) => (
+                      <div key={bestand.id}>
+                        <button
+                          onClick={async () => {
+                            const { data } = await supabase.storage.from('project-files').createSignedUrl(bestand.file_url, 3600);
+                            if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[56px] active:bg-foreground/[0.03] transition-colors text-left"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center shrink-0">
+                            <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[14px] font-semibold text-foreground truncate">{bestand.caption || 'Bestand'}</p>
+                            <p className="text-[11px] text-muted-foreground/40 mt-0.5">Tik om te openen of downloaden</p>
+                          </div>
+                          <Download className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                        </button>
+                        {i < projectBestanden.length - 1 && <div className="ios-dash-row-divider" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Project afronden CTA */}
             {project.status === 'planned' ? (
               <button
@@ -355,6 +390,31 @@ export default function ProjectDetail() {
           <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{project.notes}</p>
         </DesktopSection>
       )}
+
+      {(() => {
+        const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
+        if (projectBestanden.length === 0) return null;
+        return (
+          <DesktopSection title="Projectbestanden">
+            {projectBestanden.map((bestand: any) => (
+              <div key={bestand.id} className="flex items-center py-2 border-b border-border/15 last:border-0">
+                <span className="text-sm text-foreground flex-1 truncate">{bestand.caption || 'Bestand'}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-lg"
+                  onClick={async () => {
+                    const { data } = await supabase.storage.from('project-files').createSignedUrl(bestand.file_url, 3600);
+                    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                  }}
+                >
+                  <Download className="h-3.5 w-3.5 mr-1" /> Openen
+                </Button>
+              </div>
+            ))}
+          </DesktopSection>
+        );
+      })()}
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <DesktopSection title="Meetopstelling" action={
