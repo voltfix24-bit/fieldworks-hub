@@ -50,13 +50,20 @@ interface Props {
 const S = {
   page: {
     width: '794px',
-    minHeight: '1123px',
     background: '#ffffff',
     fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif',
     color: '#1D1D1F',
     position: 'relative' as const,
     boxSizing: 'border-box' as const,
     padding: '0',
+  },
+  pdfPage: {
+    width: '794px',
+    minHeight: '1123px',
+    background: '#ffffff',
+    boxSizing: 'border-box' as const,
+    position: 'relative' as const,
+    overflow: 'hidden' as const,
   },
   topStripe: (kleur: string) => ({
     width: '100%',
