@@ -25,7 +25,10 @@ export default function PlanningPage() {
   const { data: projects = [] } = useProjects();
   const { data: technicians = [] } = useTechnicians();
   const isMobile = useIsMobile();
-  const [view, setView] = useState<ViewMode>('list');
+  const [searchParams] = useSearchParams();
+  const [view, setView] = useState<ViewMode>(
+    searchParams.get('view') === 'kalender' ? 'calendar' : 'list'
+  );
   const [calMonth, setCalMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 

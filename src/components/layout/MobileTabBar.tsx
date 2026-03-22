@@ -372,9 +372,9 @@ function CenterFab({ isOpen, onTap }: { isOpen: boolean; onTap: () => void }) {
 }
 
 function getActiveKey(pathname: string): string {
+  if (pathname === '/dashboard' || pathname === '/') return 'vandaag';
   if (pathname.startsWith('/planning')) return 'planning';
-  if (pathname.startsWith('/meer') || pathname.startsWith('/settings')) return 'meer';
   if (pathname.startsWith('/projects')) return 'projecten';
-  if (pathname === '/dashboard' || pathname === '/') return 'start';
-  return 'start';
+  if (pathname.startsWith('/settings') || pathname.startsWith('/meer')) return 'instellingen';
+  return 'vandaag';
 }
