@@ -24,17 +24,20 @@ const HIDDEN_ROUTE_PATTERNS = [
 ];
 
 /* ── Tab Icons (inline SVG for iOS precision) ── */
-function HomeIcon({ active }: { active: boolean }) {
+function VandaagIcon({ active }: { active: boolean }) {
+  const c = active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)';
+  const sw = active ? '2' : '1.5';
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path
-        d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H15V15H9V21H4C3.45 21 3 20.55 3 20V10.5Z"
-        stroke={active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)'}
-        strokeWidth={active ? '2' : '1.5'}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill={active ? 'hsl(var(--tenant-primary) / 0.1)' : 'none'}
+        d="M3 12L12 4L21 12V20C21 20.55 20.55 21 20 21H15V15H9V21H4C3.45 21 3 20.55 3 20V12Z"
+        stroke={c} strokeWidth={sw}
+        strokeLinecap="round" strokeLinejoin="round"
+        fill={active ? 'hsl(var(--tenant-primary)/0.1)' : 'none'}
       />
+      <circle cx="18" cy="5" r="2" fill={c} />
+      <path d="M18 2V1M18 9V8M15 5H14M22 5H21M15.8 2.8L15.1 2.1M20.9 7.9L21.6 8.6M20.9 2.1L21.6 1.4M15.1 7.9L15.8 8.6"
+        stroke={c} strokeWidth={sw} strokeLinecap="round" />
     </svg>
   );
 }
@@ -61,22 +64,25 @@ function FolderIcon({ active }: { active: boolean }) {
     </svg>
   );
 }
-function MoreIcon({ active }: { active: boolean }) {
+function InstellingenIcon({ active }: { active: boolean }) {
+  const c = active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)';
+  const sw = active ? '2' : '1.5';
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      {[6, 12, 18].map(cy => (
-        <circle key={cy} cx="12" cy={cy} r={active ? '2' : '1.5'}
-          fill={active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)'} />
-      ))}
+      <circle cx="12" cy="12" r="3"
+        stroke={c} strokeWidth={sw}
+        fill={active ? 'hsl(var(--tenant-primary)/0.1)' : 'none'} />
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+        stroke={c} strokeWidth={sw} strokeLinejoin="round" />
     </svg>
   );
 }
 
 const TAB_ICONS: Record<string, React.FC<{ active: boolean }>> = {
-  start: HomeIcon,
+  vandaag: VandaagIcon,
   planning: CalIcon,
   projecten: FolderIcon,
-  meer: MoreIcon,
+  instellingen: InstellingenIcon,
 };
 
 /* ── Sheet action icons ── */
