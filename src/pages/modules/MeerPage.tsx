@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor, Users, HardHat, Wrench, FileText } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor, Users, HardHat, Wrench, FileText, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
