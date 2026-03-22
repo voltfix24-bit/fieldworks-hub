@@ -16,11 +16,6 @@ import { nl } from 'date-fns/locale';
 
 const MONTEUR_KEY = 'aardpen_laatste_monteur';
 
-function genProjectNumber(): string {
-  const y = new Date().getFullYear();
-  return `P-${y}-${String(Math.floor(Math.random() * 900) + 100)}`;
-}
-
 export default function ProjectForm() {
   const { id } = useParams();
   const isEdit = !!id;
