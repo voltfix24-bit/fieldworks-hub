@@ -15,8 +15,9 @@ import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
-  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar
+  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ProjectDetail() {
   const { id } = useParams();
