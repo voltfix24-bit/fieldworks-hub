@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff, AlertTriangle, Check, X as XIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -12,6 +13,7 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { GroundingIcon, GroundingLoader } from '@/components/measurement/GroundingIcon';
@@ -220,14 +222,23 @@ export default function MeasurementWorkspace() {
   const initializeDepthRows = useCallback((penId: string, pen: any) => {
     if (depthsInitRef.current.has(penId)) return;
     depthsInitRef.current.add(penId);
-    PREDEFINED_DEPTHS.forEach((d, i) => {
-      createMeasurement.mutate({
-        tenant_id: tenantId, project_id: pen.project_id,
-        measurement_session_id: pen.measurement_session_id,
-        electrode_id: pen.electrode_id,
-        pen_id: penId, depth_meters: d, resistance_value: 0, sort_order: i,
+    // Check if pen already has measurements (returning to saved project)
+    supabase
+      .from('depth_measurements')
+      .select('id')
+      .eq('pen_id', penId)
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) return; // Already has measurements — skip
+        PREDEFINED_DEPTHS.forEach((d, i) => {
+          createMeasurement.mutate({
+            tenant_id: tenantId, project_id: pen.project_id,
+            measurement_session_id: pen.measurement_session_id,
+            electrode_id: pen.electrode_id,
+            pen_id: penId, depth_meters: d, resistance_value: 0, sort_order: i,
+          });
+        });
       });
-    });
   }, [tenantId, createMeasurement]);
 
   const handleSaveContext = async () => {
@@ -344,11 +355,16 @@ export default function MeasurementWorkspace() {
     setUploading(false);
   };
 
+  const qc = useQueryClient();
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
     const validValues = updatedMeasurements.filter((m: any) => m.resistance_value > 0).map((m: any) => m.resistance_value);
     const lowestResistance = validValues.length > 0 ? Math.min(...validValues) : null;
-    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance, rv_value: null });
-  }, [updateElectrode]);
+    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance, rv_value: null }, {
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: ['electrodes', session?.id] });
+      }
+    });
+  }, [updateElectrode, qc, session?.id]);
 
   if (projectLoading || sessionLoading) return (
     <div className="flex justify-center py-20"><GroundingLoader /></div>

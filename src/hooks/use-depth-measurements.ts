@@ -42,7 +42,10 @@ export function useUpdateDepthMeasurement() {
       if (error) throw error;
       return data as DepthMeasurement;
     },
-    onSuccess: (data) => qc.invalidateQueries({ queryKey: ['depth-measurements', data.pen_id] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['depth-measurements', data.pen_id] });
+      qc.invalidateQueries({ queryKey: ['electrodes'] });
+    },
   });
 }
 
