@@ -13,6 +13,7 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { GroundingIcon, GroundingLoader } from '@/components/measurement/GroundingIcon';
