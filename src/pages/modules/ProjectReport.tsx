@@ -371,6 +371,33 @@ export default function ProjectReport() {
               </button>
             </div>
 
+            {/* Browser PDF button */}
+            <button
+              onClick={async () => {
+                const rapportData = await buildRapportData(actieveHandtekening ?? null);
+                if (!rapportData) {
+                  toast({ title: 'Geen data', description: 'Kon rapportdata niet ophalen.', variant: 'destructive' });
+                  return;
+                }
+                const bestandsnaam = `Aardingsrapport_${(project.project_number || project.project_name).replace(/\s+/g, '_').slice(0, 30)}_${rapportData.meetdatum.replace(/-/g, '')}.pdf`;
+                await genereerBrowser(rapportData, bestandsnaam);
+              }}
+              disabled={!actieveHandtekening || browserBezig}
+              className={cn(
+                'w-full flex items-center justify-center gap-2 rounded-xl font-semibold text-[13px] py-3 mt-2 transition-all active:scale-[0.98]',
+                actieveHandtekening
+                  ? 'bg-muted/20 border border-border/40 text-foreground'
+                  : 'bg-muted/10 text-muted-foreground/30 cursor-not-allowed'
+              )}
+            >
+              {browserBezig ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
+              {browserBezig ? 'Genereren…' : 'Download (browser)'}
+            </button>
+
             {/* Email modal */}
             {emailOpen && (
               <div className="mt-4 rounded-xl border border-border/40 bg-muted/10 p-4 space-y-3">
