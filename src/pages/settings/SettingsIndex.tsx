@@ -1,11 +1,15 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
-import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle, Users, HardHat, Wrench, FileText, Settings, LogOut, Sun, Moon, Monitor, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function SettingsIndex() {
   const navigate = useNavigate();
