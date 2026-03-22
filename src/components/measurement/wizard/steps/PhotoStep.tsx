@@ -1,18 +1,24 @@
 import { useState, useRef } from 'react';
 import { Camera, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
 
-interface PhotoStepProps {
-  electrodeCode: string;
+export interface ElektrodeMetFotos {
+  id: string;
+  code: string;
   displayPhotoUrl: string | null;
   overviewPhotoUrl: string | null;
-  onUpload: (type: 'display_photo_url' | 'overview_photo_url', file: File) => Promise<void>;
-  onRemove: (type: 'display_photo_url' | 'overview_photo_url') => void;
   uploading: boolean;
+}
+
+interface PhotoStepProps {
+  elektrodes: ElektrodeMetFotos[];
+  onUpload: (electrodeId: string, type: 'display_photo_url' | 'overview_photo_url', file: File) => Promise<void>;
+  onRemove: (electrodeId: string, type: 'display_photo_url' | 'overview_photo_url') => void;
   compact?: boolean;
 }
 
-export function PhotoStep({ electrodeCode, displayPhotoUrl, overviewPhotoUrl, onUpload, onRemove, uploading, compact }: PhotoStepProps) {
+export function PhotoStep({ elektrodes, onUpload, onRemove, compact }: PhotoStepProps) {
   return (
     <div>
       <div className={compact ? 'mb-3' : 'mb-5'}>
@@ -26,29 +32,53 @@ export function PhotoStep({ electrodeCode, displayPhotoUrl, overviewPhotoUrl, on
           'text-muted-foreground/50 mt-0.5',
           compact ? 'text-[12px]' : 'text-[13px]'
         )}>
-          {electrodeCode}
+          Optioneel — per elektrode
         </p>
       </div>
 
-      <div className="space-y-4">
-        <PhotoSlot
-          label="Meetdisplay foto"
-          description="Close-up van het meetapparaat"
-          currentUrl={displayPhotoUrl}
-          onUpload={(file) => onUpload('display_photo_url', file)}
-          onRemove={() => onRemove('display_photo_url')}
-          uploading={uploading}
-          compact={compact}
-        />
-        <PhotoSlot
-          label="Overzichtsfoto"
-          description="Bredere opname van de locatie"
-          currentUrl={overviewPhotoUrl}
-          onUpload={(file) => onUpload('overview_photo_url', file)}
-          onRemove={() => onRemove('overview_photo_url')}
-          uploading={uploading}
-          compact={compact}
-        />
+      <div className="space-y-5">
+        {elektrodes.map((elektrode, idx) => (
+          <div key={elektrode.id}>
+            {/* Elektrode header */}
+            {elektrodes.length > 1 && (
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-[hsl(var(--tenant-primary,var(--primary)))]">{idx + 1}</span>
+                </div>
+                <span className={cn('font-semibold text-foreground', compact ? 'text-[13px]' : 'text-[14px]')}>
+                  {elektrode.code}
+                </span>
+              </div>
+            )}
+
+            {/* Twee foto slots */}
+            <div className="space-y-4">
+              <PhotoSlot
+                label="Meetdisplay foto"
+                description="Close-up van het meetapparaat"
+                currentUrl={elektrode.displayPhotoUrl}
+                onUpload={(file) => onUpload(elektrode.id, 'display_photo_url', file)}
+                onRemove={() => onRemove(elektrode.id, 'display_photo_url')}
+                uploading={elektrode.uploading}
+                compact={compact}
+              />
+              <PhotoSlot
+                label="Overzichtsfoto"
+                description="Bredere opname van de locatie"
+                currentUrl={elektrode.overviewPhotoUrl}
+                onUpload={(file) => onUpload(elektrode.id, 'overview_photo_url', file)}
+                onRemove={() => onRemove(elektrode.id, 'overview_photo_url')}
+                uploading={elektrode.uploading}
+                compact={compact}
+              />
+            </div>
+
+            {/* Scheiding tussen elektrodes */}
+            {idx < elektrodes.length - 1 && (
+              <div className="border-b border-border/10 my-5" />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
