@@ -9,11 +9,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 const TAB_ITEMS = [
-  { key: 'start', label: 'Start', path: '/dashboard' },
-  { key: 'planning', label: 'Planning', path: '/planning' },
+  { key: 'vandaag', label: 'Vandaag', path: '/dashboard' },
+  { key: 'planning', label: 'Planning', path: '/planning?view=kalender' },
   { key: 'meten', label: 'Meten', path: null },
   { key: 'projecten', label: 'Projecten', path: '/projects' },
-  { key: 'meer', label: 'Meer', path: '/meer' },
+  { key: 'instellingen', label: 'Instellingen', path: '/settings' },
 ];
 
 const HIDDEN_ROUTE_PATTERNS = [
