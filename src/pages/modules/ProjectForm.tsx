@@ -55,14 +55,13 @@ export default function ProjectForm() {
       const equipId = defaultEquipment?.id || (activeEquip.length === 1 ? activeEquip[0].id : '');
       setForm(prev => ({
         ...prev,
-        project_number: autoNumber,
         planned_date: format(new Date(), 'yyyy-MM-dd'),
         equipment_id: equipId,
         technician_id: techId,
       }));
       setDefaultsApplied(true);
     }
-  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber, activeTechs, activeEquip]);
+  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, activeTechs, activeEquip]);
 
   // Remember last used technician
   useEffect(() => {
