@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Paperclip, Save, PenTool } from 'lucide-react';
-import { GroundingIcon } from '../../GroundingIcon';
+
 import { cn } from '@/lib/utils';
 import HandtekeningPad from '../../HandtekeningPad';
 import { useHandtekening } from '@/hooks/useHandtekening';
@@ -18,16 +18,14 @@ interface ElektrodeSamenvatting {
 }
 
 interface NextActionStepProps {
-  onAddElectrode: () => void;
   onGoToSketch: () => void;
   onSave: () => void;
-  nextElectrodeNumber: number;
   compact?: boolean;
   onHandtekeningChange?: (base64: string | null) => void;
   elektrodes?: ElektrodeSamenvatting[];
 }
 
-export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
@@ -141,14 +139,6 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
       )}
 
       <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
-        <ActionCard
-          icon={<GroundingIcon size={compact ? 16 : 18} />}
-          label={`Elektrode ${nextElectrodeNumber} starten`}
-          description="Nieuwe elektrode met nieuwe pennen"
-          onClick={onAddElectrode}
-          compact={compact}
-          primary
-        />
         <ActionCard
           icon={<Paperclip className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
           label="Schets en bijlagen"

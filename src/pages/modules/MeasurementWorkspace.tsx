@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, WifiOff, AlertTriangle, Check, X as XIcon, Plus, Loader2 } from 'lucide-react';
+import { ArrowLeft, WifiOff, AlertTriangle, Check, X as XIcon, Plus, Loader2, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
-import { useElectrodes, useCreateElectrode, useUpdateElectrode } from '@/hooks/use-electrodes';
+import { useElectrodes, useCreateElectrode, useUpdateElectrode, useDeleteElectrode } from '@/hooks/use-electrodes';
 import { usePens, useCreatePen, useUpdatePen, useDeletePen } from '@/hooks/use-pens';
 import { useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
@@ -47,6 +47,7 @@ export default function MeasurementWorkspace() {
   const { data: electrodes = [] } = useElectrodes(session?.id);
   const createElectrode = useCreateElectrode();
   const updateElectrode = useUpdateElectrode();
+  const deleteElectrode = useDeleteElectrode();
 
   const [activeElectrodeId, setActiveElectrodeId] = useState<string | null>(null);
   const activeElectrode = electrodes.find((e: any) => e.id === activeElectrodeId);
@@ -75,6 +76,7 @@ export default function MeasurementWorkspace() {
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const [elektrodesAanmaken, setElektrodesAanmaken] = useState(false);
+  const [elektrodeTeVerwijderen, setElektrodeTeVerwijderen] = useState<any>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // DEEL 1 — Battery warning
@@ -520,31 +522,45 @@ export default function MeasurementWorkspace() {
         const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
         const actief = e.id === activeElectrodeId;
         return (
-          <button
-            key={e.id}
-            onMouseDown={(ev) => {
-              ev.preventDefault();
-              (document.activeElement as HTMLElement)?.blur();
-              handleElectrodeWissel(e.id);
-            }}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.96] min-h-[34px]',
-              actief
-                ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
-                : klaar && voldoet
-                  ? 'bg-green-500/10 text-green-600 border border-green-500/20'
-                  : klaar && !voldoet
-                    ? 'bg-destructive/8 text-destructive border border-destructive/20'
-                    : 'bg-card text-foreground border border-border/40'
+          <div key={e.id} className="relative shrink-0">
+            <button
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                (document.activeElement as HTMLElement)?.blur();
+                handleElectrodeWissel(e.id);
+              }}
+              className={cn(
+                'flex items-center gap-1.5 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all duration-150 active:scale-[0.96] min-h-[34px]',
+                !actief && electrodes.length > 1 ? 'pl-3 pr-6' : 'px-3',
+                actief
+                  ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                  : klaar && voldoet
+                    ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                    : klaar && !voldoet
+                      ? 'bg-destructive/8 text-destructive border border-destructive/20'
+                      : 'bg-card text-foreground border border-border/40'
+              )}
+            >
+              {klaar && voldoet && !actief && (
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {e.electrode_code}
+            </button>
+            {!actief && electrodes.length > 1 && (
+              <button
+                onMouseDown={(ev) => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setElektrodeTeVerwijderen(e);
+                }}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center bg-foreground/10 text-muted-foreground/60 active:bg-foreground/20 transition-all"
+              >
+                <XIcon className="h-2.5 w-2.5" />
+              </button>
             )}
-          >
-            {klaar && voldoet && !actief && (
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-            {e.electrode_code}
-          </button>
+          </div>
         );
       })}
 
@@ -705,10 +721,8 @@ export default function MeasurementWorkspace() {
 
             {step === 2 && !showSketch && (
               <NextActionStep
-                onAddElectrode={handleAddNewElectrode}
                 onGoToSketch={() => setShowSketch(true)}
                 onSave={() => navigate(`/projects/${id}`)}
-                nextElectrodeNumber={electrodes.length + 1}
                 onHandtekeningChange={setHandtekeningB64}
                 elektrodes={elektrodesVoorSamenvatting}
                 compact
@@ -774,6 +788,51 @@ export default function MeasurementWorkspace() {
                 Opslaan
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Electrode delete confirmation dialog */}
+        {elektrodeTeVerwijderen && (
+          <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-end justify-center p-4">
+            <div className="w-full max-w-sm bg-background rounded-3xl p-5 shadow-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </div>
+              </div>
+              <h3 className="text-[17px] font-bold text-foreground mb-1">
+                {elektrodeTeVerwijderen.electrode_code} verwijderen?
+              </h3>
+              <p className="text-[14px] text-muted-foreground/60 mb-5">
+                Alle metingen, pennen en foto's van deze elektrode worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={async () => {
+                    const delId = elektrodeTeVerwijderen.id;
+                    const delCode = elektrodeTeVerwijderen.electrode_code;
+                    setElektrodeTeVerwijderen(null);
+                    try {
+                      await deleteElectrode.mutateAsync({ id: delId, sessionId: session!.id });
+                      const over = electrodes.filter((e: any) => e.id !== delId);
+                      if (over.length > 0) handleElectrodeWissel(over[over.length - 1].id);
+                      toast({ description: `${delCode} verwijderd` });
+                    } catch {
+                      toast({ variant: 'destructive', title: 'Verwijderen mislukt', description: 'Probeer opnieuw.' });
+                    }
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-destructive text-white font-semibold text-[15px] active:scale-[0.98] transition-all"
+                >
+                  Ja, verwijderen
+                </button>
+                <button
+                  onClick={() => setElektrodeTeVerwijderen(null)}
+                  className="w-full py-3.5 rounded-2xl bg-muted/30 text-muted-foreground font-semibold text-[15px] active:scale-[0.98] transition-all"
+                >
+                  Annuleren
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -852,24 +911,37 @@ export default function MeasurementWorkspace() {
             const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
             const actief = e.id === activeElectrodeId;
             return (
-              <button
-                key={e.id}
-                onClick={() => handleElectrodeWissel(e.id)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap shrink-0 transition-all',
-                  actief
-                    ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
-                    : klaar && voldoet
-                      ? 'bg-green-500/10 text-green-600 border border-green-500/20'
-                      : klaar && !voldoet
-                        ? 'bg-destructive/8 text-destructive border border-destructive/20'
-                        : 'bg-muted/30 text-muted-foreground/60'
+              <div key={e.id} className="relative shrink-0">
+                <button
+                  onClick={() => handleElectrodeWissel(e.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all',
+                    !actief && electrodes.length > 1 ? 'pl-3 pr-6' : 'px-3',
+                    actief
+                      ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                      : klaar && voldoet
+                        ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                        : klaar && !voldoet
+                          ? 'bg-destructive/8 text-destructive border border-destructive/20'
+                          : 'bg-muted/30 text-muted-foreground/60'
+                  )}
+                >
+                  {klaar && voldoet && !actief && <Check className="h-3 w-3" />}
+                  {klaar && !voldoet && !actief && <XIcon className="h-3 w-3" />}
+                  {e.electrode_code}
+                </button>
+                {!actief && electrodes.length > 1 && (
+                  <button
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setElektrodeTeVerwijderen(e);
+                    }}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center bg-foreground/10 text-muted-foreground/60 hover:bg-foreground/20 transition-all"
+                  >
+                    <XIcon className="h-2.5 w-2.5" />
+                  </button>
                 )}
-              >
-                {klaar && voldoet && !actief && <Check className="h-3 w-3" />}
-                {klaar && !voldoet && !actief && <XIcon className="h-3 w-3" />}
-                {e.electrode_code}
-              </button>
+              </div>
             );
           })}
           <button
@@ -911,10 +983,8 @@ export default function MeasurementWorkspace() {
 
         {step === 2 && !showSketch && (
           <NextActionStep
-            onAddElectrode={handleAddNewElectrode}
             onGoToSketch={() => setShowSketch(true)}
             onSave={() => navigate(`/projects/${id}`)}
-            nextElectrodeNumber={electrodes.length + 1}
             onHandtekeningChange={setHandtekeningB64}
             elektrodes={elektrodesVoorSamenvatting}
           />
@@ -942,6 +1012,51 @@ export default function MeasurementWorkspace() {
           onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
           nextLabel="Opslaan"
         />
+      )}
+
+      {/* Electrode delete confirmation dialog (desktop) */}
+      {elektrodeTeVerwijderen && (
+        <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-background rounded-3xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </div>
+            </div>
+            <h3 className="text-[17px] font-bold text-foreground mb-1">
+              {elektrodeTeVerwijderen.electrode_code} verwijderen?
+            </h3>
+            <p className="text-[14px] text-muted-foreground/60 mb-5">
+              Alle metingen, pennen en foto's van deze elektrode worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={async () => {
+                  const delId = elektrodeTeVerwijderen.id;
+                  const delCode = elektrodeTeVerwijderen.electrode_code;
+                  setElektrodeTeVerwijderen(null);
+                  try {
+                    await deleteElectrode.mutateAsync({ id: delId, sessionId: session!.id });
+                    const over = electrodes.filter((e: any) => e.id !== delId);
+                    if (over.length > 0) handleElectrodeWissel(over[over.length - 1].id);
+                    toast({ description: `${delCode} verwijderd` });
+                  } catch {
+                    toast({ variant: 'destructive', title: 'Verwijderen mislukt', description: 'Probeer opnieuw.' });
+                  }
+                }}
+                className="w-full py-3.5 rounded-2xl bg-destructive text-white font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Ja, verwijderen
+              </button>
+              <button
+                onClick={() => setElektrodeTeVerwijderen(null)}
+                className="w-full py-3.5 rounded-2xl bg-muted/30 text-muted-foreground font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Annuleren
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Exit confirmation dialog (desktop) */}
