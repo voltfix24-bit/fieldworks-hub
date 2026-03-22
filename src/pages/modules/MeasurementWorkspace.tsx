@@ -464,19 +464,24 @@ export default function MeasurementWorkspace() {
             )}
             <div className="ios-wizard-bottom-bar">
               {step > 0 ? (
-                <button className="ios-wizard-btn-back" onClick={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}>
+                <button className="ios-wizard-btn-back" onMouseDown={(e) => {
+                  e.preventDefault();
+                  (document.activeElement as HTMLElement)?.blur();
+                  setTimeout(() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }, 50);
+                }}>
                   <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   Vorige
                 </button>
               ) : <div />}
               <button
                 className={cn('ios-wizard-btn-next', rvMissing && step === 0 && 'opacity-40 pointer-events-none')}
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  (document.activeElement as HTMLElement)?.blur();
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
                   if (step === 0 && rvMissing) return;
                   if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
-                  setProgressionWarningDismissed(false);
-                  setStep(step + 1);
+                  setTimeout(() => { setProgressionWarningDismissed(false); setStep(step + 1); }, 50);
                 }}
               >
                 Volgende
