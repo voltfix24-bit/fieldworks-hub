@@ -69,13 +69,12 @@ export function SetupStep({
         </FieldGroup>
 
         <FieldGroup label="Opdrachtgever" compact={compact}>
-          <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
-            <SelectTrigger className={cn(fieldH, fieldText)}><SelectValue placeholder="Selecteer opdrachtgever" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">— Geen selectie —</SelectItem>
-              {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <ClientCombobox
+            value={selectedClient}
+            onChange={setSelectedClient}
+            clients={clients}
+            compact={compact}
+          />
         </FieldGroup>
 
         <FieldGroup label="Monteur" compact={compact}>
