@@ -1014,6 +1014,51 @@ export default function MeasurementWorkspace() {
         />
       )}
 
+      {/* Electrode delete confirmation dialog (desktop) */}
+      {elektrodeTeVerwijderen && (
+        <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-background rounded-3xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </div>
+            </div>
+            <h3 className="text-[17px] font-bold text-foreground mb-1">
+              {elektrodeTeVerwijderen.electrode_code} verwijderen?
+            </h3>
+            <p className="text-[14px] text-muted-foreground/60 mb-5">
+              Alle metingen, pennen en foto's van deze elektrode worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={async () => {
+                  const delId = elektrodeTeVerwijderen.id;
+                  const delCode = elektrodeTeVerwijderen.electrode_code;
+                  setElektrodeTeVerwijderen(null);
+                  try {
+                    await deleteElectrode.mutateAsync({ id: delId, sessionId: session!.id });
+                    const over = electrodes.filter((e: any) => e.id !== delId);
+                    if (over.length > 0) handleElectrodeWissel(over[over.length - 1].id);
+                    toast({ description: `${delCode} verwijderd` });
+                  } catch {
+                    toast({ variant: 'destructive', title: 'Verwijderen mislukt', description: 'Probeer opnieuw.' });
+                  }
+                }}
+                className="w-full py-3.5 rounded-2xl bg-destructive text-white font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Ja, verwijderen
+              </button>
+              <button
+                onClick={() => setElektrodeTeVerwijderen(null)}
+                className="w-full py-3.5 rounded-2xl bg-muted/30 text-muted-foreground font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Annuleren
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Exit confirmation dialog (desktop) */}
       {toonAfsluitBevestiging && (
         <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
