@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProject, useCreateProject, useUpdateProject } from '@/hooks/use-projects';
 import { useClients } from '@/hooks/use-clients';
+import { ClientCombobox } from '@/components/ui/ClientCombobox';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
@@ -225,20 +226,14 @@ export default function ProjectForm() {
           <div className="ios-form-divider" />
 
           {/* Opdrachtgever */}
-          <div className="ios-form-list-row">
-            <span className="ios-form-list-label">Opdrachtgever</span>
-            <Select value={form.client_id || '__none'} onValueChange={v => set('client_id', v === '__none' ? '' : v)}>
-              <SelectTrigger className="ios-form-select-trigger">
-                <span className={cn('truncate', !clientName && 'ios-form-placeholder')}>
-                  {clientName || 'Geen'}
-                </span>
-                <ChevronRight className="ios-form-chevron" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none">Geen</SelectItem>
-                {activeClients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="ios-form-field ios-form-field-full px-4 py-2.5">
+            <span className="ios-form-field-label">Opdrachtgever</span>
+            <ClientCombobox
+              value={form.client_id}
+              onChange={id => set('client_id', id)}
+              clients={activeClients}
+              onClientAangemaakt={() => {}}
+            />
           </div>
 
           <div className="ios-form-divider" />
