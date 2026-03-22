@@ -42,6 +42,30 @@ export function getDepthProgressionWarnings(measurements: DepthRow[]): Set<strin
   return warnings;
 }
 
+/**
+ * Detect gaps: a row has a value while an earlier row is still empty.
+ */
+function getGatenWarnings(measurements: DepthRow[]): Set<string> {
+  const warnings = new Set<string>();
+  const sorted = [...measurements].sort((a, b) => a.depth_meters - b.depth_meters);
+
+  let eersteLeeg: number | null = null;
+
+  for (const m of sorted) {
+    const heeftWaarde = m.resistance_value > 0;
+
+    if (!heeftWaarde && eersteLeeg === null) {
+      eersteLeeg = m.depth_meters;
+    }
+
+    if (heeftWaarde && eersteLeeg !== null) {
+      if (m.id) warnings.add(m.id);
+    }
+  }
+
+  return warnings;
+}
+
 export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete, disabled, compact }: DepthMeasurementTableProps) {
   const lowestResistance = measurements.length > 0
     ? Math.min(...measurements.filter(m => m.resistance_value > 0).map(m => m.resistance_value))
@@ -58,33 +82,31 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   // Depth progression validation
   const warningIds = getDepthProgressionWarnings(measurements);
 
-  // Sort measurements by depth for sequential validation
+  // Gap validation
+  const gatenWarningIds = getGatenWarnings(measurements);
+
+  // Sort measurements by depth
   const sortedMeasurements = [...measurements].sort((a, b) => a.depth_meters - b.depth_meters);
 
   return (
     <div className="space-y-0 overflow-x-hidden max-w-full">
       {/* Measurement rows */}
       <div className="rounded-lg overflow-hidden border border-border/30">
-        {sortedMeasurements.map((m, idx) => {
-          const vorigeRij = idx > 0 ? sortedMeasurements[idx - 1] : null;
-          const vorigeHeeftWaarde = idx === 0 || (vorigeRij?.resistance_value ?? 0) > 0;
-
-          return (
-            <DepthRowComponent
-              key={m.id}
-              row={m}
-              onUpdate={onUpdate}
-              onDelete={onDelete}
-              isLowest={lowestIsValid && m.resistance_value === lowestResistance && m.resistance_value > 0}
-              disabled={disabled}
-              isEven={idx % 2 === 0}
-              compact={compact}
-              isPreset={PRESET_DEPTHS.has(m.depth_meters)}
-              hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
-              vorigeHeeftWaarde={vorigeHeeftWaarde}
-            />
-          );
-        })}
+        {sortedMeasurements.map((m, idx) => (
+          <DepthRowComponent
+            key={m.id}
+            row={m}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            isLowest={lowestIsValid && m.resistance_value === lowestResistance && m.resistance_value > 0}
+            disabled={disabled}
+            isEven={idx % 2 === 0}
+            compact={compact}
+            isPreset={PRESET_DEPTHS.has(m.depth_meters)}
+            hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
+            heeftGatWaarschuwing={m.id ? gatenWarningIds.has(m.id) : false}
+          />
+        ))}
       </div>
 
       {/* Add deeper action */}
@@ -137,6 +159,19 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
         </div>
       )}
 
+      {/* Gap warnings summary */}
+      {gatenWarningIds.size > 0 && (
+        <div className={cn(
+          'flex items-start gap-2 rounded-md bg-amber-500/5 border border-amber-500/15',
+          compact ? 'px-2.5 py-1.5 mt-1' : 'px-3 py-2 mt-1.5'
+        )}>
+          <AlertTriangle className={cn('text-amber-500 shrink-0 mt-0.5', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+          <span className={cn('text-amber-700 dark:text-amber-400 font-medium leading-snug', compact ? 'text-[10px]' : 'text-[11px]')}>
+            Let op: er zijn dieptes overgeslagen. Controleer of dit klopt.
+          </span>
+        </div>
+      )}
+
       {measurements.length === 0 && (
         <div className="text-center py-6">
           <div className="w-8 h-8 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-1.5">
@@ -149,7 +184,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, hasProgressionWarning, vorigeHeeftWaarde }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, hasProgressionWarning, heeftGatWaarschuwing }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
@@ -159,15 +194,13 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   compact?: boolean;
   isPreset?: boolean;
   hasProgressionWarning?: boolean;
-  vorigeHeeftWaarde: boolean;
+  heeftGatWaarschuwing?: boolean;
 }) {
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
   const [isFocused, setIsFocused] = useState(false);
   const [saved, setSaved] = useState(false);
   const resistanceRef = useRef<HTMLInputElement>(null);
   const rijRef = useRef<HTMLDivElement>(null);
-
-  const isGeblokkeerd = !vorigeHeeftWaarde && row.resistance_value === 0;
 
   // Smart number suggestion: if user types e.g. "182" suggest "1,82"
   const toonSuggestie = (() => {
@@ -210,6 +243,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
       className={cn(
         'transition-colors duration-75 relative',
         hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
+        heeftGatWaarschuwing && !hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-300',
       )}
     >
       {/* Swipe delete background */}
@@ -230,7 +264,6 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
           hasProgressionWarning && 'bg-amber-500/[0.04]',
           isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
           saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
-          isGeblokkeerd && 'opacity-30',
         )}
         style={canSwipe ? {
           transform: `translateX(-${swipeX}px)`,
@@ -281,7 +314,6 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             onFocus={(e) => {
               setIsFocused(true);
               e.target.select();
-              // DEEL 3 — Scroll row into view for keyboard
               setTimeout(() => {
                 rijRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }, 300);
@@ -290,24 +322,30 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             onKeyDown={(e) => {
               if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
                 e.preventDefault();
-                handleBlur();
-                const inputs = document.querySelectorAll('.depth-input');
-                const arr = Array.from(inputs);
-                const idx = arr.indexOf(e.currentTarget);
-                const next = arr[idx + 1] as HTMLInputElement | undefined;
-                if (next) { next.focus(); next.select(); }
+                (e.target as HTMLInputElement).blur();
+                const alleInputs = Array.from(
+                  document.querySelectorAll('.depth-measurement-input')
+                ) as HTMLInputElement[];
+                const huidigeIndex = alleInputs.indexOf(e.target as HTMLInputElement);
+                const volgende = alleInputs[huidigeIndex + 1];
+                if (volgende) {
+                  setTimeout(() => {
+                    volgende.focus();
+                    volgende.select();
+                  }, 50);
+                }
               }
             }}
-            placeholder={isGeblokkeerd ? "Vul eerst vorige in" : "—"}
+            placeholder="—"
             className={cn(
-              'w-full bg-transparent outline-none border-0 depth-input',
+              'w-full bg-transparent outline-none border-0 depth-measurement-input',
               compact ? 'h-10 text-[15px] pr-4 px-3' : 'h-11 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
               'placeholder:text-muted-foreground/25'
             )}
-            disabled={disabled || isGeblokkeerd}
+            disabled={disabled}
           />
           <span className={cn(
             'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
