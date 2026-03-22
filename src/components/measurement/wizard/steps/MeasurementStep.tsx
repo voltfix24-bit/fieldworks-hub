@@ -281,7 +281,11 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
 
   return (
     <button
-      onClick={onExpand}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        (document.activeElement as HTMLElement)?.blur();
+        setTimeout(onExpand, 50);
+      }}
       className={cn(
         'w-full flex items-center gap-2.5 rounded-lg border border-border/25',
         'bg-muted/8 hover:bg-muted/20 transition-all duration-150',
@@ -289,13 +293,14 @@ function CollapsedPenSummary({ pen, electrode, tenantId, depthsInitRef, initiali
         compact ? 'px-3 py-2.5' : 'px-3.5 py-3'
       )}
     >
-      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+      <ChevronDown className="h-3.5 w-3.5 text-[hsl(var(--tenant-primary,var(--primary))/0.5)] shrink-0 -rotate-90" />
       <span className={cn('font-bold text-foreground/80 min-w-0 truncate', compact ? 'text-[12px]' : 'text-[13px]')}>{pen.pen_code}</span>
       <div className="flex items-center gap-2 shrink-0 ml-auto">
         <span className="text-[10px] text-muted-foreground/50 tabular-nums font-medium">{filledCount}/{measurements.length}</span>
         {lowest != null && (
           <span className="text-[11px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.8)] tabular-nums">{formatNlNumber(lowest)} Ω</span>
         )}
+        <span className="text-[9px] text-muted-foreground/25 font-medium shrink-0 ml-1">Bewerken</span>
       </div>
     </button>
   );

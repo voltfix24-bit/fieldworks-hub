@@ -42,7 +42,10 @@ export function useUpdateElectrode() {
       if (error) throw error;
       return data as Electrode;
     },
-    onSuccess: (data) => qc.invalidateQueries({ queryKey: ['electrodes', data.measurement_session_id] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['electrodes', data.measurement_session_id] });
+      qc.invalidateQueries({ queryKey: ['electrodes'] });
+    },
   });
 }
 
