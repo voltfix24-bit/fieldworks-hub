@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff, AlertTriangle, Check, X as XIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
@@ -94,6 +94,54 @@ export default function MeasurementWorkspace() {
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
   const [penWaarschuwingZichtbaar, setPenWaarschuwingZichtbaar] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
+
+  // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
+  useEffect(() => {
+    const blurActief = () => {
+      const actief = document.activeElement as HTMLElement;
+      if (actief && (actief.tagName === 'INPUT' || actief.tagName === 'TEXTAREA')) {
+        actief.blur();
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') blurActief();
+    };
+    const handleUnload = () => blurActief();
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, []);
+
+  // DEEL 11 — Scroll position per step
+  const scrollPosities = useRef<Record<number, number>>({});
+  const handleStapWissel = (nieuweStap: number) => {
+    scrollPosities.current[step] = window.scrollY;
+    setStep(nieuweStap);
+  };
+  useEffect(() => {
+    const opgeslagen = scrollPosities.current[step];
+    if (opgeslagen !== undefined) {
+      setTimeout(() => window.scrollTo({ top: opgeslagen, behavior: 'instant' as ScrollBehavior }), 50);
+    } else {
+      window.scrollTo({ top: 0 });
+    }
+  }, [step]);
+
+  // DEEL 9 — Context check on load
+  useEffect(() => {
+    if (!session) return;
+    const ontbreekt = !session.client_id || !session.technician_id || !session.equipment_id;
+    if (ontbreekt) {
+      setShowContextEdit(true);
+    }
+  }, [session?.id]);
+
+  // DEEL 13 — Exit confirmation
+  const [toonAfsluitBevestiging, setToonAfsluitBevestiging] = useState(false);
 
   // Sync form fields from session or project
   useEffect(() => {
@@ -231,9 +279,6 @@ export default function MeasurementWorkspace() {
   };
 
   const handlePenToevoegenMetCheck = () => {
-    // Check if we need to show a warning
-    // We'll just proceed since we can't access measurements here directly
-    // The warning is best shown in the MeasurementStep itself
     handleAddNewPen();
   };
 
@@ -253,24 +298,50 @@ export default function MeasurementWorkspace() {
     });
     setActivePenId(newPen.id);
     initializeDepthRows(newPen.id, newPen);
-    setStep(0); // back to measurements
+    handleStapWissel(0); // back to measurements
   };
 
+  // DEEL 7 — Photo upload with retry
+  const [lokaleFotoPreview, setLokaleFotoPreview] = useState<Record<string, string>>({});
+
   const handlePhotoUpload = async (type: 'display_photo_url' | 'overview_photo_url', file: File) => {
-    // Koppel altijd aan de EERSTE pen van de actieve elektrode
     const firstPen = pens[0];
     if (!firstPen) return;
     setUploading(true);
-    try {
-      const url = await uploadMeasurementPhoto(file, tenantId, firstPen.project_id);
+
+    const localUrl = URL.createObjectURL(file);
+    setLokaleFotoPreview(prev => ({ ...prev, [type]: localUrl }));
+
+    let pogingen = 0;
+    const maxPogingen = 3;
+
+    while (pogingen < maxPogingen) {
       try {
+        const url = await uploadMeasurementPhoto(file, tenantId, firstPen.project_id);
         await updatePen.mutateAsync({ id: firstPen.id, [type]: url });
-      } catch (dbErr: any) {
-        toast({ variant: 'destructive', title: 'Database-update mislukt', description: dbErr?.message || 'Foto geüpload maar koppeling mislukt.' });
+        URL.revokeObjectURL(localUrl);
+        setLokaleFotoPreview(prev => {
+          const nieuw = { ...prev };
+          delete nieuw[type];
+          return nieuw;
+        });
+        toast({ description: 'Foto opgeslagen ✓', duration: 1500 });
+        break;
+      } catch (err) {
+        pogingen++;
+        if (pogingen === maxPogingen) {
+          toast({
+            variant: 'destructive',
+            title: 'Foto upload mislukt',
+            description: 'Controleer je verbinding en probeer opnieuw.',
+            duration: 6000,
+          });
+        } else {
+          await new Promise(r => setTimeout(r, 1000 * pogingen));
+        }
       }
-    } catch (uploadErr: any) {
-      toast({ variant: 'destructive', title: 'Upload mislukt', description: uploadErr?.message || 'Controleer je verbinding en probeer opnieuw.' });
-    } finally { setUploading(false); }
+    }
+    setUploading(false);
   };
 
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
@@ -306,19 +377,23 @@ export default function MeasurementWorkspace() {
     </div>
   );
 
+  // DEEL 13 — Exit confirmation handler
   const handleBack = () => {
-    toast({
-      title: 'Meting automatisch opgeslagen',
-      description: 'Je kunt veilig teruggaan. Alle metingen zijn bewaard.',
-      duration: 3000,
-    });
-    setTimeout(() => navigate(`/projects/${id}`), 800);
+    const heeftInvoer = electrodes.length > 0;
+    if (heeftInvoer) {
+      setToonAfsluitBevestiging(true);
+    } else {
+      navigate(`/projects/${id}`);
+    }
   };
 
   const clientName = clients.find((c: any) => c.id === (session?.client_id || selectedClient))?.company_name;
   const techName = technicians.find((t: any) => t.id === (session?.technician_id || selectedTechnician))?.full_name;
   const equipName = equipment.find((e: any) => e.id === (session?.equipment_id || selectedEquipment))?.device_name;
   const displayStep = showSketch ? -1 : step;
+
+  // DEEL 9 — Context incomplete indicator
+  const contextOnvolledig = !selectedClient || !selectedTechnician || !selectedEquipment;
 
   // ═══════════════════════════════════════════════
   // MOBILE: fullscreen work mode
@@ -337,7 +412,7 @@ export default function MeasurementWorkspace() {
               <span>{project.project_name}</span>
             </button>
             {activeElectrode && !showSketch && (
-              <span className="ios-wizard-nav-badge">
+              <span className="ios-wizard-nav-badge max-w-[160px] truncate bg-[hsl(var(--tenant-primary)/0.12)] text-[hsl(var(--tenant-primary))] font-bold px-2.5 py-1 rounded-lg text-[11px]">
                 {activeElectrode.electrode_code}
                 {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
               </span>
@@ -356,7 +431,7 @@ export default function MeasurementWorkspace() {
                     i < step && 'done',
                   )}
                   onClick={() => {
-                    if (i <= step) { setShowSketch(false); setStep(i); setProgressionWarningDismissed(false); }
+                    if (i <= step) { setShowSketch(false); handleStapWissel(i); setProgressionWarningDismissed(false); }
                   }}
                 >
                   {i < step && (
@@ -371,6 +446,42 @@ export default function MeasurementWorkspace() {
           )}
         </div>
 
+        {/* DEEL 5 — Electrode progress bar */}
+        {electrodes.length > 1 && !showSketch && (
+          <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 overflow-x-auto border-b border-border/10">
+            {electrodes.map((e: any) => {
+              const klaar = e.ra_value != null || e.rv_value != null;
+              const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
+              const actief = e.id === activeElectrodeId;
+              return (
+                <button
+                  key={e.id}
+                  onMouseDown={(ev) => {
+                    ev.preventDefault();
+                    (document.activeElement as HTMLElement)?.blur();
+                    setActiveElectrodeId(e.id);
+                    handleStapWissel(0);
+                  }}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.96]',
+                    actief
+                      ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                      : klaar && voldoet
+                        ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                        : klaar && !voldoet
+                          ? 'bg-destructive/8 text-destructive border border-destructive/20'
+                          : 'bg-muted/30 text-muted-foreground/60'
+                  )}
+                >
+                  {klaar && voldoet && !actief && <Check className="h-3 w-3" />}
+                  {klaar && !voldoet && !actief && <XIcon className="h-3 w-3" />}
+                  {e.electrode_code}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* ─── Offline banner ─── */}
         {!isOnline && (
           <div className="shrink-0 flex items-center gap-2 px-4 py-2 bg-amber-500/10 border-b border-amber-400/20">
@@ -380,7 +491,7 @@ export default function MeasurementWorkspace() {
         )}
 
         {/* ─── Scrollable content ─── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2 overflow-x-hidden" style={{ maxWidth: '100vw' }} key={showSketch ? 'sketch' : step}>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2 overflow-x-hidden measurement-scroll-container" style={{ maxWidth: '100vw' }} key={showSketch ? 'sketch' : step}>
           <div className="wizard-step-enter">
 
             {/* Project context block — shown above measurements */}
@@ -399,6 +510,7 @@ export default function MeasurementWorkspace() {
                 selectedTechnician={selectedTechnician} setSelectedTechnician={setSelectedTechnician}
                 selectedEquipment={selectedEquipment} setSelectedEquipment={setSelectedEquipment}
                 clients={clients} technicians={technicians} equipment={equipment}
+                onvolledig={contextOnvolledig}
               />
             )}
 
@@ -422,8 +534,8 @@ export default function MeasurementWorkspace() {
             {step === 1 && !showSketch && activeElectrode && pens.length > 0 && (
               <PhotoStep
                 electrodeCode={activeElectrode.electrode_code}
-                displayPhotoUrl={pens[0]?.display_photo_url ?? null}
-                overviewPhotoUrl={pens[0]?.overview_photo_url ?? null}
+                displayPhotoUrl={lokaleFotoPreview['display_photo_url'] || (pens[0]?.display_photo_url ?? null)}
+                overviewPhotoUrl={lokaleFotoPreview['overview_photo_url'] || (pens[0]?.overview_photo_url ?? null)}
                 onUpload={(type, file) => handlePhotoUpload(type, file)}
                 onRemove={(type) => updatePen.mutate({ id: pens[0].id, [type]: null })}
                 uploading={uploading}
@@ -457,9 +569,18 @@ export default function MeasurementWorkspace() {
                 <span className="ios-wizard-warning-text">
                   {warningCount} {warningCount === 1 ? 'meetwaarde wijkt' : 'meetwaarden wijken'} af
                 </span>
-                <button className="ios-wizard-warning-btn" onClick={() => { setProgressionWarningDismissed(true); setStep(step + 1); }}>
+                <button className="ios-wizard-warning-btn" onClick={() => { setProgressionWarningDismissed(true); handleStapWissel(step + 1); }}>
                   Doorgaan
                 </button>
+              </div>
+            )}
+            {/* DEEL 6 — RV missing warning in bottom bar */}
+            {rvMissing && step === 0 && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/[0.06] border-t border-amber-500/20">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                  Vul de RV-waarde in om door te gaan — lees de waarde af van uw meetapparaat
+                </p>
               </div>
             )}
             <div className="ios-wizard-bottom-bar">
@@ -467,7 +588,7 @@ export default function MeasurementWorkspace() {
                 <button className="ios-wizard-btn-back" onMouseDown={(e) => {
                   e.preventDefault();
                   (document.activeElement as HTMLElement)?.blur();
-                  setTimeout(() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }, 50);
+                  setTimeout(() => { handleStapWissel(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }, 50);
                 }}>
                   <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   Vorige
@@ -481,7 +602,7 @@ export default function MeasurementWorkspace() {
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
                   if (step === 0 && rvMissing) return;
                   if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
-                  setTimeout(() => { setProgressionWarningDismissed(false); setStep(step + 1); }, 50);
+                  setTimeout(() => { setProgressionWarningDismissed(false); handleStapWissel(step + 1); }, 50);
                 }}
               >
                 Volgende
@@ -502,6 +623,32 @@ export default function MeasurementWorkspace() {
                 Opslaan
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* DEEL 13 — Exit confirmation dialog */}
+        {toonAfsluitBevestiging && (
+          <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-end justify-center p-4">
+            <div className="w-full max-w-sm bg-background rounded-3xl p-5 shadow-xl">
+              <h3 className="text-[17px] font-bold text-foreground mb-1">Meting verlaten?</h3>
+              <p className="text-[14px] text-muted-foreground/60 mb-5">
+                Alle ingevoerde metingen zijn automatisch opgeslagen. Je kunt later verdergaan.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => { setToonAfsluitBevestiging(false); navigate(`/projects/${id}`); }}
+                  className="w-full py-3.5 rounded-2xl bg-[hsl(var(--tenant-primary))] text-white font-semibold text-[15px] active:scale-[0.98] transition-all"
+                >
+                  Ja, verlaten
+                </button>
+                <button
+                  onClick={() => setToonAfsluitBevestiging(false)}
+                  className="w-full py-3.5 rounded-2xl bg-muted/30 text-muted-foreground font-semibold text-[15px] active:scale-[0.98] transition-all"
+                >
+                  Verder meten
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -548,9 +695,40 @@ export default function MeasurementWorkspace() {
         <WizardStepIndicator
           steps={DESKTOP_STEPS}
           currentStep={desktopStep}
-          onStepClick={(i) => { setShowSketch(false); setStep(i === 0 ? -1 : i - 1); }}
+          onStepClick={(i) => { setShowSketch(false); handleStapWissel(i === 0 ? -1 : i - 1); }}
         />
       </div>
+
+      {/* DEEL 5 — Electrode progress bar (desktop) */}
+      {electrodes.length > 1 && !showSketch && (
+        <div className="flex items-center gap-1.5 mb-4 overflow-x-auto">
+          {electrodes.map((e: any) => {
+            const klaar = e.ra_value != null || e.rv_value != null;
+            const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
+            const actief = e.id === activeElectrodeId;
+            return (
+              <button
+                key={e.id}
+                onClick={() => { setActiveElectrodeId(e.id); handleStapWissel(0); }}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap shrink-0 transition-all',
+                  actief
+                    ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                    : klaar && voldoet
+                      ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                      : klaar && !voldoet
+                        ? 'bg-destructive/8 text-destructive border border-destructive/20'
+                        : 'bg-muted/30 text-muted-foreground/60'
+                )}
+              >
+                {klaar && voldoet && !actief && <Check className="h-3 w-3" />}
+                {klaar && !voldoet && !actief && <XIcon className="h-3 w-3" />}
+                {e.electrode_code}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="min-h-[50vh] wizard-step-enter" key={showSketch ? 'sketch' : step}>
         {step === -1 && !showSketch && (
@@ -583,8 +761,8 @@ export default function MeasurementWorkspace() {
         {step === 1 && !showSketch && activeElectrode && pens.length > 0 && (
           <PhotoStep
             electrodeCode={activeElectrode.electrode_code}
-            displayPhotoUrl={pens[0]?.display_photo_url ?? null}
-            overviewPhotoUrl={pens[0]?.overview_photo_url ?? null}
+            displayPhotoUrl={lokaleFotoPreview['display_photo_url'] || (pens[0]?.display_photo_url ?? null)}
+            overviewPhotoUrl={lokaleFotoPreview['overview_photo_url'] || (pens[0]?.overview_photo_url ?? null)}
             onUpload={(type, file) => handlePhotoUpload(type, file)}
             onRemove={(type) => updatePen.mutate({ id: pens[0].id, [type]: null })}
             uploading={uploading}
@@ -609,8 +787,8 @@ export default function MeasurementWorkspace() {
       {step < 2 && !showSketch && (
         <StickyActionBar
           showPrev={step >= 0}
-          onPrev={() => setStep(step - 1)}
-          onNext={step === -1 ? handleSaveContext : () => { if (step === 0 && rvMissing) return; setStep(step + 1); }}
+          onPrev={() => handleStapWissel(step - 1)}
+          onNext={step === -1 ? handleSaveContext : () => { if (step === 0 && rvMissing) return; handleStapWissel(step + 1); }}
           nextLabel={step === -1 ? 'Opslaan & verder' : 'Volgende'}
           nextDisabled={step === 0 && rvMissing}
           nextLoading={updateSession.isPending || createSession.isPending}
@@ -624,6 +802,32 @@ export default function MeasurementWorkspace() {
           onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
           nextLabel="Opslaan"
         />
+      )}
+
+      {/* DEEL 13 — Exit confirmation dialog (desktop) */}
+      {toonAfsluitBevestiging && (
+        <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-background rounded-3xl p-6 shadow-xl">
+            <h3 className="text-[17px] font-bold text-foreground mb-1">Meting verlaten?</h3>
+            <p className="text-[14px] text-muted-foreground/60 mb-5">
+              Alle ingevoerde metingen zijn automatisch opgeslagen. Je kunt later verdergaan.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => { setToonAfsluitBevestiging(false); navigate(`/projects/${id}`); }}
+                className="w-full py-3.5 rounded-2xl bg-[hsl(var(--tenant-primary))] text-white font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Ja, verlaten
+              </button>
+              <button
+                onClick={() => setToonAfsluitBevestiging(false)}
+                className="w-full py-3.5 rounded-2xl bg-muted/30 text-muted-foreground font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Verder meten
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -644,6 +848,7 @@ interface MobileContextBlockProps {
   selectedTechnician: string; setSelectedTechnician: (v: string) => void;
   selectedEquipment: string; setSelectedEquipment: (v: string) => void;
   clients: any[]; technicians: any[]; equipment: any[];
+  onvolledig?: boolean;
 }
 
 function MobileContextBlock({
@@ -653,6 +858,7 @@ function MobileContextBlock({
   selectedTechnician, setSelectedTechnician,
   selectedEquipment, setSelectedEquipment,
   clients, technicians, equipment,
+  onvolledig,
 }: MobileContextBlockProps) {
   const summaryItems = [
     clientName, techName, equipName, date ? formatNlDate(date) : null,
@@ -667,8 +873,13 @@ function MobileContextBlock({
         <span className="ios-wizard-context-summary">
           {summaryItems.length > 0 ? summaryItems.join(' · ') : 'Meetgegevens instellen'}
         </span>
-        <div className="ios-wizard-context-edit">
-          <Pencil className="h-3 w-3" />
+        <div className="flex items-center gap-1.5">
+          {onvolledig && (
+            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+          )}
+          <div className="ios-wizard-context-edit">
+            <Pencil className="h-3 w-3" />
+          </div>
         </div>
       </button>
 

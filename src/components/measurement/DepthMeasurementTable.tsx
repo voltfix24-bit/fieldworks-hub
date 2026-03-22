@@ -165,6 +165,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   const [isFocused, setIsFocused] = useState(false);
   const [saved, setSaved] = useState(false);
   const resistanceRef = useRef<HTMLInputElement>(null);
+  const rijRef = useRef<HTMLDivElement>(null);
 
   const isGeblokkeerd = !vorigeHeeftWaarde && row.resistance_value === 0;
 
@@ -204,10 +205,13 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   const canSwipe = !isPreset && !disabled;
 
   return (
-    <div className={cn(
-      'transition-colors duration-75 relative',
-      hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
-    )}>
+    <div
+      ref={rijRef}
+      className={cn(
+        'transition-colors duration-75 relative',
+        hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
+      )}
+    >
       {/* Swipe delete background */}
       {canSwipe && swipeX > 10 && (
         <div className="absolute inset-0 flex items-center justify-end px-4 bg-destructive/90 rounded-sm">
@@ -274,7 +278,14 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             pattern="[0-9]*[.,]?[0-9]*"
             value={resistance}
             onChange={e => setResistance(e.target.value)}
-            onFocus={(e) => { setIsFocused(true); e.target.select(); }}
+            onFocus={(e) => {
+              setIsFocused(true);
+              e.target.select();
+              // DEEL 3 — Scroll row into view for keyboard
+              setTimeout(() => {
+                rijRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 300);
+            }}
             onBlur={handleBlur}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {

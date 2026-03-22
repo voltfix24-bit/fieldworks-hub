@@ -114,8 +114,10 @@ export function MeasurementStep({
         </div>
       </div>
 
+      {/* DEEL 12 — Sticky RA/RV status bar */}
       <div className={cn(
         'flex items-center justify-between rounded-2xl px-4 py-3',
+        'sticky top-0 z-20 backdrop-blur-xl bg-background/90 -mx-4 px-4',
         !showRv
           ? electrode.ra_value != null
             ? hasTarget
