@@ -6,6 +6,7 @@ import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
+import { Textarea } from '@/components/ui/textarea';
 
 interface MeasurementStepProps {
   electrode: any;
