@@ -695,6 +695,7 @@
   background: hsl(var(--tenant-primary));
 }
 .ios-cal-event-dot.green { background: hsl(var(--status-completed)); }
+.ios-cal-event-dot.red { background: hsl(var(--destructive)); }
 
 /* Day detail */
 .ios-cal-day-detail {
