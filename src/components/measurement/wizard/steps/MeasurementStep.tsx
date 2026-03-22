@@ -126,8 +126,8 @@ export function MeasurementStep({
                 : 'bg-destructive/[0.06]'
               : 'bg-[hsl(var(--tenant-primary,var(--primary))/0.06)]'
             : 'bg-muted/20'
-          : rvMissing
-            ? 'bg-amber-500/[0.06]'
+          : !electrode.rv_value
+            ? 'bg-card'
             : hasTarget
               ? targetMet
                 ? 'bg-[hsl(var(--status-completed)/0.08)]'
