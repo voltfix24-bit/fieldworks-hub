@@ -59,7 +59,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   const warningIds = getDepthProgressionWarnings(measurements);
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 overflow-x-hidden max-w-full">
       {/* Measurement rows */}
       <div className="rounded-lg overflow-hidden border border-border/30">
         {measurements.map((m, idx) => (

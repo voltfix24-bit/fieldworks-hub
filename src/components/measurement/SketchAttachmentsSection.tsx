@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Paperclip, Trash2, Upload, ImageIcon, ChevronDown, Loader2 } from 'lucide-react';
+import { Paperclip, Trash2, Camera, ImageIcon, FileUp, ChevronDown, Loader2 } from 'lucide-react';
 import { useAttachments, useCreateAttachment, useDeleteAttachment, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +17,9 @@ export function SketchAttachmentsSection({ projectId, tenantId, sessionId }: Ske
   const { data: attachments = [] } = useAttachments(projectId);
   const createAttachment = useCreateAttachment();
   const deleteAttachment = useDeleteAttachment();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const schetsRef = useRef<HTMLInputElement>(null);
+  const bestandRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [caption, setCaption] = useState('');
   const [isOpen, setIsOpen] = useState(true);
@@ -36,6 +38,13 @@ export function SketchAttachmentsSection({ projectId, tenantId, sessionId }: Ske
       });
       setCaption('');
     } finally { setUploading(false); }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await handleUpload(file, type);
+    e.target.value = '';
   };
 
   return (
@@ -70,34 +79,35 @@ export function SketchAttachmentsSection({ projectId, tenantId, sessionId }: Ske
                 placeholder="Omschrijf deze bijlage…"
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => { fileInputRef.current?.setAttribute('data-type', 'sketch_photo'); fileInputRef.current?.click(); }}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => cameraRef.current?.click()}
                 disabled={uploading}
-                className="flex-1 h-11 text-[13px] font-medium"
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] text-[hsl(var(--tenant-primary,var(--primary)))] text-[12px] font-medium active:scale-[0.97] transition-all disabled:opacity-40"
               >
-                {uploading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="mr-1.5 h-3.5 w-3.5" />}
-                {uploading ? 'Uploaden…' : 'Schets'}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => { fileInputRef.current?.setAttribute('data-type', 'other'); fileInputRef.current?.click(); }}
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
+                Camera
+              </button>
+              <button
+                onClick={() => schetsRef.current?.click()}
                 disabled={uploading}
-                className="flex-1 h-11 text-[13px] font-medium"
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-muted/20 text-muted-foreground/60 text-[12px] font-medium active:scale-[0.97] transition-all disabled:opacity-40"
               >
-                <Upload className="mr-1.5 h-3.5 w-3.5" /> Bestand
-              </Button>
+                <ImageIcon className="h-5 w-5" />
+                Galerij
+              </button>
+              <button
+                onClick={() => bestandRef.current?.click()}
+                disabled={uploading}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-muted/20 text-muted-foreground/60 text-[12px] font-medium active:scale-[0.97] transition-all disabled:opacity-40"
+              >
+                <FileUp className="h-5 w-5" />
+                Bestand
+              </button>
             </div>
-            <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const type = fileInputRef.current?.getAttribute('data-type') || 'other';
-                await handleUpload(file, type);
-                e.target.value = '';
-              }}
-            />
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={(e) => handleFileChange(e, 'sketch_photo')} className="hidden" />
+            <input ref={schetsRef} type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'sketch_photo')} className="hidden" />
+            <input ref={bestandRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.dwg,.dxf,.doc,.docx,.xls,.xlsx" onChange={(e) => handleFileChange(e, 'other')} className="hidden" />
           </div>
 
           {allAttachments.length > 0 && (

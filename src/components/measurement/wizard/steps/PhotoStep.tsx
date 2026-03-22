@@ -30,7 +30,7 @@ export function PhotoStep({ electrodeCode, displayPhotoUrl, overviewPhotoUrl, on
         </p>
       </div>
 
-      <div className={compact ? 'grid grid-cols-2 gap-3' : 'space-y-5'}>
+      <div className="space-y-4">
         <PhotoSlot
           label="Meetdisplay foto"
           description="Close-up van het meetapparaat"
@@ -93,24 +93,24 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
           'font-medium text-muted-foreground/50 mb-2',
           compact ? 'text-[10px]' : 'text-[11px]'
         )}>{label}</p>
-        <div className="relative inline-block">
+        <div className="relative">
           <button
             type="button"
             onClick={() => setFullscreen(true)}
-            className="rounded-xl overflow-hidden active:scale-[0.97] transition-transform"
+            className="rounded-xl overflow-hidden active:scale-[0.97] transition-transform w-full"
           >
             <img
               src={currentUrl}
               alt={label}
-              className="w-20 h-20 rounded-xl object-cover"
+              className="w-full h-36 rounded-xl object-cover"
             />
           </button>
           <button
             onClick={onRemove}
             disabled={isLoading}
-            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
           >
-            <X className="h-3 w-3" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
 
@@ -152,37 +152,29 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
       {isLoading ? (
         <div className={cn(
           'rounded-xl border border-dashed border-border/40 bg-muted/10 flex items-center justify-center gap-1.5',
-          compact ? 'h-20' : 'h-24'
+          'h-24'
         )}>
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/30" />
-          <span className={cn('text-muted-foreground/30 font-medium', compact ? 'text-[10px]' : 'text-[11px]')}>Uploaden…</span>
+          <span className="text-[11px] text-muted-foreground/30 font-medium">Uploaden…</span>
         </div>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           <button
             type="button"
             onClick={() => cameraRef.current?.click()}
             disabled={isLoading}
-            className={cn(
-              'flex items-center gap-1.5 rounded-xl font-medium transition-all active:scale-[0.96]',
-              'bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] text-[hsl(var(--tenant-primary,var(--primary)))]',
-              compact ? 'px-3 py-2 text-[11px] min-h-[44px]' : 'px-3.5 py-2.5 text-[12px] min-h-[44px]'
-            )}
+            className="flex items-center justify-center gap-2 w-full rounded-xl font-medium py-3 text-[13px] bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] text-[hsl(var(--tenant-primary,var(--primary)))] active:scale-[0.98] transition-all"
           >
-            <Camera className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+            <Camera className="h-4 w-4" />
             Camera
           </button>
           <button
             type="button"
             onClick={() => galleryRef.current?.click()}
             disabled={isLoading}
-            className={cn(
-              'flex items-center gap-1.5 rounded-xl font-medium transition-all active:scale-[0.96]',
-              'bg-[hsl(var(--tenant-primary,var(--primary))/0.1)] text-[hsl(var(--tenant-primary,var(--primary)))]',
-              compact ? 'px-3 py-2 text-[11px] min-h-[44px]' : 'px-3.5 py-2.5 text-[12px] min-h-[44px]'
-            )}
+            className="flex items-center justify-center gap-2 w-full rounded-xl font-medium py-3 text-[13px] bg-muted/30 text-muted-foreground/60 active:scale-[0.98] transition-all"
           >
-            <ImageIcon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+            <ImageIcon className="h-4 w-4" />
             Galerij
           </button>
         </div>
