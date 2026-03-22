@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X, MessageCircle, FileDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
@@ -16,6 +16,8 @@ import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSecti
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
+import { useRapportGeneratorBrowser } from '@/hooks/useRapportGeneratorBrowser';
+import { useRapportData } from '@/hooks/useRapportData';
 import { useHandtekening } from '@/hooks/useHandtekening';
 import { useToast } from '@/hooks/use-toast';
 import HandtekeningPad from '@/components/measurement/HandtekeningPad';
@@ -30,6 +32,8 @@ export default function ProjectReport() {
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
+  const { genereer: genereerBrowser, bezig: browserBezig } = useRapportGeneratorBrowser();
+  const { buildRapportData } = useRapportData(id);
   const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening(user?.id);
   const { toast } = useToast();
   const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
@@ -366,6 +370,33 @@ export default function ProjectReport() {
                 <Mail className="h-4 w-4" />
               </button>
             </div>
+
+            {/* Browser PDF button */}
+            <button
+              onClick={async () => {
+                const rapportData = await buildRapportData(actieveHandtekening ?? null);
+                if (!rapportData) {
+                  toast({ title: 'Geen data', description: 'Kon rapportdata niet ophalen.', variant: 'destructive' });
+                  return;
+                }
+                const bestandsnaam = `Aardingsrapport_${(project.project_number || project.project_name).replace(/\s+/g, '_').slice(0, 30)}_${rapportData.meetdatum.replace(/-/g, '')}.pdf`;
+                await genereerBrowser(rapportData, bestandsnaam);
+              }}
+              disabled={!actieveHandtekening || browserBezig}
+              className={cn(
+                'w-full flex items-center justify-center gap-2 rounded-xl font-semibold text-[13px] py-3 mt-2 transition-all active:scale-[0.98]',
+                actieveHandtekening
+                  ? 'bg-muted/20 border border-border/40 text-foreground'
+                  : 'bg-muted/10 text-muted-foreground/30 cursor-not-allowed'
+              )}
+            >
+              {browserBezig ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
+              {browserBezig ? 'Genereren…' : 'Download (browser)'}
+            </button>
 
             {/* Email modal */}
             {emailOpen && (
