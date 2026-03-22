@@ -31,6 +31,7 @@ export default function ProjectForm() {
   const { data: clients } = useClients();
   const { data: technicians } = useTechnicians();
   const { data: equipment } = useEquipmentList();
+  const { data: allProjects } = useProjects();
   const createMut = useCreateProject();
   const updateMut = useUpdateProject();
 
@@ -39,6 +40,7 @@ export default function ProjectForm() {
   const activeEquip = equipment?.filter(e => e.is_active) ?? [];
   const defaultTech = activeTechs.find(t => t.is_default);
   const autoNumber = useMemo(genProjectNumber, []);
+  const [duplicaatProject, setDuplicaatProject] = useState<any>(null);
 
   const [form, setForm] = useState({
     project_number: '', project_name: '', site_name: '',
