@@ -286,6 +286,15 @@ export default function MeasurementWorkspace() {
       const overige = pens.filter((p: any) => p.id !== penId);
       if (overige.length > 0) setActivePenId(overige[0].id);
     }
+    // Als er nog maar 1 pen over is → terug naar RA modus
+    const overigePennen = pens.filter((p: any) => p.id !== penId);
+    if (overigePennen.length === 1 && activeElectrodeId) {
+      await updateElectrode.mutateAsync({
+        id: activeElectrodeId,
+        is_coupled: false,
+        rv_value: null,
+      });
+    }
     toast({ description: 'Pen verwijderd' });
   };
 
@@ -357,14 +366,19 @@ export default function MeasurementWorkspace() {
 
   const qc = useQueryClient();
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
+    // Bij 2+ pennen is RV leidend — recalcRa NIET uitvoeren
+    const aantalPennen = pens.filter((p: any) => p.electrode_id === electrodeId).length;
+    if (aantalPennen >= 2) return;
+
+    // Bij 1 pen: RA automatisch berekenen
     const validValues = updatedMeasurements.filter((m: any) => m.resistance_value > 0).map((m: any) => m.resistance_value);
     const lowestResistance = validValues.length > 0 ? Math.min(...validValues) : null;
-    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance, rv_value: null }, {
+    updateElectrode.mutate({ id: electrodeId, ra_value: lowestResistance }, {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: ['electrodes', session?.id] });
       }
     });
-  }, [updateElectrode, qc, session?.id]);
+  }, [updateElectrode, qc, session?.id, pens]);
 
   if (projectLoading || sessionLoading) return (
     <div className="flex justify-center py-20"><GroundingLoader /></div>
@@ -590,15 +604,7 @@ export default function MeasurementWorkspace() {
                 </button>
               </div>
             )}
-            {/* DEEL 6 — RV missing warning in bottom bar */}
-            {rvMissing && step === 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/[0.06] border-t border-amber-500/20">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
-                  Vul de RV-waarde in om door te gaan — lees de waarde af van uw meetapparaat
-                </p>
-              </div>
-            )}
+            {/* DEEL 6 — RV hint (niet blokkerend) */}
             <div className="ios-wizard-bottom-bar">
               {step > 0 ? (
                 <button className="ios-wizard-btn-back" onMouseDown={(e) => {
@@ -611,12 +617,11 @@ export default function MeasurementWorkspace() {
                 </button>
               ) : <div />}
               <button
-                className={cn('ios-wizard-btn-next', rvMissing && step === 0 && 'opacity-40 pointer-events-none')}
+                className="ios-wizard-btn-next"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   (document.activeElement as HTMLElement)?.blur();
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
-                  if (step === 0 && rvMissing) return;
                   if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
                   setTimeout(() => { setProgressionWarningDismissed(false); handleStapWissel(step + 1); }, 50);
                 }}
@@ -804,9 +809,9 @@ export default function MeasurementWorkspace() {
         <StickyActionBar
           showPrev={step >= 0}
           onPrev={() => handleStapWissel(step - 1)}
-          onNext={step === -1 ? handleSaveContext : () => { if (step === 0 && rvMissing) return; handleStapWissel(step + 1); }}
+          onNext={step === -1 ? handleSaveContext : () => { handleStapWissel(step + 1); }}
           nextLabel={step === -1 ? 'Opslaan & verder' : 'Volgende'}
-          nextDisabled={step === 0 && rvMissing}
+          nextDisabled={false}
           nextLoading={updateSession.isPending || createSession.isPending}
         />
       )}

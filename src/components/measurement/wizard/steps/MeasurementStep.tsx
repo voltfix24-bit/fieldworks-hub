@@ -79,7 +79,7 @@ export function MeasurementStep({
   const handleRvBlur = () => {
     const parsed = parseNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
-      onUpdateElectrode({ rv_value: parsed, ra_value: null });
+      onUpdateElectrode({ rv_value: parsed, ra_value: null, is_coupled: true });
     }
   };
 
@@ -126,8 +126,8 @@ export function MeasurementStep({
                 : 'bg-destructive/[0.06]'
               : 'bg-[hsl(var(--tenant-primary,var(--primary))/0.06)]'
             : 'bg-muted/20'
-          : rvMissing
-            ? 'bg-amber-500/[0.06]'
+          : !electrode.rv_value
+            ? 'bg-card'
             : hasTarget
               ? targetMet
                 ? 'bg-[hsl(var(--status-completed)/0.08)]'
@@ -144,13 +144,13 @@ export function MeasurementStep({
               ? electrode.ra_value != null
                 ? hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--status-completed))]'
                 : 'text-muted-foreground/25'
-              : rvMissing
-                ? 'text-amber-600/70'
+              : !electrode.rv_value
+                ? 'text-muted-foreground/25'
                 : hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--status-completed))]'
           )}>
             {!showRv
               ? electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '— Ω'
-              : rvMissing ? '— Ω' : `${formatNlNumber(Number(electrode.rv_value))} Ω`
+              : !electrode.rv_value ? '— Ω' : `${formatNlNumber(Number(electrode.rv_value))} Ω`
             }
           </p>
         </div>
@@ -205,15 +205,14 @@ export function MeasurementStep({
 
             {isLast && showRv && (
               <div className={cn(
-                'mt-2 rounded-xl border bg-card overflow-hidden',
+                'mt-2 rounded-xl border border-border/30 bg-card overflow-hidden',
                 compact ? 'p-3' : 'p-4',
-                rvMissing ? 'border-amber-400/30' : 'border-border/30'
               )}>
                 <label className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/60 mb-1.5 block">
                   RV-waarde (Ω)
                 </label>
                 <div className="flex items-center gap-2">
-                  <GroundingIcon size={13} className={cn('shrink-0', rvMissing ? 'text-amber-500/60' : 'text-muted-foreground/60')} />
+                  <GroundingIcon size={13} className="shrink-0 text-muted-foreground/60" />
                   <input
                     type="text"
                     inputMode="decimal"
@@ -229,9 +228,9 @@ export function MeasurementStep({
                   />
                   <span className="text-[12px] text-muted-foreground/45 font-semibold">Ω</span>
                 </div>
-                {rvMissing && (
-                  <p className="text-[11px] text-amber-600 font-medium mt-1.5">
-                    Vul de RV-waarde in om door te gaan
+                {!rvInput && (
+                  <p className="text-[11px] text-muted-foreground/40 mt-1.5">
+                    Vul in na de laatste pen — afgelezen van meetapparaat
                   </p>
                 )}
               </div>
