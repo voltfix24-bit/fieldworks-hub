@@ -571,7 +571,8 @@ export default function MeasurementWorkspace() {
             pens={pens}
             tenantId={tenantId}
             onUpdateElectrode={(updates) => updateElectrode.mutate({ id: activeElectrode.id, ...updates })}
-            onAddPen={handleAddNewPen}
+            onAddPen={handlePenToevoegenMetCheck}
+            onDeletePen={handleDeletePen}
             recalcRa={recalcRa}
             depthsInitRef={depthsInitRef}
             initializeDepthRows={initializeDepthRows}
