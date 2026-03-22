@@ -911,10 +911,8 @@ export default function MeasurementWorkspace() {
 
         {step === 2 && !showSketch && (
           <NextActionStep
-            onAddElectrode={handleAddNewElectrode}
             onGoToSketch={() => setShowSketch(true)}
             onSave={() => navigate(`/projects/${id}`)}
-            nextElectrodeNumber={electrodes.length + 1}
             onHandtekeningChange={setHandtekeningB64}
             elektrodes={elektrodesVoorSamenvatting}
           />
