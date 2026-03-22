@@ -77,6 +77,17 @@ export default function MeasurementWorkspace() {
   const [elektrodesAanmaken, setElektrodesAanmaken] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
+  // DEEL 1 — Battery warning
+  const [batterijLaag, setBatterijLaag] = useState(false);
+
+  // DEEL 3 — Swipe between steps
+  const swipeStartX = useRef(0);
+  const swipeStartY = useRef(0);
+  const SWIPE_DREMPEL = 60;
+
+  // DEEL 4 — High contrast mode
+  const [hoogContrast, setHoogContrast] = useState(false);
+
   // Photo upload state per electrode
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
