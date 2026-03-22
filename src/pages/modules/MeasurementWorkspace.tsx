@@ -534,8 +534,8 @@ export default function MeasurementWorkspace() {
             {step === 1 && !showSketch && activeElectrode && pens.length > 0 && (
               <PhotoStep
                 electrodeCode={activeElectrode.electrode_code}
-                displayPhotoUrl={lokaleFotoPreview['display_photo_url'] || pens[0]?.display_photo_url ?? null}
-                overviewPhotoUrl={lokaleFotoPreview['overview_photo_url'] || pens[0]?.overview_photo_url ?? null}
+                displayPhotoUrl={lokaleFotoPreview['display_photo_url'] || (pens[0]?.display_photo_url ?? null)}
+                overviewPhotoUrl={lokaleFotoPreview['overview_photo_url'] || (pens[0]?.overview_photo_url ?? null)}
                 onUpload={(type, file) => handlePhotoUpload(type, file)}
                 onRemove={(type) => updatePen.mutate({ id: pens[0].id, [type]: null })}
                 uploading={uploading}
