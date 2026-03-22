@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, WifiOff, AlertTriangle, Check, X as XIcon, Plus, Loader2 } from 'lucide-react';
+import { ArrowLeft, WifiOff, AlertTriangle, Check, X as XIcon, Plus, Loader2, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
