@@ -53,16 +53,51 @@ export default function ProjectForm() {
 
   useEffect(() => {
     if (!isEdit && !defaultsApplied) {
+      const laatsteMonteur = localStorage.getItem(MONTEUR_KEY);
+      const techId = defaultTech?.id || laatsteMonteur || activeTechs[0]?.id || '';
+      const equipId = defaultEquipment?.id || (activeEquip.length === 1 ? activeEquip[0].id : '');
       setForm(prev => ({
         ...prev,
         project_number: autoNumber,
         planned_date: format(new Date(), 'yyyy-MM-dd'),
-        ...(defaultEquipment ? { equipment_id: defaultEquipment.id } : {}),
-        ...(defaultTech ? { technician_id: defaultTech.id } : {}),
+        equipment_id: equipId,
+        technician_id: techId,
       }));
       setDefaultsApplied(true);
     }
-  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber]);
+  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber, activeTechs, activeEquip]);
+
+  // Remember last used technician
+  useEffect(() => {
+    if (form.technician_id) {
+      localStorage.setItem(MONTEUR_KEY, form.technician_id);
+    }
+  }, [form.technician_id]);
+
+  // Auto-fill target_value from client's last project
+  useEffect(() => {
+    if (!form.client_id || !allProjects || form.target_value) return;
+    const klantProjecten = allProjects
+      .filter(p => p.client_id === form.client_id && (p as any).target_value != null)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    if (klantProjecten[0]) {
+      const waarde = String((klantProjecten[0] as any).target_value).replace('.', ',');
+      set('target_value', waarde);
+      if (!showExtra) setShowExtra(true);
+      toast({ description: `Toetswaarde ${waarde} Ω overgenomen van vorig project`, duration: 2500 });
+    }
+  }, [form.client_id]);
+
+  // Duplicate address detection
+  useEffect(() => {
+    if (!form.address_line_1 || !form.city || !allProjects) { setDuplicaatProject(null); return; }
+    const zoekAdres = `${form.address_line_1} ${form.city}`.toLowerCase().trim();
+    const bestaand = allProjects.find(p => {
+      const padres = `${p.address_line_1 || ''} ${p.city || ''}`.toLowerCase().trim();
+      return padres === zoekAdres && p.id !== id;
+    });
+    setDuplicaatProject(bestaand || null);
+  }, [form.address_line_1, form.city, allProjects]);
 
   useEffect(() => {
     if (existing) {
