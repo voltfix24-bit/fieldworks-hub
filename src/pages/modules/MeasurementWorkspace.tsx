@@ -604,15 +604,7 @@ export default function MeasurementWorkspace() {
                 </button>
               </div>
             )}
-            {/* DEEL 6 — RV missing warning in bottom bar */}
-            {rvMissing && step === 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/[0.06] border-t border-amber-500/20">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
-                  Vul de RV-waarde in om door te gaan — lees de waarde af van uw meetapparaat
-                </p>
-              </div>
-            )}
+            {/* DEEL 6 — RV hint (niet blokkerend) */}
             <div className="ios-wizard-bottom-bar">
               {step > 0 ? (
                 <button className="ios-wizard-btn-back" onMouseDown={(e) => {
