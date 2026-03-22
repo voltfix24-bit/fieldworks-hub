@@ -391,6 +391,31 @@ export default function ProjectDetail() {
         </DesktopSection>
       )}
 
+      {(() => {
+        const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
+        if (projectBestanden.length === 0) return null;
+        return (
+          <DesktopSection title="Projectbestanden">
+            {projectBestanden.map((bestand: any) => (
+              <div key={bestand.id} className="flex items-center py-2 border-b border-border/15 last:border-0">
+                <span className="text-sm text-foreground flex-1 truncate">{bestand.caption || 'Bestand'}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-lg"
+                  onClick={async () => {
+                    const { data } = await supabase.storage.from('project-files').createSignedUrl(bestand.file_url, 3600);
+                    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                  }}
+                >
+                  <Download className="h-3.5 w-3.5 mr-1" /> Openen
+                </Button>
+              </div>
+            ))}
+          </DesktopSection>
+        );
+      })()}
+
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <DesktopSection title="Meetopstelling" action={
           <Button variant="outline" size="sm" className="rounded-lg" onClick={() => navigate(`/projects/${id}/measurements`)}>{hasSession ? 'Openen' : 'Starten'}</Button>
