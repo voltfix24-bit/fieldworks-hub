@@ -14,9 +14,33 @@ import { supabase } from '@/integrations/supabase/client';
 export default function SettingsIndex() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { branding } = useTenant();
+  const { profile } = useAuth();
+  const { tenant, branding } = useTenant();
   const { data: technicians } = useTechnicians();
   const { data: equipment } = useEquipmentList();
+  const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+  const { toegestaan, vraagToestemming } = usePushNotifications();
+  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'light') {
+      root.classList.remove('dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   const hasLogo = !!(branding?.logo_url || branding?.compact_logo_url);
   const hasKvk = !!branding?.kvk_number;
