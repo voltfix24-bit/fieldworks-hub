@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProject, useCreateProject, useUpdateProject } from '@/hooks/use-projects';
 import { useClients } from '@/hooks/use-clients';
+import { ClientCombobox } from '@/components/ui/ClientCombobox';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
