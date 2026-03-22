@@ -420,6 +420,42 @@ export default function MeasurementWorkspace() {
   });
 
 
+  // Summary data for NextActionStep
+  const elektrodesVoorSamenvatting = electrodes.map((e: any) => {
+    const eerstePen = allePens.find((p: any) => p.electrode_id === e.id);
+    const isRv = (allePens.filter((p: any) => p.electrode_id === e.id).length >= 2);
+    return {
+      id: e.id,
+      code: e.electrode_code,
+      eindtype: (isRv ? 'RV' : 'RA') as 'RA' | 'RV',
+      eindwaarde: isRv ? e.rv_value : e.ra_value,
+      targetValue: e.target_value,
+      heeftDisplayFoto: !!eerstePen?.display_photo_url,
+      heeftOverzichtFoto: !!eerstePen?.overview_photo_url,
+    };
+  });
+
+  // Swipe handlers for mobile step navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    swipeStartX.current = e.touches[0].clientX;
+    swipeStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = swipeStartX.current - e.changedTouches[0].clientX;
+    const dy = Math.abs(swipeStartY.current - e.changedTouches[0].clientY);
+    if (dy > 40) return;
+    if (Math.abs(dx) < SWIPE_DREMPEL) return;
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+    if (dx > 0 && step < 2) {
+      if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
+      handleStapWissel(step + 1);
+      if (navigator.vibrate) navigator.vibrate(6);
+    } else if (dx < 0 && step > 0) {
+      handleStapWissel(step - 1);
+      if (navigator.vibrate) navigator.vibrate(6);
+    }
+  };
+
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
     // Bij 2+ pennen is RV leidend — recalcRa NIET uitvoeren
     const aantalPennen = pens.filter((p: any) => p.electrode_id === electrodeId).length;
