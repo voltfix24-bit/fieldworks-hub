@@ -916,6 +916,7 @@ export default function MeasurementWorkspace() {
             onSave={() => navigate(`/projects/${id}`)}
             nextElectrodeNumber={electrodes.length + 1}
             onHandtekeningChange={setHandtekeningB64}
+            elektrodes={elektrodesVoorSamenvatting}
           />
         )}
 

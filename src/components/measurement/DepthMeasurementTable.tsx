@@ -339,7 +339,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0 depth-measurement-input',
-              compact ? 'h-10 text-[15px] pr-4 px-3' : 'h-11 text-[16px] pr-5 px-3.5',
+              compact ? 'h-12 text-[16px] pr-4 px-3' : 'h-12 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',

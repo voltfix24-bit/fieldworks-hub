@@ -7,6 +7,16 @@ import { useHandtekening } from '@/hooks/useHandtekening';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
+interface ElektrodeSamenvatting {
+  id: string;
+  code: string;
+  eindtype: 'RA' | 'RV';
+  eindwaarde: number | null;
+  targetValue: number | null;
+  heeftDisplayFoto: boolean;
+  heeftOverzichtFoto: boolean;
+}
+
 interface NextActionStepProps {
   onAddElectrode: () => void;
   onGoToSketch: () => void;
@@ -14,9 +24,10 @@ interface NextActionStepProps {
   nextElectrodeNumber: number;
   compact?: boolean;
   onHandtekeningChange?: (base64: string | null) => void;
+  elektrodes?: ElektrodeSamenvatting[];
 }
 
-export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange }: NextActionStepProps) {
+export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
@@ -48,6 +59,86 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           Kies hoe je verder wilt gaan
         </p>
       </div>
+
+      {/* DEEL 2 — Samenvatting */}
+      {elektrodes.length > 0 && (
+        <div className="mb-5 rounded-2xl bg-card border border-border/30 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/50">
+              Samenvatting
+            </span>
+            <span className={cn(
+              'text-[11px] font-bold px-2 py-0.5 rounded-full',
+              elektrodes.every(e =>
+                e.eindwaarde !== null &&
+                e.targetValue !== null &&
+                e.eindwaarde <= e.targetValue
+              )
+                ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                : 'bg-amber-500/10 text-amber-600'
+            )}>
+              {elektrodes.filter(e =>
+                e.eindwaarde !== null &&
+                e.targetValue !== null &&
+                e.eindwaarde <= e.targetValue
+              ).length}/{elektrodes.length} voldoet
+            </span>
+          </div>
+          <div className="divide-y divide-border/15">
+            {elektrodes.map((e, i) => {
+              const heeftWaarde = e.eindwaarde !== null;
+              const voldoet = heeftWaarde && e.targetValue !== null && e.eindwaarde! <= e.targetValue;
+              const fotosOk = e.heeftDisplayFoto && e.heeftOverzichtFoto;
+              const fotosDeels = e.heeftDisplayFoto || e.heeftOverzichtFoto;
+
+              return (
+                <div key={e.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className={cn(
+                    'w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold',
+                    voldoet
+                      ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                      : heeftWaarde
+                        ? 'bg-destructive/10 text-destructive'
+                        : 'bg-muted/30 text-muted-foreground/40'
+                  )}>
+                    {voldoet ? '✓' : heeftWaarde ? '✗' : i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-foreground">{e.code}</p>
+                    <p className={cn(
+                      'text-[11px] font-medium',
+                      voldoet
+                        ? 'text-[hsl(var(--status-completed))]'
+                        : heeftWaarde
+                          ? 'text-destructive'
+                          : 'text-muted-foreground/40'
+                    )}>
+                      {heeftWaarde
+                        ? `${e.eindtype} · ${String(e.eindwaarde).replace('.', ',')} Ω`
+                        : 'Geen waarde'
+                      }
+                    </p>
+                  </div>
+                  <div className={cn(
+                    'flex items-center gap-1 text-[10px] font-semibold shrink-0',
+                    fotosOk
+                      ? 'text-[hsl(var(--status-completed))]'
+                      : fotosDeels
+                        ? 'text-amber-500'
+                        : 'text-muted-foreground/25'
+                  )}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="5" width="18" height="15" rx="2" stroke="currentColor" strokeWidth="2"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+                    </svg>
+                    {fotosOk ? '2/2' : fotosDeels ? '1/2' : '0/2'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
         <ActionCard
