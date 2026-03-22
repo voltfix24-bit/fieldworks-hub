@@ -911,24 +911,37 @@ export default function MeasurementWorkspace() {
             const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
             const actief = e.id === activeElectrodeId;
             return (
-              <button
-                key={e.id}
-                onClick={() => handleElectrodeWissel(e.id)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap shrink-0 transition-all',
-                  actief
-                    ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
-                    : klaar && voldoet
-                      ? 'bg-green-500/10 text-green-600 border border-green-500/20'
-                      : klaar && !voldoet
-                        ? 'bg-destructive/8 text-destructive border border-destructive/20'
-                        : 'bg-muted/30 text-muted-foreground/60'
+              <div key={e.id} className="relative shrink-0">
+                <button
+                  onClick={() => handleElectrodeWissel(e.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all',
+                    !actief && electrodes.length > 1 ? 'pl-3 pr-6' : 'px-3',
+                    actief
+                      ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
+                      : klaar && voldoet
+                        ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                        : klaar && !voldoet
+                          ? 'bg-destructive/8 text-destructive border border-destructive/20'
+                          : 'bg-muted/30 text-muted-foreground/60'
+                  )}
+                >
+                  {klaar && voldoet && !actief && <Check className="h-3 w-3" />}
+                  {klaar && !voldoet && !actief && <XIcon className="h-3 w-3" />}
+                  {e.electrode_code}
+                </button>
+                {!actief && electrodes.length > 1 && (
+                  <button
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setElektrodeTeVerwijderen(e);
+                    }}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center bg-foreground/10 text-muted-foreground/60 hover:bg-foreground/20 transition-all"
+                  >
+                    <XIcon className="h-2.5 w-2.5" />
+                  </button>
                 )}
-              >
-                {klaar && voldoet && !actief && <Check className="h-3 w-3" />}
-                {klaar && !voldoet && !actief && <XIcon className="h-3 w-3" />}
-                {e.electrode_code}
-              </button>
+              </div>
             );
           })}
           <button
