@@ -259,6 +259,13 @@ export function MeasurementStep({
         <Plus className="h-3.5 w-3.5" />
         Pen toevoegen
       </button>
+
+      {/* DEEL 6 — Notitie per elektrode */}
+      <ElectrodeNoteSection
+        notes={electrode.notes}
+        onSave={(notes) => onUpdateElectrode({ notes })}
+        compact={compact}
+      />
     </div>
   );
 }
