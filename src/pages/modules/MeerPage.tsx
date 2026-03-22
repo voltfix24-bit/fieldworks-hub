@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor, Users, HardHat, Wrench, FileText } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor, Users, HardHat, Wrench, FileText, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -50,6 +51,7 @@ export default function MeerPage() {
   const { tenant, branding } = useTenant();
   const isMobile = useIsMobile();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+  const { toegestaan, vraagToestemming } = usePushNotifications();
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
   });
@@ -150,6 +152,33 @@ export default function MeerPage() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Meldingen */}
+        <div className="ios-meer-section">
+          <p className="ios-meer-section-title">Meldingen</p>
+          <div className="ios-meer-card">
+            {!toegestaan ? (
+              <button onClick={vraagToestemming} className="ios-meer-row">
+                <div className={cn('ios-meer-icon', 'ios-meer-icon-orange')}>
+                  <Bell className="h-4 w-4" />
+                </div>
+                <div className="ios-meer-row-text">
+                  <p className="ios-meer-row-title">Meldingen inschakelen</p>
+                  <p className="ios-meer-row-sub">Ontvang herinneringen voor geplande projecten</p>
+                </div>
+                <ChevronRight className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground) / 0.25)' }} />
+              </button>
+            ) : (
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[14px] font-medium text-foreground">Projectherinneringen</p>
+                  <span className="text-[11px] font-semibold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">Aan</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/40 mt-0.5">Je ontvangt herinneringen voor geplande projecten</p>
+              </div>
+            )}
           </div>
         </div>
 

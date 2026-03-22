@@ -1,17 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useProject, useCreateProject, useUpdateProject } from '@/hooks/use-projects';
+import { useProject, useCreateProject, useUpdateProject, useProjects } from '@/hooks/use-projects';
 import { useClients } from '@/hooks/use-clients';
 import { ClientCombobox } from '@/components/ui/ClientCombobox';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronDown, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+
+const MONTEUR_KEY = 'aardpen_laatste_monteur';
 
 function genProjectNumber(): string {
   const y = new Date().getFullYear();
@@ -29,6 +31,7 @@ export default function ProjectForm() {
   const { data: clients } = useClients();
   const { data: technicians } = useTechnicians();
   const { data: equipment } = useEquipmentList();
+  const { data: allProjects } = useProjects();
   const createMut = useCreateProject();
   const updateMut = useUpdateProject();
 
@@ -37,6 +40,7 @@ export default function ProjectForm() {
   const activeEquip = equipment?.filter(e => e.is_active) ?? [];
   const defaultTech = activeTechs.find(t => t.is_default);
   const autoNumber = useMemo(genProjectNumber, []);
+  const [duplicaatProject, setDuplicaatProject] = useState<any>(null);
 
   const [form, setForm] = useState({
     project_number: '', project_name: '', site_name: '',
@@ -49,16 +53,51 @@ export default function ProjectForm() {
 
   useEffect(() => {
     if (!isEdit && !defaultsApplied) {
+      const laatsteMonteur = localStorage.getItem(MONTEUR_KEY);
+      const techId = defaultTech?.id || laatsteMonteur || activeTechs[0]?.id || '';
+      const equipId = defaultEquipment?.id || (activeEquip.length === 1 ? activeEquip[0].id : '');
       setForm(prev => ({
         ...prev,
         project_number: autoNumber,
         planned_date: format(new Date(), 'yyyy-MM-dd'),
-        ...(defaultEquipment ? { equipment_id: defaultEquipment.id } : {}),
-        ...(defaultTech ? { technician_id: defaultTech.id } : {}),
+        equipment_id: equipId,
+        technician_id: techId,
       }));
       setDefaultsApplied(true);
     }
-  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber]);
+  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, autoNumber, activeTechs, activeEquip]);
+
+  // Remember last used technician
+  useEffect(() => {
+    if (form.technician_id) {
+      localStorage.setItem(MONTEUR_KEY, form.technician_id);
+    }
+  }, [form.technician_id]);
+
+  // Auto-fill target_value from client's last project
+  useEffect(() => {
+    if (!form.client_id || !allProjects || form.target_value) return;
+    const klantProjecten = allProjects
+      .filter(p => p.client_id === form.client_id && (p as any).target_value != null)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    if (klantProjecten[0]) {
+      const waarde = String((klantProjecten[0] as any).target_value).replace('.', ',');
+      set('target_value', waarde);
+      if (!showExtra) setShowExtra(true);
+      toast({ description: `Toetswaarde ${waarde} Ω overgenomen van vorig project`, duration: 2500 });
+    }
+  }, [form.client_id]);
+
+  // Duplicate address detection
+  useEffect(() => {
+    if (!form.address_line_1 || !form.city || !allProjects) { setDuplicaatProject(null); return; }
+    const zoekAdres = `${form.address_line_1} ${form.city}`.toLowerCase().trim();
+    const bestaand = allProjects.find(p => {
+      const padres = `${p.address_line_1 || ''} ${p.city || ''}`.toLowerCase().trim();
+      return padres === zoekAdres && p.id !== id;
+    });
+    setDuplicaatProject(bestaand || null);
+  }, [form.address_line_1, form.city, allProjects]);
 
   useEffect(() => {
     if (existing) {
@@ -204,6 +243,24 @@ export default function ProjectForm() {
               />
             </div>
           </div>
+
+          {/* Duplicate address warning */}
+          {duplicaatProject && (
+            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 mt-2 mx-4">
+              <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-[12px] font-semibold text-amber-700 dark:text-amber-400">Al een project op dit adres</p>
+                <p className="text-[11px] text-amber-600/70 mt-0.5">{duplicaatProject.project_name} · {duplicaatProject.project_number}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(`/projects/${duplicaatProject.id}`)}
+                className="text-[11px] font-semibold text-amber-600 px-2 py-1 rounded-lg bg-amber-500/10 active:scale-95 transition-all shrink-0"
+              >
+                Bekijken →
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── SECTION C: Uitvoering ── */}

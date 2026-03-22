@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useTenant } from '@/contexts/TenantContext';
@@ -12,6 +13,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO, isPast } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const { tenant } = useTenant();
@@ -19,6 +22,48 @@ export default function Dashboard() {
   const { data: projects } = useProjects();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+
+  // Daily calibration check
+  useEffect(() => {
+    const KALIBRATIE_CHECK_KEY = 'aardpen_kalibratie_check_datum';
+    const vandaag = new Date().toISOString().split('T')[0];
+    if (localStorage.getItem(KALIBRATIE_CHECK_KEY) === vandaag) return;
+    
+    (async () => {
+      try {
+        const { data: apparaat } = await supabase
+          .from('equipment')
+          .select('*')
+          .eq('is_active', true)
+          .eq('is_default', true)
+          .limit(1)
+          .maybeSingle();
+        
+        if (apparaat?.next_calibration_date) {
+          localStorage.setItem(KALIBRATIE_CHECK_KEY, vandaag);
+          const verloopDatum = new Date(apparaat.next_calibration_date);
+          const nu = new Date();
+          const dagenOver = Math.ceil((verloopDatum.getTime() - nu.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (dagenOver < 0) {
+            toast({
+              title: '⚠️ Kalibratie verlopen',
+              description: `${apparaat.device_name} is verlopen op ${verloopDatum.toLocaleDateString('nl-NL')}. Gebruik dit apparaat niet voor officiële metingen.`,
+              variant: 'destructive',
+              duration: 8000,
+            });
+          } else if (dagenOver <= 30) {
+            toast({
+              title: 'Kalibratie verloopt binnenkort',
+              description: `${apparaat.device_name} verloopt over ${dagenOver} dagen. Plan een nieuwe kalibratie.`,
+              duration: 5000,
+            });
+          }
+        }
+      } catch {}
+    })();
+  }, []);
 
   const planned = projects?.filter(p => p.status === 'planned') ?? [];
   const completed = projects?.filter(p => p.status === 'completed') ?? [];

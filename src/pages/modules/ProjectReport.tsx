@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X } from 'lucide-react';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
@@ -151,6 +151,7 @@ export default function ProjectReport() {
   const [emailTo, setEmailTo] = useState(client?.email || '');
   const [emailNaam, setEmailNaam] = useState(client?.contact_name || '');
   const [emailSending, setEmailSending] = useState(false);
+  const [whatsAppLoading, setWhatsAppLoading] = useState(false);
 
   const handleSendEmail = async () => {
     if (!emailTo) return;
@@ -171,6 +172,56 @@ export default function ProjectReport() {
       toast({ title: 'Versturen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
     } finally {
       setEmailSending(false);
+    }
+  };
+
+  const handleWhatsApp = async () => {
+    setWhatsAppLoading(true);
+    try {
+      // Generate PDF and get signed URL
+      const { data, error: fnError } = await supabase.functions.invoke('generate-rapport', {
+        body: { project_id: id, handtekening_b64: actieveHandtekening ?? undefined },
+      });
+      if (fnError) throw new Error(fnError.message);
+
+      let rapportUrl = '';
+      if (data?.pdf_base64) {
+        // Upload to storage and get signed URL
+        const binaryStr = atob(data.pdf_base64);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+        
+        const pad = `shared/${id}/${Date.now()}_${data.bestandsnaam || 'rapport.pdf'}`;
+        const { data: upload, error: uploadErr } = await supabase.storage
+          .from('generated-reports')
+          .upload(pad, bytes, { contentType: 'application/pdf', upsert: false });
+        if (uploadErr) throw uploadErr;
+        
+        const { data: signedData } = await supabase.storage
+          .from('generated-reports')
+          .createSignedUrl(upload.path, 86400);
+        rapportUrl = signedData?.signedUrl || '';
+      }
+
+      const klantNaam = client?.company_name || 'opdrachtgever';
+      const projectNaam = project.project_name;
+      const datum = formatNlDate(session?.measurement_date);
+      
+      const bericht = `Geachte ${klantNaam},\n\nHierbij het aardingsrapport voor project "${projectNaam}" (${datum}).\n\n📄 Rapport downloaden:\n${rapportUrl}\n\nMet vriendelijke groet,\n${tech?.full_name || 'Het team'}`;
+      const encoded = encodeURIComponent(bericht);
+
+      if (client?.phone) {
+        const telefoon = client.phone.replace(/[\s\-\(\)]/g, '').replace(/^0/, '31');
+        window.open(`https://wa.me/${telefoon}?text=${encoded}`, '_blank');
+      } else {
+        window.open(`https://wa.me/?text=${encoded}`, '_blank');
+      }
+
+      toast({ title: 'WhatsApp geopend', description: 'Controleer het bericht en verstuur naar de opdrachtgever.' });
+    } catch (err) {
+      toast({ title: 'Delen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } finally {
+      setWhatsAppLoading(false);
     }
   };
 
@@ -289,6 +340,18 @@ export default function ProjectReport() {
                   <Download className="h-4 w-4" />
                 )}
                 {rapportLoading ? 'Genereren…' : 'Download'}
+              </button>
+              <button
+                onClick={handleWhatsApp}
+                disabled={!actieveHandtekening || whatsAppLoading}
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 px-4 transition-all active:scale-[0.98]',
+                  actieveHandtekening
+                    ? 'bg-[#25D366]/10 text-[#25D366]'
+                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+                )}
+              >
+                {whatsAppLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
               </button>
               <button
                 onClick={() => setEmailOpen(true)}

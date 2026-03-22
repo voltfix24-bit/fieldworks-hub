@@ -152,6 +152,15 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   const [saved, setSaved] = useState(false);
   const resistanceRef = useRef<HTMLInputElement>(null);
 
+  // Smart number suggestion: if user types e.g. "182" suggest "1,82"
+  const toonSuggestie = (() => {
+    const r = parseNlNumber(resistance);
+    if (isNaN(r) || r <= 10) return null;
+    const gesuggereerd = r / 100;
+    if (gesuggereerd > 0 && gesuggereerd <= 10) return gesuggereerd;
+    return null;
+  })();
+
   // Swipe-to-delete state
   const [swipeX, setSwipeX] = useState(0);
   const [swiping, setSwiping] = useState(false);
@@ -276,6 +285,17 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
             compact ? 'text-[9px]' : 'text-[9px]'
           )}>Ω</span>
+          {toonSuggestie && isFocused && (
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setResistance(String(toonSuggestie).replace('.', ','));
+              }}
+              className="absolute -bottom-5 left-0 text-[9px] text-[hsl(var(--tenant-primary,var(--primary)))] font-medium whitespace-nowrap z-10"
+            >
+              Bedoel je {String(toonSuggestie).replace('.', ',')}?
+            </button>
+          )}
         </div>
 
         {/* Delete / warning icon */}
