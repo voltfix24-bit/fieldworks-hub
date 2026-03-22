@@ -286,6 +286,15 @@ export default function MeasurementWorkspace() {
       const overige = pens.filter((p: any) => p.id !== penId);
       if (overige.length > 0) setActivePenId(overige[0].id);
     }
+    // Als er nog maar 1 pen over is → terug naar RA modus
+    const overigePennen = pens.filter((p: any) => p.id !== penId);
+    if (overigePennen.length === 1 && activeElectrodeId) {
+      await updateElectrode.mutateAsync({
+        id: activeElectrodeId,
+        is_coupled: false,
+        rv_value: null,
+      });
+    }
     toast({ description: 'Pen verwijderd' });
   };
 
