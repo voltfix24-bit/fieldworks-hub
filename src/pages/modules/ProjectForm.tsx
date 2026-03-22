@@ -170,8 +170,8 @@ export default function ProjectForm() {
     }
   };
 
-  const saving = createMut.isPending || updateMut.isPending;
-  const canSubmit = form.project_number.trim() && form.project_name.trim();
+  const saving = createMut.isPending || updateMut.isPending || uploadende;
+  const canSubmit = form.project_name.trim();
 
   const clientName = activeClients.find(c => c.id === form.client_id)?.company_name;
   const techName = activeTechs.find(t => t.id === form.technician_id)?.full_name;
