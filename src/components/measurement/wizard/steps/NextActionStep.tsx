@@ -25,7 +25,7 @@ interface NextActionStepProps {
   elektrodes?: ElektrodeSamenvatting[];
 }
 
-export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
