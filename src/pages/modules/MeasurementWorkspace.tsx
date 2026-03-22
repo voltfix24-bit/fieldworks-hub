@@ -71,6 +71,7 @@ export default function MeasurementWorkspace() {
 
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
+  const deletePen = useDeletePen();
 
   const createMeasurement = useCreateDepthMeasurement();
   const updateMeasurement = useUpdateDepthMeasurement();
@@ -91,6 +92,7 @@ export default function MeasurementWorkspace() {
   const [autoInitError, setAutoInitError] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
+  const [penWaarschuwingZichtbaar, setPenWaarschuwingZichtbaar] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // Sync form fields from session or project
