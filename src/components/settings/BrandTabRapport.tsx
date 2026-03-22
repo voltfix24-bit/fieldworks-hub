@@ -203,7 +203,7 @@ export function BrandTabRapport({ form, updateField }: BrandTabRapportProps) {
       {/* Signing block */}
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-foreground">Ondertekening</h3>
-        <SectionToggle label="Ondertekenblok tonen" checked={form.report_sign_block === true} onChange={v => updateField('report_sign_block', v)} />
+        <SectionToggle label="Ondertekenblok tonen" checked={form.report_sign_block !== false} onChange={v => updateField('report_sign_block', v)} />
         {form.report_sign_block && (
           <div className="pl-2 space-y-1 border-l-2 border-border">
             <FieldToggle label="Naam uitvoerder" checked={form.report_sign_executor !== false} onChange={v => updateField('report_sign_executor', v)} />

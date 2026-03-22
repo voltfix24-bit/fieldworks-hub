@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { WizardStepHeader } from '../WizardStepHeader';
+import { cn } from '@/lib/utils';
 
 interface ElectrodeStepProps {
   electrodeCode: string;
@@ -49,10 +50,24 @@ export function ElectrodeStep({
           />
         </FieldGroup>
 
-        <div className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/50">
+        <div className={cn(
+          "flex items-center justify-between p-4 rounded-xl border transition-colors",
+          isCoupled
+            ? "bg-[hsl(var(--tenant-primary)/0.06)] border-[hsl(var(--tenant-primary)/0.2)]"
+            : "bg-muted/20 border-border/50"
+        )}>
           <div>
-            <p className="text-[13px] font-medium text-foreground">Gekoppeld</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Meerdere pennen aan dezelfde elektrode</p>
+            <p className="text-[13px] font-medium text-foreground">Pennen gekoppeld</p>
+            <p className={cn(
+              "text-[11px] mt-0.5 font-medium",
+              isCoupled
+                ? "text-[hsl(var(--tenant-primary))]"
+                : "text-muted-foreground"
+            )}>
+              {isCoupled
+                ? "RV — verspreidingsweerstand"
+                : "RA — aardingsweerstand"}
+            </p>
           </div>
           <Switch checked={isCoupled} onCheckedChange={setIsCoupled} />
         </div>

@@ -185,15 +185,20 @@ export default function PlanningPage() {
                         {format(day, 'd')}
                       </span>
                       <div className="ios-cal-event-dots">
-                        {hasProjects && dayProjects.slice(0, 3).map((p, i) => (
-                          <span
-                            key={i}
-                            className={cn(
-                              'ios-cal-event-dot',
-                              p.status === 'completed' && 'green'
-                            )}
-                          />
-                        ))}
+                        {hasProjects && (() => {
+                          const heeftAchterstallig = dayProjects.some(dp => {
+                            try { return dp.status === 'planned' && isPast(parseISO(dp.planned_date!)) && !isToday(parseISO(dp.planned_date!)); } catch { return false; }
+                          });
+                          const heeftGepland = dayProjects.some(dp => dp.status === 'planned') && !heeftAchterstallig;
+                          const heeftAfgerond = dayProjects.some(dp => dp.status === 'completed');
+                          return (
+                            <>
+                              {heeftAchterstallig && <span className="ios-cal-event-dot red" />}
+                              {heeftGepland && <span className="ios-cal-event-dot" />}
+                              {heeftAfgerond && <span className="ios-cal-event-dot green" />}
+                            </>
+                          );
+                        })()}
                       </div>
                     </button>
                   );

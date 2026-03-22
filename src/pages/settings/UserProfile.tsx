@@ -22,8 +22,15 @@ export default function UserProfile() {
   const isMobile = useIsMobile();
   const [fullName, setFullName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [email, setEmail] = useState('');
 
   useEffect(() => { if (profile?.full_name) setFullName(profile.full_name); }, [profile]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setEmail(data.user.email);
+    });
+  }, []);
 
   const handleSave = async () => {
     if (!user) return;
@@ -37,7 +44,6 @@ export default function UserProfile() {
   if (isMobile) {
     return (
       <div className="ios-settings-page animate-fade-in">
-        {/* Sticky top nav */}
         <div className="ios-settings-topnav">
           <button onClick={() => navigate('/meer')} className="ios-settings-nav-back">
             <ChevronLeft className="h-5 w-5" style={{ color: 'hsl(var(--tenant-primary))' }} />
@@ -50,7 +56,6 @@ export default function UserProfile() {
         </div>
 
         <div className="ios-settings-scroll">
-          {/* Name field */}
           <p className="ios-settings-section-label">Persoonlijke gegevens</p>
           <div className="ios-meer-card">
             <div className="ios-settings-field">
@@ -64,11 +69,10 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Account info */}
           <p className="ios-settings-section-label">Accountgegevens</p>
           <div className="ios-meer-card">
             {[
-              { label: 'E-mail', value: user?.email || '—' },
+              { label: 'E-mail', value: email || user?.email || '—' },
               { label: 'Rol', value: profile?.role?.replace('_', ' ') || '—' },
               { label: 'Bedrijf', value: tenant?.company_name || '—' },
             ].map((row, i, arr) => (
@@ -112,7 +116,7 @@ export default function UserProfile() {
       <Card>
         <CardHeader><CardTitle className="text-base">Accountgegevens</CardTitle></CardHeader>
         <CardContent>
-          <InfoRow label="E-mail" value={user?.email} />
+          <InfoRow label="E-mail" value={email || user?.email} />
           <InfoRow label="Rol" value={profile?.role?.replace('_', ' ')} />
           <InfoRow label="Bedrijf" value={tenant?.company_name} />
           <div className="flex flex-col sm:flex-row sm:items-center py-3">

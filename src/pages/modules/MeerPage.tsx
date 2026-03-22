@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor } from 'lucide-react';
+import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor, Users, HardHat, Wrench, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,6 +12,15 @@ const MENU_SECTIONS = [
     title: 'Account',
     items: [
       { label: 'Profiel', description: 'Persoonlijke gegevens', icon: User, iconStyle: 'ios-meer-icon-salmon' },
+    ],
+  },
+  {
+    title: 'Stamdata',
+    items: [
+      { label: 'Klanten', description: 'Opdrachtgevers beheren', icon: Users, iconStyle: 'ios-meer-icon-blue' },
+      { label: 'Monteurs', description: 'Technici en uitvoerders', icon: HardHat, iconStyle: 'ios-meer-icon-green' },
+      { label: 'Apparatuur', description: 'Meetapparatuur en kalibratie', icon: Wrench, iconStyle: 'ios-meer-icon-orange' },
+      { label: 'Rapporten', description: 'Gegenereerde rapporten', icon: FileText, iconStyle: 'ios-meer-icon-salmon' },
     ],
   },
   {
@@ -29,6 +38,10 @@ const PATHS: Record<string, string> = {
   'Huisstijl': '/settings/branding',
   'Bedrijfsgegevens': '/settings/tenant',
   'Alle instellingen': '/settings',
+  'Klanten': '/clients',
+  'Monteurs': '/technicians',
+  'Apparatuur': '/equipment',
+  'Rapporten': '/reports',
 };
 
 export default function MeerPage() {
@@ -148,7 +161,7 @@ export default function MeerPage() {
           </button>
         </div>
 
-        <p className="ios-meer-version">{tenant?.company_name} · v1.0</p>
+        <p className="ios-meer-version">{tenant?.company_name} · v0.0.0</p>
       </div>
     );
   }
@@ -219,7 +232,7 @@ export default function MeerPage() {
       </button>
 
       <p className="text-center text-[10px] text-muted-foreground/25 mt-6 mb-2">
-        {tenant?.company_name} · v1.0
+        {tenant?.company_name} · v0.0.0
       </p>
     </div>
   );

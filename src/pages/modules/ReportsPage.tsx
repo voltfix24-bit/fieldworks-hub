@@ -5,14 +5,17 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import { useGeneratedReports, downloadReport } from '@/hooks/use-generated-reports';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { formatNlDate } from '@/lib/nl-date';
-import { FileText, Download, ChevronRight, Loader2 } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
+import { FileText, Download, ChevronRight, Loader2, FolderKanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ReportsPage() {
   const { data: reports = [], isLoading } = useGeneratedReports();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [downloading, setDownloading] = useState<string | null>(null);
 
   const handleDownload = async (fileUrl: string, id: string) => {
@@ -26,6 +29,62 @@ export default function ReportsPage() {
     }
   };
 
+  if (isMobile) {
+    return (
+      <div className="ios-dash animate-fade-in">
+        <div className="ios-dash-greeting">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-foreground">Rapporten</h1>
+          <p className="ios-dash-greeting-sub">Gegenereerde meetrapporten</p>
+        </div>
+
+        {isLoading ? (
+          <Loader />
+        ) : reports.length === 0 ? (
+          <EmptyState
+            icon={FileText}
+            title="Nog geen rapporten"
+            description="Genereer je eerste rapport via een project om het hier te zien."
+            action={
+              <Button variant="outline" onClick={() => navigate('/projects')} className="rounded-xl">
+                <FolderKanban className="mr-2 h-4 w-4" /> Naar projecten
+              </Button>
+            }
+          />
+        ) : (
+          <div className="ios-dash-card mx-4">
+            {reports.map((r: any, i: number) => (
+              <div key={r.id}>
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center shrink-0">
+                    <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-semibold text-foreground truncate">
+                      {r.projects?.project_name || 'Onbekend project'}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground/40 font-mono">{r.projects?.project_number}</span>
+                      <span className="text-[11px] text-muted-foreground/30">·</span>
+                      <span className="text-[11px] text-muted-foreground/40">{formatNlDate(r.created_at)}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDownload(r.file_url, r.id)}
+                    disabled={downloading === r.id}
+                    className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center text-[hsl(var(--tenant-primary))]"
+                  >
+                    {downloading === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  </button>
+                </div>
+                {i < reports.length - 1 && <div className="ios-dash-row-divider" />}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="animate-fade-in">
       <PageHeader
@@ -34,12 +93,17 @@ export default function ReportsPage() {
       />
 
       {isLoading ? (
-        <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+        <Loader />
       ) : reports.length === 0 ? (
         <EmptyState
           icon={FileText}
           title="Nog geen rapporten"
           description="Rapporten verschijnen hier zodra ze gegenereerd zijn vanuit een project."
+          action={
+            <Button variant="outline" onClick={() => navigate('/projects')} className="rounded-xl">
+              <FolderKanban className="mr-2 h-4 w-4" /> Naar projecten
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-2xl bg-card overflow-hidden divide-y divide-border/20">

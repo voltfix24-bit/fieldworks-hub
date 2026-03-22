@@ -11,10 +11,11 @@ import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist'
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatNlDate } from '@/lib/nl-date';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
+import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
-  FileText, Play, Printer, AlertCircle, ChevronRight
+  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar
 } from 'lucide-react';
 
 export default function ProjectDetail() {
@@ -31,7 +32,7 @@ export default function ProjectDetail() {
   const { data: reportData } = useReportData(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  if (isLoading) return <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>;
+  if (isLoading) return <Loader />;
   if (!project) return <p className="text-muted-foreground/40 text-center py-16">Project niet gevonden</p>;
 
   const client = project.clients as any;
@@ -46,6 +47,9 @@ export default function ProjectDetail() {
   const hasMeasurements = (reportData?.stats.measurementCount || 0) > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
   const isReportReady = hasSession && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
+
+  const metingGestart = hasSession && hasElectrodes;
+  const metingKlaar = isReportReady;
 
   const readinessItems = [
     { label: 'Meetopstelling voltooid', met: hasSession },
@@ -104,8 +108,37 @@ export default function ProjectDetail() {
               {project.status === 'completed' ? 'Afgerond' : 'Gepland'}
             </span>
           </div>
+          {session?.measurement_date && (
+            <div className="flex items-center gap-1.5 mt-1 px-4">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground/30" />
+              <span className="text-[12px] text-muted-foreground/40">
+                Gemeten op {formatNlDate(session.measurement_date)}
+              </span>
+            </div>
+          )}
 
           <div className="ios-detail-scroll">
+            {/* Continue measuring CTA */}
+            {metingGestart && !metingKlaar && (
+              <button
+                onClick={() => navigate(`/projects/${id}/measurements`)}
+                className="w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 mb-4 bg-[hsl(var(--tenant-primary)/0.08)] border border-[hsl(var(--tenant-primary)/0.2)] active:scale-[0.98] transition-all"
+              >
+                <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary))] flex items-center justify-center shrink-0">
+                  <Play className="h-4 w-4 text-white ml-0.5" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-[14px] font-bold text-[hsl(var(--tenant-primary))]">
+                    Doorgaan met meten
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+                    Meting is nog niet afgerond
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-[hsl(var(--tenant-primary)/0.4)]" />
+              </button>
+            )}
+
             {/* Metingen hero card */}
             <button
               className="ios-detail-hero"
@@ -284,6 +317,14 @@ export default function ProjectDetail() {
             <StatusIndicator status={project.status} />
           </div>
           <p className="text-sm text-muted-foreground/50 font-mono">{project.project_number}</p>
+          {session?.measurement_date && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground/30" />
+              <span className="text-[12px] text-muted-foreground/40">
+                Gemeten op {formatNlDate(session.measurement_date)}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/projects/${id}/edit`)}><Pencil className="mr-2 h-3.5 w-3.5" /> Bewerken</Button>

@@ -11,7 +11,7 @@ import { User, Settings, LogOut } from 'lucide-react';
 
 export function AppHeader() {
   const { user, profile, signOut } = useAuth();
-  const { tenant } = useTenant();
+  const { tenant, branding } = useTenant();
   const navigate = useNavigate();
 
   const initials = profile?.full_name
@@ -19,9 +19,20 @@ export function AppHeader() {
     : user?.email?.[0]?.toUpperCase() || '?';
 
   return (
-    <header className="h-12 border-b border-border/30 bg-card/60 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
+    <header className="h-12 border-b border-border/30 bg-card/60 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 relative">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-muted-foreground/40 hover:text-foreground transition-colors" />
+      </div>
+
+      {/* Center logo */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+        {branding?.compact_logo_url && (
+          <img
+            src={branding.compact_logo_url}
+            alt=""
+            className="h-6 w-auto max-w-[120px] object-contain"
+          />
+        )}
       </div>
 
       <DropdownMenu>
