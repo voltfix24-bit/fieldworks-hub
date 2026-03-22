@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Paperclip, Save, PenTool } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ interface NextActionStepProps {
 export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElectrodeNumber, compact, onHandtekeningChange }: NextActionStepProps) {
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
+  const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
 
   const handleHandtekeningChange = async (base64: string | null) => {
     onHandtekeningChange?.(base64);
@@ -63,11 +65,19 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           onClick={onGoToSketch}
           compact={compact}
         />
+
+        {/* Visuele scheiding */}
+        <div className="flex items-center gap-3 py-1">
+          <div className="flex-1 border-t border-border/20" />
+          <span className="text-[10px] text-muted-foreground/30 font-medium">of</span>
+          <div className="flex-1 border-t border-border/20" />
+        </div>
+
         <ActionCard
           icon={<Save className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
           label="Opslaan"
           description="Voortgang opslaan en afsluiten"
-          onClick={onSave}
+          onClick={() => setOpslaanBevestiging(true)}
           compact={compact}
           saveStyle
         />
@@ -91,6 +101,32 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           monteurId={user?.id}
         />
       </div>
+
+      {/* DEEL 4 — Save confirmation dialog */}
+      {opslaanBevestiging && (
+        <div className="fixed inset-0 z-[500] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-background rounded-3xl p-5 shadow-xl">
+            <h3 className="text-[17px] font-bold text-foreground mb-1">Meting afsluiten?</h3>
+            <p className="text-[14px] text-muted-foreground/60 mb-5">
+              De voortgang wordt opgeslagen. Je kunt later verder gaan via de project detail pagina.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => { setOpslaanBevestiging(false); onSave(); }}
+                className="w-full py-3.5 rounded-2xl bg-[hsl(var(--tenant-primary))] text-white font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Opslaan en afsluiten
+              </button>
+              <button
+                onClick={() => setOpslaanBevestiging(false)}
+                className="w-full py-3.5 rounded-2xl bg-muted/30 text-muted-foreground font-semibold text-[15px] active:scale-[0.98] transition-all"
+              >
+                Verder meten
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
