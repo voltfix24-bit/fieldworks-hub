@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
       apparaat_naam: equip
         ? [equip.brand, equip.device_name].filter(Boolean).join(" ")
         : "—",
-      apparaat_serie: (equip?.serial_number as string) || null,
+      apparaat_serie: (equip?.serial_number as string) || "",
       meetmethode: "3-punts aardverspreidingsweerstand",
       kalibratie_datum: equip?.calibration_date
         ? new Date(equip.calibration_date as string).toLocaleDateString("nl-NL")
