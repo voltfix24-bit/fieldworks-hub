@@ -51,17 +51,9 @@ export function useRapportGeneratorBrowser() {
       // 3. Wait for images to load
       await new Promise(r => setTimeout(r, 600));
 
-      // 4. html2canvas → canvas
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        width: 794,
-        windowWidth: 794,
-      });
+      // 4. Zoek alle logische pagina's
+      const pageElements = container.querySelectorAll('[data-pdf-page]');
 
-      // 5. Split canvas into A4 pages
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'px',
@@ -71,45 +63,30 @@ export function useRapportGeneratorBrowser() {
 
       const pdfBreedte = pdf.internal.pageSize.getWidth();
       const pdfHoogte = pdf.internal.pageSize.getHeight();
-      const canvasBreedte = canvas.width;
-      const canvasHoogte = canvas.height;
-      const verhouding = pdfBreedte / canvasBreedte;
-      const paginaHoogteInCanvas = pdfHoogte / verhouding;
 
-      let positie = 0;
-      let paginaNummer = 0;
+      for (let i = 0; i < pageElements.length; i++) {
+        if (i > 0) pdf.addPage();
 
-      while (positie < canvasHoogte) {
-        if (paginaNummer > 0) {
-          pdf.addPage();
-        }
+        const pageEl = pageElements[i] as HTMLElement;
 
-        const paginaCanvas = document.createElement('canvas');
-        paginaCanvas.width = canvasBreedte;
-        paginaCanvas.height = Math.min(
-          paginaHoogteInCanvas,
-          canvasHoogte - positie
-        );
+        const canvas = await html2canvas(pageEl, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: 794,
+          windowWidth: 794,
+        });
 
-        const ctx = paginaCanvas.getContext('2d')!;
-        ctx.drawImage(
-          canvas,
-          0, positie,
-          canvasBreedte, paginaCanvas.height,
-          0, 0,
-          canvasBreedte, paginaCanvas.height
-        );
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgHoogte = (canvas.height / canvas.width) * pdfBreedte;
 
-        const imgData = paginaCanvas.toDataURL('image/jpeg', 0.95);
         pdf.addImage(
           imgData, 'JPEG',
           0, 0,
           pdfBreedte,
-          paginaCanvas.height * verhouding
+          Math.min(imgHoogte, pdfHoogte)
         );
-
-        positie += paginaHoogteInCanvas;
-        paginaNummer++;
       }
 
       // 6. Download
