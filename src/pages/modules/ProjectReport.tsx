@@ -342,6 +342,18 @@ export default function ProjectReport() {
                 {rapportLoading ? 'Genereren…' : 'Download'}
               </button>
               <button
+                onClick={handleWhatsApp}
+                disabled={!actieveHandtekening || whatsAppLoading}
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 px-4 transition-all active:scale-[0.98]',
+                  actieveHandtekening
+                    ? 'bg-[#25D366]/10 text-[#25D366]'
+                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
+                )}
+              >
+                {whatsAppLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              </button>
+              <button
                 onClick={() => setEmailOpen(true)}
                 disabled={!actieveHandtekening || rapportLoading}
                 className={cn(
