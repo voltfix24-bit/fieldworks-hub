@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Paperclip, Save, PenTool } from 'lucide-react';
-import { GroundingIcon } from '../../GroundingIcon';
+
 import { cn } from '@/lib/utils';
 import HandtekeningPad from '../../HandtekeningPad';
 import { useHandtekening } from '@/hooks/useHandtekening';
