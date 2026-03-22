@@ -1,18 +1,46 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
-import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle, Users, HardHat, Wrench, FileText, Settings, LogOut, Sun, Moon, Monitor, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function SettingsIndex() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { branding } = useTenant();
+  const { profile } = useAuth();
+  const { tenant, branding } = useTenant();
   const { data: technicians } = useTechnicians();
   const { data: equipment } = useEquipmentList();
+  const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+  const { toegestaan, vraagToestemming } = usePushNotifications();
+  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'light') {
+      root.classList.remove('dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   const hasLogo = !!(branding?.logo_url || branding?.compact_logo_url);
   const hasKvk = !!branding?.kvk_number;
@@ -55,57 +83,148 @@ export default function SettingsIndex() {
     ...(calWarnings > 0 ? [{ label: 'Kalibratie', value: `${calWarnings} waarschuwing${calWarnings !== 1 ? 'en' : ''}`, ok: false }] : []),
   ];
 
+  const MENU_SECTIONS = [
+    {
+      title: 'Account',
+      items: [
+        { label: 'Profiel', description: 'Persoonlijke gegevens', icon: User, iconStyle: 'ios-meer-icon-salmon', path: '/settings/profile' },
+      ],
+    },
+    {
+      title: 'Stamdata',
+      items: [
+        { label: 'Klanten', description: 'Opdrachtgevers beheren', icon: Users, iconStyle: 'ios-meer-icon-blue', path: '/clients' },
+        { label: 'Monteurs', description: 'Technici en uitvoerders', icon: HardHat, iconStyle: 'ios-meer-icon-green', path: '/technicians' },
+        { label: 'Apparatuur', description: 'Meetapparatuur en kalibratie', icon: Wrench, iconStyle: 'ios-meer-icon-orange', path: '/equipment' },
+        { label: 'Rapporten', description: 'Gegenereerde rapporten', icon: FileText, iconStyle: 'ios-meer-icon-salmon', path: '/reports' },
+      ],
+    },
+    {
+      title: 'Beheer',
+      items: [
+        { label: 'Huisstijl', description: 'Logo, kleuren & rapport', icon: Palette, iconStyle: 'ios-meer-icon-blue', path: '/settings/branding' },
+        { label: 'Bedrijfsgegevens', description: 'Naam, status & info', icon: Building2, iconStyle: 'ios-meer-icon-purple', path: '/settings/tenant' },
+      ],
+    },
+  ];
+
   if (isMobile) {
     return (
-      <div className="animate-fade-in">
-        <PageHeader title="Instellingen" description="Account en bedrijfsinstellingen" />
-        <div className="rounded-xl border border-border/40 bg-card overflow-hidden divide-y divide-border/30">
-          {sections.map(s => (
-            <button
-              key={s.path}
-              onClick={() => navigate(s.path)}
-              className="w-full flex items-center gap-3.5 px-4 py-3.5 hover:bg-muted/15 transition-colors text-left active:bg-muted/25"
-            >
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `hsl(${s.color} / 0.08)` }}
-              >
-                <s.icon className="h-[18px] w-[18px]" style={{ color: `hsl(${s.color} / 0.6)` }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-foreground">{s.title}</p>
-                <p className="text-[11px] text-muted-foreground/50 mt-0.5">{s.description}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {s.status && (
-                  <span className={cn(
-                    'text-[10px] font-medium',
-                    s.statusOk ? 'text-[hsl(var(--status-completed))]' : 'text-muted-foreground/40'
-                  )}>
-                    {s.statusOk ? '✓' : '✗'}
-                  </span>
-                )}
-                <ChevronRight className="h-4 w-4 text-muted-foreground/25" />
-              </div>
-            </button>
-          ))}
+      <div className="ios-meer-page animate-fade-in">
+        {/* Profile card */}
+        <div className="ios-meer-profile-card">
+          <div className="ios-meer-avatar">
+            {logoUrl ? (
+              <img src={logoUrl} alt="" className="h-7 w-7 object-contain" />
+            ) : (
+              <span className="text-[18px] font-bold" style={{ color: 'hsl(var(--tenant-primary) / 0.6)' }}>
+                {(profile?.full_name || '?')[0].toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="ios-meer-profile-info">
+            <p className="ios-meer-profile-name">{profile?.full_name || 'Gebruiker'}</p>
+            <p className="ios-meer-profile-company">{tenant?.company_name || ''}</p>
+          </div>
+          <button
+            onClick={() => navigate('/settings/profile')}
+            className="ios-meer-profile-edit"
+          >
+            Bewerk
+          </button>
         </div>
 
-        {statusItems.length > 0 && (
-          <div className="mt-4 rounded-xl border border-border/40 bg-card overflow-hidden divide-y divide-border/30">
-            {statusItems.map(item => (
-              <div key={item.label} className="flex items-center justify-between px-4 py-3">
-                <span className="text-[13px] text-foreground">{item.label}</span>
-                <span className={cn(
-                  'text-[12px] font-medium',
-                  item.ok ? 'text-[hsl(var(--status-completed))]' : 'text-amber-500'
-                )}>
-                  {item.value}
-                </span>
-              </div>
-            ))}
+        {/* Menu sections */}
+        {MENU_SECTIONS.map(section => (
+          <div key={section.title} className="ios-meer-section">
+            <p className="ios-meer-section-title">{section.title}</p>
+            <div className="ios-meer-card">
+              {section.items.map((item, i) => (
+                <div key={item.label}>
+                  <button
+                    onClick={() => navigate(item.path)}
+                    className="ios-meer-row"
+                  >
+                    <div className={cn('ios-meer-icon', item.iconStyle)}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
+                    <div className="ios-meer-row-text">
+                      <p className="ios-meer-row-title">{item.label}</p>
+                      <p className="ios-meer-row-sub">{item.description}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground) / 0.25)' }} />
+                  </button>
+                  {i < section.items.length - 1 && <div className="ios-meer-divider" />}
+                </div>
+              ))}
+            </div>
           </div>
-        )}
+        ))}
+
+        {/* Weergave */}
+        <div className="ios-meer-section">
+          <p className="ios-meer-section-title">Weergave</p>
+          <div className="ios-meer-card">
+            <div className="flex items-center gap-2 px-4 py-3">
+              {([
+                { key: 'light' as const, label: 'Licht', Icon: Sun },
+                { key: 'dark' as const, label: 'Donker', Icon: Moon },
+                { key: 'system' as const, label: 'Systeem', Icon: Monitor },
+              ]).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setThemeState(key)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.96]',
+                    theme === key
+                      ? 'bg-[hsl(var(--tenant-primary,var(--primary))/0.12)] text-[hsl(var(--tenant-primary,var(--primary)))]'
+                      : 'text-muted-foreground/50'
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Meldingen */}
+        <div className="ios-meer-section">
+          <p className="ios-meer-section-title">Meldingen</p>
+          <div className="ios-meer-card">
+            {!toegestaan ? (
+              <button onClick={vraagToestemming} className="ios-meer-row">
+                <div className={cn('ios-meer-icon', 'ios-meer-icon-orange')}>
+                  <Bell className="h-4 w-4" />
+                </div>
+                <div className="ios-meer-row-text">
+                  <p className="ios-meer-row-title">Meldingen inschakelen</p>
+                  <p className="ios-meer-row-sub">Ontvang herinneringen voor geplande projecten</p>
+                </div>
+                <ChevronRight className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground) / 0.25)' }} />
+              </button>
+            ) : (
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[14px] font-medium text-foreground">Projectherinneringen</p>
+                  <span className="text-[11px] font-semibold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">Aan</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/40 mt-0.5">Je ontvangt herinneringen voor geplande projecten</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Logout */}
+        <div className="ios-meer-card" style={{ marginTop: 8 }}>
+          <button onClick={handleLogout} className="ios-meer-logout-row">
+            <LogOut className="h-4 w-4" style={{ color: 'hsl(var(--destructive))' }} />
+            <span className="ios-meer-logout-label">Uitloggen</span>
+          </button>
+        </div>
+
+        <p className="ios-meer-version">{tenant?.company_name} · v0.0.0</p>
       </div>
     );
   }

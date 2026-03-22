@@ -73,7 +73,7 @@ const App = () => (
                 <Route path="/reports" element={<ReportsPage />} />
 
                 <Route path="/planning" element={<PlanningPage />} />
-                <Route path="/meer" element={<MeerPage />} />
+                <Route path="/meer" element={<Navigate to="/settings" replace />} />
 
                 <Route path="/settings" element={<SettingsIndex />} />
                 <Route path="/settings/branding" element={<BrandingSettings />} />

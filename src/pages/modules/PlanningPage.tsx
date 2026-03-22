@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { PageHeader } from '@/components/ui/page-header';
@@ -24,7 +25,10 @@ export default function PlanningPage() {
   const { data: projects = [] } = useProjects();
   const { data: technicians = [] } = useTechnicians();
   const isMobile = useIsMobile();
-  const [view, setView] = useState<ViewMode>('list');
+  const [searchParams] = useSearchParams();
+  const [view, setView] = useState<ViewMode>(
+    searchParams.get('view') === 'kalender' ? 'calendar' : 'list'
+  );
   const [calMonth, setCalMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
