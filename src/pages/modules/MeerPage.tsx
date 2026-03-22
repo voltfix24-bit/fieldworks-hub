@@ -51,6 +51,7 @@ export default function MeerPage() {
   const { tenant, branding } = useTenant();
   const isMobile = useIsMobile();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
+  const { toegestaan, vraagToestemming } = usePushNotifications();
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
   });
