@@ -130,13 +130,40 @@ export default function ProjectForm() {
       cable_material: form.cable_material || null,
     };
     try {
+      let savedProject: any;
       if (isEdit) {
-        await updateMut.mutateAsync({ id, ...payload, status: existing?.status || 'planned' });
+        savedProject = await updateMut.mutateAsync({ id, ...payload, status: existing?.status || 'planned' });
         toast({ title: 'Project bijgewerkt' });
       } else {
-        await createMut.mutateAsync(payload);
+        savedProject = await createMut.mutateAsync(payload);
         toast({ title: 'Project aangemaakt' });
       }
+
+      // Upload project files
+      const projectId = savedProject?.id || id;
+      if (projectBestanden.length > 0 && projectId && profile?.tenant_id) {
+        setUploadende(true);
+        try {
+          for (const bestand of projectBestanden) {
+            const pad = `${profile.tenant_id}/${projectId}/bestanden/${Date.now()}_${bestand.name}`;
+            const { data: uploadData, error } = await supabase.storage
+              .from('project-files')
+              .upload(pad, bestand, { contentType: bestand.type, upsert: false });
+            if (!error && uploadData) {
+              await supabase.from('project_attachments').insert({
+                tenant_id: profile.tenant_id,
+                project_id: projectId,
+                file_url: uploadData.path,
+                attachment_type: 'project_bestand',
+                caption: bestand.name,
+              });
+            }
+          }
+        } finally {
+          setUploadende(false);
+        }
+      }
+
       navigate('/projects');
     } catch (err: any) {
       toast({ title: 'Fout', description: err.message, variant: 'destructive' });
