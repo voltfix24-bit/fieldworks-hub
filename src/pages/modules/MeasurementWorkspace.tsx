@@ -5,7 +5,7 @@ import { ArrowLeft, WifiOff, AlertTriangle, Check, X as XIcon, Plus, Loader2 } f
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
-import { useElectrodes, useCreateElectrode, useUpdateElectrode } from '@/hooks/use-electrodes';
+import { useElectrodes, useCreateElectrode, useUpdateElectrode, useDeleteElectrode } from '@/hooks/use-electrodes';
 import { usePens, useCreatePen, useUpdatePen, useDeletePen } from '@/hooks/use-pens';
 import { useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { useAttachments, uploadMeasurementPhoto } from '@/hooks/use-attachments';
