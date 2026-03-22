@@ -32,6 +32,8 @@ export default function ProjectReport() {
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
+  const { genereer: genereerBrowser, bezig: browserBezig } = useRapportGeneratorBrowser();
+  const { buildRapportData } = useRapportData(id);
   const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening(user?.id);
   const { toast } = useToast();
   const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
