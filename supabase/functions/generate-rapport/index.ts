@@ -135,7 +135,8 @@ Deno.serve(async (req) => {
         nummer: idx + 1,
         code: el.electrode_code || `Elektrode ${idx + 1}`,
         notes: el.notes || null,
-        ...(isRv ? { rv: eindwaarde } : { ra: eindwaarde }),
+        ra: isRv ? "" : eindwaarde,
+        rv: isRv ? eindwaarde : "",
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
@@ -186,7 +187,7 @@ Deno.serve(async (req) => {
       apparaat_naam: equip
         ? [equip.brand, equip.device_name].filter(Boolean).join(" ")
         : "—",
-      apparaat_serie: (equip?.serial_number as string) || null,
+      apparaat_serie: (equip?.serial_number as string) || "",
       meetmethode: "3-punts aardverspreidingsweerstand",
       kalibratie_datum: equip?.calibration_date
         ? new Date(equip.calibration_date as string).toLocaleDateString("nl-NL")
