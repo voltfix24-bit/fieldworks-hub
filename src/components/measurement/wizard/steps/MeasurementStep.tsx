@@ -61,7 +61,7 @@ export function MeasurementStep({
   }, [rvMissing, onRvMissingChange]);
 
   useEffect(() => {
-    if (pens.length > 0) {
+    if (pens.length > 0 && !expandedPenId) {
       setExpandedPenId(pens[pens.length - 1].id);
     }
   }, [pens.length]);
