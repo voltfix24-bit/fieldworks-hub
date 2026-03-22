@@ -155,6 +155,33 @@ export default function MeerPage() {
           </div>
         </div>
 
+        {/* Meldingen */}
+        <div className="ios-meer-section">
+          <p className="ios-meer-section-title">Meldingen</p>
+          <div className="ios-meer-card">
+            {!toegestaan ? (
+              <button onClick={vraagToestemming} className="ios-meer-row">
+                <div className={cn('ios-meer-icon', 'ios-meer-icon-orange')}>
+                  <Bell className="h-4 w-4" />
+                </div>
+                <div className="ios-meer-row-text">
+                  <p className="ios-meer-row-title">Meldingen inschakelen</p>
+                  <p className="ios-meer-row-sub">Ontvang herinneringen voor geplande projecten</p>
+                </div>
+                <ChevronRight className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground) / 0.25)' }} />
+              </button>
+            ) : (
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[14px] font-medium text-foreground">Projectherinneringen</p>
+                  <span className="text-[11px] font-semibold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">Aan</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/40 mt-0.5">Je ontvangt herinneringen voor geplande projecten</p>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Logout */}
         <div className="ios-meer-card" style={{ marginTop: 8 }}>
           <button onClick={handleLogout} className="ios-meer-logout-row">
