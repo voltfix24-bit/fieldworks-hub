@@ -113,6 +113,37 @@ export default function MeasurementWorkspace() {
     };
   }, []);
 
+  // Battery check
+  useEffect(() => {
+    if (!('getBattery' in navigator)) return;
+    let battery: any = null;
+    const checkBatterij = () => {
+      if (!battery) return;
+      const pct = Math.round(battery.level * 100);
+      const laden = battery.charging;
+      setBatterijLaag(pct <= 20 && !laden);
+      if (pct <= 20 && !laden) {
+        toast({
+          title: `Batterij ${pct}%`,
+          description: 'Laad je telefoon op — niet opgeslagen data kan verloren gaan bij uitschakelen.',
+          duration: 8000,
+        });
+      }
+    };
+    (navigator as any).getBattery().then((bat: any) => {
+      battery = bat;
+      checkBatterij();
+      bat.addEventListener('levelchange', checkBatterij);
+      bat.addEventListener('chargingchange', checkBatterij);
+    }).catch(() => {});
+    return () => {
+      if (battery) {
+        battery.removeEventListener('levelchange', checkBatterij);
+        battery.removeEventListener('chargingchange', checkBatterij);
+      }
+    };
+  }, []);
+
   // Scroll position per step
   const scrollPosities = useRef<Record<number, number>>({});
   const handleStapWissel = (nieuweStap: number) => {
