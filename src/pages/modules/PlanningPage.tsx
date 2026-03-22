@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { PageHeader } from '@/components/ui/page-header';
