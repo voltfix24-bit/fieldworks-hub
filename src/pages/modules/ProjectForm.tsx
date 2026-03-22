@@ -424,6 +424,44 @@ export default function ProjectForm() {
                   rows={3}
                 />
               </div>
+              <div className="ios-form-divider" />
+              <div className="ios-form-field ios-form-field-full">
+                <span className="ios-form-field-label">Projectbestanden</span>
+                <span className="ios-form-field-hint">Werktekeningen, instructies of situatieschetsen voor de monteur</span>
+                <label className="flex items-center gap-2.5 mt-2 px-4 py-3 rounded-xl border border-dashed border-border/40 bg-muted/10 cursor-pointer active:bg-muted/20 transition-colors">
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.png,.jpg,.jpeg,.dwg,.dxf,.doc,.docx"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setProjectBestanden(prev => [...prev, ...files]);
+                      e.target.value = '';
+                    }}
+                    className="hidden"
+                  />
+                  <Upload className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                  <span className="text-[13px] text-muted-foreground/50">Bestand toevoegen</span>
+                </label>
+                {projectBestanden.length > 0 && (
+                  <div className="mt-2 space-y-1.5">
+                    {projectBestanden.map((file, i) => (
+                      <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card border border-border/30">
+                        <FileIcon className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                        <span className="text-[13px] text-foreground flex-1 truncate">{file.name}</span>
+                        <span className="text-[11px] text-muted-foreground/30 shrink-0">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                        <button
+                          type="button"
+                          onClick={() => setProjectBestanden(prev => prev.filter((_, j) => j !== i))}
+                          className="w-5 h-5 rounded-full bg-muted/30 flex items-center justify-center shrink-0 active:bg-muted/60 transition-colors"
+                        >
+                          <X className="h-3 w-3 text-muted-foreground/50" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
