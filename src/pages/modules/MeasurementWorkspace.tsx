@@ -362,7 +362,7 @@ export default function MeasurementWorkspace() {
         )}
 
         {/* ─── Scrollable content ─── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2" key={showSketch ? 'sketch' : step}>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2 overflow-x-hidden" style={{ maxWidth: '100vw' }} key={showSketch ? 'sketch' : step}>
           <div className="wizard-step-enter">
 
             {/* Project context block — shown above measurements */}
