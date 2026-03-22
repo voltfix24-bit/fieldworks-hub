@@ -202,14 +202,6 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   const resistanceRef = useRef<HTMLInputElement>(null);
   const rijRef = useRef<HTMLDivElement>(null);
 
-  // Smart number suggestion: if user types e.g. "182" suggest "1,82"
-  const toonSuggestie = (() => {
-    const r = parseNlNumber(resistance);
-    if (isNaN(r) || r <= 10) return null;
-    const gesuggereerd = r / 100;
-    if (gesuggereerd > 0 && gesuggereerd <= 10) return gesuggereerd;
-    return null;
-  })();
 
   // Swipe-to-delete state
   const [swipeX, setSwipeX] = useState(0);
