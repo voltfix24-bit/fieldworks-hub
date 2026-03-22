@@ -79,6 +79,7 @@ export default function MeasurementWorkspace() {
 
   // Photo upload state per electrode
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
+  const qc = useQueryClient();
 
   // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
   useEffect(() => {
