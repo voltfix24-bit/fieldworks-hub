@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff, AlertTriangle, Check, X as XIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
