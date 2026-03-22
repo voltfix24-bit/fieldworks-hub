@@ -35,8 +35,9 @@ export default function ProjectForm() {
   const activeTechs = technicians?.filter(t => t.is_active) ?? [];
   const activeEquip = equipment?.filter(e => e.is_active) ?? [];
   const defaultTech = activeTechs.find(t => t.is_default);
-  const autoNumber = useMemo(genProjectNumber, []);
   const [duplicaatProject, setDuplicaatProject] = useState<any>(null);
+  const [projectBestanden, setProjectBestanden] = useState<File[]>([]);
+  const [uploadende, setUploadende] = useState(false);
 
   const [form, setForm] = useState({
     project_number: '', project_name: '', site_name: '',
