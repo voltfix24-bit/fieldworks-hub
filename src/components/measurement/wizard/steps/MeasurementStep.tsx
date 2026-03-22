@@ -79,7 +79,7 @@ export function MeasurementStep({
   const handleRvBlur = () => {
     const parsed = parseNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
-      onUpdateElectrode({ rv_value: parsed, ra_value: null });
+      onUpdateElectrode({ rv_value: parsed, ra_value: null, is_coupled: true });
     }
   };
 
