@@ -144,13 +144,13 @@ export function MeasurementStep({
               ? electrode.ra_value != null
                 ? hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--status-completed))]'
                 : 'text-muted-foreground/25'
-              : rvMissing
-                ? 'text-amber-600/70'
+              : !electrode.rv_value
+                ? 'text-muted-foreground/25'
                 : hasTarget && !targetMet ? 'text-destructive' : 'text-[hsl(var(--status-completed))]'
           )}>
             {!showRv
               ? electrode.ra_value != null ? `${formatNlNumber(Number(electrode.ra_value))} Ω` : '— Ω'
-              : rvMissing ? '— Ω' : `${formatNlNumber(Number(electrode.rv_value))} Ω`
+              : !electrode.rv_value ? '— Ω' : `${formatNlNumber(Number(electrode.rv_value))} Ω`
             }
           </p>
         </div>
