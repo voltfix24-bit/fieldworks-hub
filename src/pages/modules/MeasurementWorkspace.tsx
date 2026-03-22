@@ -649,43 +649,39 @@ function MobileContextBlock({
 
       {open && (
         <div className="px-4 pb-3 pt-2 space-y-2.5 border-t border-border/10 animate-in slide-in-from-top-1 duration-150">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Datum</Label>
-              <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="h-8 text-[11px]" />
-            </div>
-            <div className="space-y-0.5">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Apparaat</Label>
-              <Select value={selectedEquipment || 'none'} onValueChange={v => setSelectedEquipment(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
-                  {equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wide w-24 shrink-0">Datum</span>
+            <Input type="date" value={measurementDate} onChange={e => setMeasurementDate(e.target.value)} className="flex-1 h-9 text-[13px]" />
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Opdrachtgever</Label>
-              <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
-                  {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-0.5">
-              <Label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50">Monteur</Label>
-              <Select value={selectedTechnician || 'none'} onValueChange={v => setSelectedTechnician(v === 'none' ? '' : v)}>
-                <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
-                  {technicians.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wide w-24 shrink-0">Klant</span>
+            <Select value={selectedClient || 'none'} onValueChange={v => setSelectedClient(v === 'none' ? '' : v)}>
+              <SelectTrigger className="flex-1 h-9 text-[13px]"><SelectValue placeholder="Selecteer" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wide w-24 shrink-0">Monteur</span>
+            <Select value={selectedTechnician || 'none'} onValueChange={v => setSelectedTechnician(v === 'none' ? '' : v)}>
+              <SelectTrigger className="flex-1 h-9 text-[13px]"><SelectValue placeholder="Selecteer" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                {technicians.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wide w-24 shrink-0">Apparaat</span>
+            <Select value={selectedEquipment || 'none'} onValueChange={v => setSelectedEquipment(v === 'none' ? '' : v)}>
+              <SelectTrigger className="flex-1 h-9 text-[13px]"><SelectValue placeholder="Selecteer" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                {equipment.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.device_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <button
             onClick={onSave}

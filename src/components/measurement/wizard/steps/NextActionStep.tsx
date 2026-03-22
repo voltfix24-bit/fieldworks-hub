@@ -69,27 +69,21 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
           description="Voortgang opslaan en afsluiten"
           onClick={onSave}
           compact={compact}
-          muted
+          saveStyle
         />
       </div>
 
       {/* Handtekening sectie */}
-      <div className={cn('mt-6', compact ? 'mt-5' : 'mt-8')}>
-        <div className="flex items-center gap-2 mb-3">
-          <PenTool className="h-4 w-4 text-muted-foreground/50" />
-          <h3 className={cn(
-            'font-semibold text-foreground tracking-tight',
-            compact ? 'text-[14px]' : 'text-[15px]'
-          )}>
+      <div className="mt-4">
+        <div className="flex items-center gap-2 mb-2">
+          <PenTool className="h-3.5 w-3.5 text-muted-foreground/40" />
+          <h3 className="text-[13px] font-semibold text-foreground">
             Handtekening monteur
           </h3>
+          <span className="text-[11px] text-muted-foreground/30 ml-auto">
+            Optioneel
+          </span>
         </div>
-        <p className={cn(
-          'text-muted-foreground/40 mb-3',
-          compact ? 'text-[11px]' : 'text-[12px]'
-        )}>
-          Optioneel — wordt opgenomen in het rapport
-        </p>
         <HandtekeningPad
           onChange={handleHandtekeningChange}
           breedte={compact ? 400 : 500}
@@ -101,8 +95,8 @@ export function NextActionStep({ onAddElectrode, onGoToSketch, onSave, nextElect
   );
 }
 
-function ActionCard({ icon, label, description, onClick, muted, compact, primary }: {
-  icon: React.ReactNode; label: string; description: string; onClick: () => void; muted?: boolean; compact?: boolean; primary?: boolean;
+function ActionCard({ icon, label, description, onClick, compact, primary, saveStyle }: {
+  icon: React.ReactNode; label: string; description: string; onClick: () => void; compact?: boolean; primary?: boolean; saveStyle?: boolean;
 }) {
   return (
     <button
@@ -111,8 +105,8 @@ function ActionCard({ icon, label, description, onClick, muted, compact, primary
         'w-full flex items-center gap-3.5 rounded-2xl transition-all duration-150',
         'active:scale-[0.98] text-left',
         compact ? 'p-3.5' : 'p-4',
-        muted
-          ? 'bg-muted/20'
+        saveStyle
+          ? 'bg-card border border-border/40'
           : primary
             ? 'bg-[hsl(var(--tenant-primary)/0.04)]'
             : 'bg-card'
@@ -121,8 +115,8 @@ function ActionCard({ icon, label, description, onClick, muted, compact, primary
       <div className={cn(
         'rounded-xl flex items-center justify-center shrink-0',
         compact ? 'w-9 h-9' : 'w-10 h-10',
-        muted
-          ? 'bg-muted/30 text-muted-foreground/40'
+        saveStyle
+          ? 'bg-muted/20 text-muted-foreground/50'
           : primary
             ? 'bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))]'
             : 'bg-muted/30 text-foreground/50'
@@ -133,7 +127,7 @@ function ActionCard({ icon, label, description, onClick, muted, compact, primary
         <p className={cn(
           'font-semibold leading-snug',
           compact ? 'text-[14px]' : 'text-[15px]',
-          muted ? 'text-muted-foreground/60' : primary ? 'text-foreground' : 'text-foreground'
+          'text-foreground'
         )}>{label}</p>
         <p className={cn(
           'text-muted-foreground/40 leading-snug',
