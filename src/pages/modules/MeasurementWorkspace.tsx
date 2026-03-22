@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
