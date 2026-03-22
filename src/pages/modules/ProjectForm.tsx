@@ -216,7 +216,7 @@ export default function ProjectForm() {
                 className="ios-form-input ios-font-mono"
                 value={form.project_number}
                 onChange={e => set('project_number', e.target.value)}
-                placeholder="P-2026-001"
+                placeholder="Bijv. P-2026-001"
               />
             </div>
             <div className="ios-form-field-divider" />
