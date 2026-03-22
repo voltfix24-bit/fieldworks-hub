@@ -377,7 +377,7 @@ export default function MeasurementWorkspace() {
     };
   });
 
-  const qc = useQueryClient();
+
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
     // Bij 2+ pennen is RV leidend — recalcRa NIET uitvoeren
     const aantalPennen = pens.filter((p: any) => p.electrode_id === electrodeId).length;
