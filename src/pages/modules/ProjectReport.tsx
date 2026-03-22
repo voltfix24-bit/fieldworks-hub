@@ -16,6 +16,8 @@ import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSecti
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
+import { useRapportGeneratorBrowser } from '@/hooks/useRapportGeneratorBrowser';
+import { useRapportData } from '@/hooks/useRapportData';
 import { useHandtekening } from '@/hooks/useHandtekening';
 import { useToast } from '@/hooks/use-toast';
 import HandtekeningPad from '@/components/measurement/HandtekeningPad';
