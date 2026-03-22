@@ -221,14 +221,23 @@ export default function MeasurementWorkspace() {
   const initializeDepthRows = useCallback((penId: string, pen: any) => {
     if (depthsInitRef.current.has(penId)) return;
     depthsInitRef.current.add(penId);
-    PREDEFINED_DEPTHS.forEach((d, i) => {
-      createMeasurement.mutate({
-        tenant_id: tenantId, project_id: pen.project_id,
-        measurement_session_id: pen.measurement_session_id,
-        electrode_id: pen.electrode_id,
-        pen_id: penId, depth_meters: d, resistance_value: 0, sort_order: i,
+    // Check if pen already has measurements (returning to saved project)
+    supabase
+      .from('depth_measurements')
+      .select('id')
+      .eq('pen_id', penId)
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) return; // Already has measurements — skip
+        PREDEFINED_DEPTHS.forEach((d, i) => {
+          createMeasurement.mutate({
+            tenant_id: tenantId, project_id: pen.project_id,
+            measurement_session_id: pen.measurement_session_id,
+            electrode_id: pen.electrode_id,
+            pen_id: penId, depth_meters: d, resistance_value: 0, sort_order: i,
+          });
+        });
       });
-    });
   }, [tenantId, createMeasurement]);
 
   const handleSaveContext = async () => {
