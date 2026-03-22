@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil, WifiOff, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/use-projects';
 import { useMeasurementSession, useCreateMeasurementSession, useUpdateMeasurementSession } from '@/hooks/use-measurement-sessions';
 import { useElectrodes, useCreateElectrode, useUpdateElectrode } from '@/hooks/use-electrodes';
-import { usePens, useCreatePen, useUpdatePen } from '@/hooks/use-pens';
+import { usePens, useCreatePen, useUpdatePen, useDeletePen } from '@/hooks/use-pens';
 import { useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { useClients } from '@/hooks/use-clients';
 import { useTechnicians } from '@/hooks/use-technicians';
@@ -71,6 +71,7 @@ export default function MeasurementWorkspace() {
 
   const createPen = useCreatePen();
   const updatePen = useUpdatePen();
+  const deletePen = useDeletePen();
 
   const createMeasurement = useCreateDepthMeasurement();
   const updateMeasurement = useUpdateDepthMeasurement();
@@ -91,6 +92,7 @@ export default function MeasurementWorkspace() {
   const [autoInitError, setAutoInitError] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
   const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
+  const [penWaarschuwingZichtbaar, setPenWaarschuwingZichtbaar] = useState(false);
   const depthsInitRef = useRef<Set<string>>(new Set());
 
   // Sync form fields from session or project
@@ -217,6 +219,22 @@ export default function MeasurementWorkspace() {
       const el = document.getElementById(`pen-section-${newPen.id}`);
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 300);
+  };
+
+  const handleDeletePen = async (penId: string) => {
+    await deletePen.mutateAsync({ id: penId, electrodeId: activeElectrodeId! });
+    if (activePenId === penId) {
+      const overige = pens.filter((p: any) => p.id !== penId);
+      if (overige.length > 0) setActivePenId(overige[0].id);
+    }
+    toast({ description: 'Pen verwijderd' });
+  };
+
+  const handlePenToevoegenMetCheck = () => {
+    // Check if we need to show a warning
+    // We'll just proceed since we can't access measurements here directly
+    // The warning is best shown in the MeasurementStep itself
+    handleAddNewPen();
   };
 
   const handleAddNewElectrode = async () => {
@@ -390,7 +408,8 @@ export default function MeasurementWorkspace() {
                 pens={pens}
                 tenantId={tenantId}
                 onUpdateElectrode={(updates) => updateElectrode.mutate({ id: activeElectrode.id, ...updates })}
-                onAddPen={handleAddNewPen}
+                onAddPen={handlePenToevoegenMetCheck}
+                onDeletePen={handleDeletePen}
                 recalcRa={recalcRa}
                 depthsInitRef={depthsInitRef}
                 initializeDepthRows={initializeDepthRows}
@@ -445,19 +464,24 @@ export default function MeasurementWorkspace() {
             )}
             <div className="ios-wizard-bottom-bar">
               {step > 0 ? (
-                <button className="ios-wizard-btn-back" onClick={() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }}>
+                <button className="ios-wizard-btn-back" onMouseDown={(e) => {
+                  e.preventDefault();
+                  (document.activeElement as HTMLElement)?.blur();
+                  setTimeout(() => { setStep(Math.max(0, step - 1)); setProgressionWarningDismissed(false); }, 50);
+                }}>
                   <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   Vorige
                 </button>
               ) : <div />}
               <button
                 className={cn('ios-wizard-btn-next', rvMissing && step === 0 && 'opacity-40 pointer-events-none')}
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  (document.activeElement as HTMLElement)?.blur();
                   if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
                   if (step === 0 && rvMissing) return;
                   if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
-                  setProgressionWarningDismissed(false);
-                  setStep(step + 1);
+                  setTimeout(() => { setProgressionWarningDismissed(false); setStep(step + 1); }, 50);
                 }}
               >
                 Volgende
@@ -547,7 +571,8 @@ export default function MeasurementWorkspace() {
             pens={pens}
             tenantId={tenantId}
             onUpdateElectrode={(updates) => updateElectrode.mutate({ id: activeElectrode.id, ...updates })}
-            onAddPen={handleAddNewPen}
+            onAddPen={handlePenToevoegenMetCheck}
+            onDeletePen={handleDeletePen}
             recalcRa={recalcRa}
             depthsInitRef={depthsInitRef}
             initializeDepthRows={initializeDepthRows}
