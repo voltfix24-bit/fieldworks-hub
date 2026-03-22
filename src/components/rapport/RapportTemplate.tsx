@@ -234,7 +234,6 @@ const S = {
     marginBottom: '16px',
   },
   pageBreak: {
-    pageBreakBefore: 'always' as const,
     paddingTop: '32px',
   },
   footer: {
