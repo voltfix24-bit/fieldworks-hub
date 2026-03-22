@@ -1,17 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useProject, useCreateProject, useUpdateProject } from '@/hooks/use-projects';
+import { useProject, useCreateProject, useUpdateProject, useProjects } from '@/hooks/use-projects';
 import { useClients } from '@/hooks/use-clients';
 import { ClientCombobox } from '@/components/ui/ClientCombobox';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronDown, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+
+const MONTEUR_KEY = 'aardpen_laatste_monteur';
 
 function genProjectNumber(): string {
   const y = new Date().getFullYear();
