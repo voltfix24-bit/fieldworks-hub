@@ -1,21 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { encode as base64Encode } from "https://deno.land/std@0.208.0/encoding/base64.ts";
 
-/** Fetch a photo URL and return as base64 string, or null on failure */
-async function urlToBase64(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`Foto fetch mislukt (${response.status}): ${url}`);
-      return null;
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    return base64Encode(new Uint8Array(arrayBuffer));
-  } catch (err) {
-    console.warn(`Foto fetch error voor ${url}:`, err);
-    return null;
-  }
-}
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -89,8 +73,8 @@ Deno.serve(async (req) => {
         })
       : new Date().toLocaleDateString("nl-NL");
 
-    // Build elektrodes with per-electrode RA/RV logic + photo base64 conversion
-    const elektrodes = await Promise.all(electrodes.map(async (el, idx) => {
+    // Build elektrodes — pass photo URLs instead of base64 to avoid memory limits
+    const elektrodes = electrodes.map((el, idx) => {
       const elPens = pens.filter((p) => p.electrode_id === el.id);
       const elDepths = depths.filter((d) => d.electrode_id === el.id);
 
@@ -119,7 +103,6 @@ Deno.serve(async (req) => {
 
       const targetValue = el.target_value ? Number(el.target_value) : 3.0;
 
-      // Per-electrode RA/RV: 1 pen → RA, 2+ coupled pens → RV
       const aantalPennen = elPens.length;
       const gekoppeld = el.is_coupled ?? (aantalPennen >= 2);
       const isRv = aantalPennen >= 2 && gekoppeld;
@@ -128,14 +111,12 @@ Deno.serve(async (req) => {
       let rvOk: boolean;
 
       if (isRv) {
-        // RV — handmatig ingevuld door monteur
         const rvVal = el.rv_value ? Number(el.rv_value) : null;
         eindwaarde = rvVal !== null
           ? `${rvVal.toFixed(2).replace(".", ",")} Ω`
           : "— Ω";
         rvOk = rvVal !== null && rvVal <= targetValue;
       } else {
-        // RA — laagste gemeten weerstand
         const allValues = elDepths
           .map((d) => Number(d.resistance_value))
           .filter((v) => v > 0);
@@ -146,29 +127,25 @@ Deno.serve(async (req) => {
         rvOk = minValue !== null && minValue <= targetValue;
       }
 
-      // Convert photo URLs to base64 (parallel)
+      // Pass URLs directly — Python API downloads them itself
       const fotoDisplayUrl = elPens.find((p) => p.display_photo_url)?.display_photo_url || null;
       const fotoOverzichtUrl = elPens.find((p) => p.overview_photo_url)?.overview_photo_url || null;
 
-      const [fotoDisplayB64, fotoOverzichtB64] = await Promise.all([
-        fotoDisplayUrl ? urlToBase64(fotoDisplayUrl) : Promise.resolve(null),
-        fotoOverzichtUrl ? urlToBase64(fotoOverzichtUrl) : Promise.resolve(null),
-      ]);
-
       return {
         nummer: idx + 1,
+        code: el.electrode_code || `Elektrode ${idx + 1}`,
+        notes: el.notes || null,
         ...(isRv ? { rv: eindwaarde } : { ra: eindwaarde }),
         norm: `${targetValue.toFixed(2).replace(".", ",")} Ω`,
         rv_ok: rvOk,
         pen_labels: penLabels.length > 0 ? penLabels : ["Pen 1 (Ω)"],
         pennen_gekoppeld: gekoppeld,
         metingen,
-        foto_display_b64: fotoDisplayB64,
-        foto_overzicht_b64: fotoOverzichtB64,
+        foto_display_url: fotoDisplayUrl,
+        foto_overzicht_url: fotoOverzichtUrl,
       };
-    }));
+    });
 
-    // Use project target_value first, then electrode, then fallback 3.00
     const projectTargetValue = (project as any).target_value
       ? Number((project as any).target_value)
       : electrodes[0]?.target_value
@@ -223,15 +200,12 @@ Deno.serve(async (req) => {
       elektrodes,
     };
 
-    // Check if external API URL is configured
     let rapportApiUrl = Deno.env.get("RAPPORT_API_URL");
 
     if (rapportApiUrl) {
-      // Ensure URL has protocol
       if (!rapportApiUrl.startsWith("http://") && !rapportApiUrl.startsWith("https://")) {
         rapportApiUrl = `https://${rapportApiUrl}`;
       }
-      // Remove trailing slash
       rapportApiUrl = rapportApiUrl.replace(/\/+$/, "");
 
       const apiResponse = await fetch(`${rapportApiUrl}/rapport/preview`, {
