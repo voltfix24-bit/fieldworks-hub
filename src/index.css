@@ -1801,6 +1801,8 @@
 .ios-meer-icon-salmon { background: hsl(var(--tenant-primary) / 0.1); color: hsl(var(--tenant-primary)); }
 .ios-meer-icon-blue   { background: hsl(210 80% 55% / 0.1); color: hsl(210 80% 55%); }
 .ios-meer-icon-purple { background: hsl(260 60% 60% / 0.1); color: hsl(260 60% 60%); }
+.ios-meer-icon-orange { background: hsl(38 100% 50% / 0.12); color: hsl(38 100% 40%); }
+.ios-meer-icon-green  { background: hsl(152 60% 42% / 0.1); color: hsl(152 60% 42%); }
 .ios-meer-icon-green  { background: hsl(var(--status-completed) / 0.1); color: hsl(var(--status-completed)); }
 .ios-meer-icon-grey   { background: hsl(var(--foreground) / 0.06); color: hsl(var(--muted-foreground)); }
 
