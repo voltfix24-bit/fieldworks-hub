@@ -8,6 +8,7 @@ import { formatNlDate, formatNlDateCompact } from '@/lib/nl-date';
 import {
   FolderKanban, CheckCircle2, Clock, MapPin,
   Calendar, ChevronRight, ArrowRight, AlertTriangle,
+  Plus, FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO, isPast } from 'date-fns';
@@ -118,6 +119,34 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Quick actions */}
+        <div className="grid grid-cols-2 gap-3 px-4 mt-1">
+          <button
+            onClick={() => navigate('/projects/new')}
+            className="flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3.5 active:scale-[0.97] transition-all shadow-[0_1px_0_hsl(var(--foreground)/0.04)]"
+          >
+            <div className="w-8 h-8 rounded-xl bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center shrink-0">
+              <Plus className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+            </div>
+            <div className="text-left">
+              <p className="text-[13px] font-semibold text-foreground">Nieuw project</p>
+              <p className="text-[10px] text-muted-foreground/40">Aanmaken</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/reports')}
+            className="flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3.5 active:scale-[0.97] transition-all shadow-[0_1px_0_hsl(var(--foreground)/0.04)]"
+          >
+            <div className="w-8 h-8 rounded-xl bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center shrink-0">
+              <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+            </div>
+            <div className="text-left">
+              <p className="text-[13px] font-semibold text-foreground">Rapporten</p>
+              <p className="text-[10px] text-muted-foreground/40">Bekijken</p>
+            </div>
+          </button>
+        </div>
+
         {/* Alert banner */}
         {overdueProjects.length > 0 && (
           <button
@@ -140,7 +169,7 @@ export default function Dashboard() {
         )}
 
         {/* Today */}
-        {todayProjects.length > 0 && (
+        {todayProjects.length > 0 ? (
           <section>
             <IosSectionHeader title="Vandaag" />
             <div className="ios-dash-card">
@@ -150,6 +179,15 @@ export default function Dashboard() {
                   {i < todayProjects.length - 1 && <div className="ios-dash-row-divider" />}
                 </div>
               ))}
+            </div>
+          </section>
+        ) : (
+          <section>
+            <IosSectionHeader title="Vandaag" />
+            <div className="ios-dash-card px-4 py-4">
+              <p className="text-[14px] text-muted-foreground/40 text-center">
+                Geen projecten gepland vandaag
+              </p>
             </div>
           </section>
         )}
@@ -218,7 +256,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <DashStatusDot status={p.status} />
+                  <DashStatusDot project={p} />
                   <ChevronRight className="h-4 w-4 text-muted-foreground/10 group-hover:text-muted-foreground/25 transition-colors" />
                 </div>
               </div>
@@ -270,13 +308,19 @@ function IosSectionHeader({ title, action, actionLabel }: { title: string; actio
   );
 }
 
-function DashStatusDot({ status }: { status: string }) {
-  return (
-    <span className={cn(
-      'ios-dash-project-dot',
-      status === 'completed' ? 'ios-pdot-green' : 'ios-pdot-grey'
-    )} />
-  );
+function getDotClass(project: any): string {
+  if (project.status === 'completed') return 'ios-pdot-green';
+  if (!project.planned_date) return 'ios-pdot-grey';
+  try {
+    const d = parseISO(project.planned_date);
+    if (isToday(d)) return 'ios-pdot-orange';
+    if (isPast(d)) return 'ios-pdot-red';
+  } catch {}
+  return 'ios-pdot-grey';
+}
+
+function DashStatusDot({ project }: { project: any }) {
+  return <span className={cn('ios-dash-project-dot', getDotClass(project))} />;
 }
 
 function DashProjectRow({ project: p, onClick, showDate }: {
@@ -287,7 +331,7 @@ function DashProjectRow({ project: p, onClick, showDate }: {
       onClick={onClick}
       className="ios-dash-project-row"
     >
-      <DashStatusDot status={p.status} />
+      <DashStatusDot project={p} />
       <div className="ios-dash-project-info">
         <p className="ios-dash-project-name">{p.project_name}</p>
         <div className="ios-dash-project-meta">

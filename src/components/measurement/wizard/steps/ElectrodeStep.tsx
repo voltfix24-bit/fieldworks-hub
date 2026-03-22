@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { WizardStepHeader } from '../WizardStepHeader';
+import { cn } from '@/lib/utils';
 
 interface ElectrodeStepProps {
   electrodeCode: string;

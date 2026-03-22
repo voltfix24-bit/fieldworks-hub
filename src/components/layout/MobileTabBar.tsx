@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -43,7 +43,8 @@ function CalIcon({ active }: { active: boolean }) {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <rect x="3" y="4" width="18" height="18" rx="3"
         stroke={active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)'}
-        strokeWidth={active ? '2' : '1.5'} />
+        strokeWidth={active ? '2' : '1.5'}
+        fill={active ? 'hsl(var(--tenant-primary) / 0.1)' : 'none'} />
       <path d="M16 2V6M8 2V6M3 10H21"
         stroke={active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)'}
         strokeWidth={active ? '2' : '1.5'} strokeLinecap="round" />
@@ -64,7 +65,7 @@ function MoreIcon({ active }: { active: boolean }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       {[6, 12, 18].map(cy => (
-        <circle key={cy} cx="12" cy={cy} r="1.5"
+        <circle key={cy} cx="12" cy={cy} r={active ? '2' : '1.5'}
           fill={active ? 'hsl(var(--tenant-primary))' : 'hsl(var(--muted-foreground) / 0.4)'} />
       ))}
     </svg>
@@ -209,7 +210,7 @@ export function MobileTabBar() {
 
           <div className="h-px bg-background mx-4" />
 
-          {/* Bestaand project */}
+          {/* Lopend project */}
           <button
             onClick={() => { setSheetOpen(false); navigate('/projects'); }}
             className="w-full flex items-center gap-3.5 px-4 py-3.5 min-h-[68px] active:bg-foreground/[0.04] transition-colors text-left"
@@ -218,8 +219,25 @@ export function MobileTabBar() {
               <SearchIcon />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[15px] font-semibold text-foreground">Bestaand project</p>
-              <p className="text-[13px] text-muted-foreground mt-0.5">Zoek en open een project</p>
+              <p className="text-[15px] font-semibold text-foreground">Lopend project</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Open en hervat een project</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+          </button>
+
+          <div className="h-px bg-background mx-4" />
+
+          {/* Planning */}
+          <button
+            onClick={() => { setSheetOpen(false); navigate('/planning'); }}
+            className="w-full flex items-center gap-3.5 px-4 py-3.5 min-h-[68px] active:bg-foreground/[0.04] transition-colors text-left"
+          >
+            <div className="h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0 bg-[hsl(0_0%_0%/0.04)]">
+              <CalendarIcon className="h-4 w-4 text-muted-foreground/60" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] font-semibold text-foreground">Planning</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Bekijk geplande projecten</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
           </button>

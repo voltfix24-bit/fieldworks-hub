@@ -1,18 +1,59 @@
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Palette, User, Building2, ChevronRight } from 'lucide-react';
+import { useTenant } from '@/contexts/TenantContext';
+import { useTechnicians } from '@/hooks/use-technicians';
+import { useEquipmentList } from '@/hooks/use-equipment';
+import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const sections = [
-  { title: 'Huisstijl', description: 'Logo, kleuren en rapport-opmaak', icon: Palette, path: '/settings/branding', color: 'var(--tenant-primary,var(--primary))' },
-  { title: 'Gebruikersprofiel', description: 'Persoonlijke gegevens beheren', icon: User, path: '/settings/profile', color: 'var(--tenant-accent,var(--accent))' },
-  { title: 'Bedrijfsoverzicht', description: 'Bedrijfsgegevens en status', icon: Building2, path: '/settings/tenant', color: 'var(--tenant-secondary,var(--secondary))' },
-];
 
 export default function SettingsIndex() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { branding } = useTenant();
+  const { data: technicians } = useTechnicians();
+  const { data: equipment } = useEquipmentList();
+
+  const hasLogo = !!(branding?.logo_url || branding?.compact_logo_url);
+  const hasKvk = !!branding?.kvk_number;
+  const activeTechs = technicians?.filter(t => t.is_active).length ?? 0;
+  const calWarnings = equipment?.filter(e => {
+    if (!e.next_calibration_date) return false;
+    return new Date(e.next_calibration_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  }).length ?? 0;
+
+  const sections = [
+    {
+      title: 'Huisstijl',
+      description: 'Logo, kleuren en rapport-opmaak',
+      icon: Palette,
+      path: '/settings/branding',
+      color: 'var(--tenant-primary,var(--primary))',
+      status: hasLogo ? 'Logo ingesteld' : 'Geen logo',
+      statusOk: hasLogo,
+    },
+    {
+      title: 'Gebruikersprofiel',
+      description: 'Persoonlijke gegevens beheren',
+      icon: User,
+      path: '/settings/profile',
+      color: 'var(--tenant-accent,var(--accent))',
+    },
+    {
+      title: 'Bedrijfsoverzicht',
+      description: 'Bedrijfsgegevens en status',
+      icon: Building2,
+      path: '/settings/tenant',
+      color: 'var(--tenant-secondary,var(--secondary))',
+      status: hasKvk ? 'KvK ingevuld' : 'KvK ontbreekt',
+      statusOk: hasKvk,
+    },
+  ];
+
+  const statusItems = [
+    { label: 'Actieve monteurs', value: String(activeTechs), ok: activeTechs > 0 },
+    ...(calWarnings > 0 ? [{ label: 'Kalibratie', value: `${calWarnings} waarschuwing${calWarnings !== 1 ? 'en' : ''}`, ok: false }] : []),
+  ];
 
   if (isMobile) {
     return (
@@ -35,10 +76,36 @@ export default function SettingsIndex() {
                 <p className="text-[13px] font-semibold text-foreground">{s.title}</p>
                 <p className="text-[11px] text-muted-foreground/50 mt-0.5">{s.description}</p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/25 shrink-0" />
+              <div className="flex items-center gap-2 shrink-0">
+                {s.status && (
+                  <span className={cn(
+                    'text-[10px] font-medium',
+                    s.statusOk ? 'text-[hsl(var(--status-completed))]' : 'text-muted-foreground/40'
+                  )}>
+                    {s.statusOk ? '✓' : '✗'}
+                  </span>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground/25" />
+              </div>
             </button>
           ))}
         </div>
+
+        {statusItems.length > 0 && (
+          <div className="mt-4 rounded-xl border border-border/40 bg-card overflow-hidden divide-y divide-border/30">
+            {statusItems.map(item => (
+              <div key={item.label} className="flex items-center justify-between px-4 py-3">
+                <span className="text-[13px] text-foreground">{item.label}</span>
+                <span className={cn(
+                  'text-[12px] font-medium',
+                  item.ok ? 'text-[hsl(var(--status-completed))]' : 'text-amber-500'
+                )}>
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -61,9 +128,43 @@ export default function SettingsIndex() {
             </div>
             <p className="text-[14px] font-semibold text-foreground">{s.title}</p>
             <p className="text-[12px] text-muted-foreground/60 mt-1">{s.description}</p>
+            {s.status && (
+              <div className="flex items-center gap-1.5 mt-2">
+                {s.statusOk ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--status-completed))]" />
+                ) : (
+                  <AlertCircle className="h-3.5 w-3.5 text-muted-foreground/30" />
+                )}
+                <span className={cn(
+                  'text-[11px]',
+                  s.statusOk ? 'text-[hsl(var(--status-completed))]' : 'text-muted-foreground/40'
+                )}>
+                  {s.status}
+                </span>
+              </div>
+            )}
           </button>
         ))}
       </div>
+
+      {statusItems.length > 0 && (
+        <div className="mt-6 rounded-xl border border-border/40 bg-card p-4">
+          <h3 className="text-[13px] font-semibold text-foreground mb-3">Status overzicht</h3>
+          <div className="space-y-2">
+            {statusItems.map(item => (
+              <div key={item.label} className="flex items-center justify-between">
+                <span className="text-[13px] text-muted-foreground/60">{item.label}</span>
+                <span className={cn(
+                  'text-[13px] font-medium',
+                  item.ok ? 'text-[hsl(var(--status-completed))]' : 'text-amber-500'
+                )}>
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
