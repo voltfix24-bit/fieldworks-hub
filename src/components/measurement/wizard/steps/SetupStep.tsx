@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ClientCombobox } from '@/components/ui/ClientCombobox';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { formatNlDate } from '@/lib/nl-date';
