@@ -307,7 +307,7 @@ export default function MeasurementWorkspace() {
   // ═══════════════════════════════════════════════
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+      <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in overflow-x-hidden max-w-full">
         {/* ─── iOS sticky top nav ─── */}
         <div className="ios-wizard-topnav shrink-0">
           <div className="ios-wizard-nav-row">
