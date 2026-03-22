@@ -371,52 +371,54 @@ export function RapportTemplate({ data, onReady }: Props) {
 
   return (
     <div style={S.page}>
-      {/* ═══ COVER ═══ */}
-      <div style={S.topStripe(kleur)} />
-      <div style={S.headerArea}>
-        {data.logo_url && (
-          <img src={data.logo_url} crossOrigin="anonymous" style={S.logo} alt="Logo" />
-        )}
-        <h1 style={S.title}>Aardingsmeting</h1>
-        <h1 style={S.subtitle(kleur)}>Rapport</h1>
-        <div style={{ width: '80px', height: '3px', background: kleur, marginBottom: '20px' }} />
-        <p style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 4px' }}>{data.project_naam}</p>
-        <p style={{ fontSize: '12px', color: '#636366', margin: '0 0 20px' }}>{data.project_adres}</p>
-      </div>
-
-      <div style={S.body}>
-        <div style={{ borderTop: '1px solid #D2D2D7', marginBottom: '20px' }} />
-
-        <div style={S.infoGrid}>
-          <InfoBlock title="Projectgegevens" kleur={kleur} rows={[
-            ['Projectnummer', data.project_nummer],
-            ['Opdrachtgever', data.klant_naam],
-            ['Contactpersoon', data.klant_contact],
-            ['Datum uitvoering', fmtDate(data.meetdatum)],
-            ['Monteur', data.monteur_naam],
-          ]} />
-          <InfoBlock title="Meetapparatuur" kleur={kleur} rows={[
-            ['Apparaat', data.apparaat_naam],
-            ['Merk / Model', [data.apparaat_merk, data.apparaat_model].filter(Boolean).join(' ')],
-            ['Serienummer', data.apparaat_serienummer],
-            ['Kalibratiedatum', fmtDate(data.kalibratie_datum)],
-            ['Volgende kalibratie', fmtDate(data.volgende_kalibratie)],
-          ]} />
+      {/* ═══ COVER (pagina 1) ═══ */}
+      <div data-pdf-page="cover" style={S.pdfPage}>
+        <div style={S.topStripe(kleur)} />
+        <div style={S.headerArea}>
+          {data.logo_url && (
+            <img src={data.logo_url} crossOrigin="anonymous" style={S.logo} alt="Logo" />
+          )}
+          <h1 style={S.title}>Aardingsmeting</h1>
+          <h1 style={S.subtitle(kleur)}>Rapport</h1>
+          <div style={{ width: '80px', height: '3px', background: kleur, marginBottom: '20px' }} />
+          <p style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 4px' }}>{data.project_naam}</p>
+          <p style={{ fontSize: '12px', color: '#636366', margin: '0 0 20px' }}>{data.project_adres}</p>
         </div>
 
-        <div style={S.statusBox(alleOk)}>
-          <span style={{ fontSize: '18px' }}>{alleOk ? '✓' : '✗'}</span>
-          <span style={S.statusText(alleOk)}>
-            {alleOk
-              ? 'De gemeten waarden voldoen aan de opgegeven toetswaarde.'
-              : 'Een of meer waarden voldoen niet aan de toetswaarde.'}
-          </span>
-        </div>
-      </div>
+        <div style={S.body}>
+          <div style={{ borderTop: '1px solid #D2D2D7', marginBottom: '20px' }} />
 
-      <div style={S.footer}>
-        <span>{data.bedrijf_naam} · {data.bedrijf_adres}</span>
-        <span>{data.bedrijf_email} · {data.bedrijf_website}</span>
+          <div style={S.infoGrid}>
+            <InfoBlock title="Projectgegevens" kleur={kleur} rows={[
+              ['Projectnummer', data.project_nummer],
+              ['Opdrachtgever', data.klant_naam],
+              ['Contactpersoon', data.klant_contact],
+              ['Datum uitvoering', fmtDate(data.meetdatum)],
+              ['Monteur', data.monteur_naam],
+            ]} />
+            <InfoBlock title="Meetapparatuur" kleur={kleur} rows={[
+              ['Apparaat', data.apparaat_naam],
+              ['Merk / Model', [data.apparaat_merk, data.apparaat_model].filter(Boolean).join(' ')],
+              ['Serienummer', data.apparaat_serienummer],
+              ['Kalibratiedatum', fmtDate(data.kalibratie_datum)],
+              ['Volgende kalibratie', fmtDate(data.volgende_kalibratie)],
+            ]} />
+          </div>
+
+          <div style={S.statusBox(alleOk)}>
+            <span style={{ fontSize: '18px' }}>{alleOk ? '✓' : '✗'}</span>
+            <span style={S.statusText(alleOk)}>
+              {alleOk
+                ? 'De gemeten waarden voldoen aan de opgegeven toetswaarde.'
+                : 'Een of meer waarden voldoen niet aan de toetswaarde.'}
+            </span>
+          </div>
+        </div>
+
+        <div style={S.footer}>
+          <span>{data.bedrijf_naam} · {data.bedrijf_adres}</span>
+          <span>{data.bedrijf_email} · {data.bedrijf_website}</span>
+        </div>
       </div>
 
       {/* ═══ ELECTRODE PAGES ═══ */}
@@ -426,8 +428,9 @@ export function RapportTemplate({ data, onReady }: Props) {
         const target = e.target_value !== null ? `≤ ${fmt(e.target_value)} Ω` : '—';
 
         return (
-          <div key={e.nummer} style={S.pageBreak}>
-            <div style={S.body}>
+          <div key={e.nummer} data-pdf-page={`elektrode-${idx}`} style={S.pdfPage}>
+            <div style={S.topStripe(kleur)} />
+            <div style={{ ...S.body, paddingTop: '32px' }}>
               <div style={S.sectionTitle(kleur)}>
                 <span style={S.sectionNum(kleur)}>{e.nummer}.</span>
                 Meetresultaten — {e.code}
@@ -485,16 +488,21 @@ export function RapportTemplate({ data, onReady }: Props) {
                 </>
               )}
             </div>
+
+            <div style={{ ...S.footer, position: 'absolute' as const, bottom: '0', left: '0', right: '0' }}>
+              <span>{data.bedrijf_naam} · {data.bedrijf_adres}</span>
+              <span>Pagina {idx + 2}</span>
+            </div>
           </div>
         );
       })}
 
       {/* ═══ SUMMARY + CONCLUSION ═══ */}
-      <div style={S.pageBreak}>
-        <div style={S.body}>
+      <div data-pdf-page="samenvatting" style={S.pdfPage}>
+        <div style={S.topStripe(kleur)} />
+        <div style={{ ...S.body, paddingTop: '32px' }}>
           <div style={S.sectionTitle(kleur)}>Samenvatting & Conclusie</div>
 
-          {/* Summary table */}
           <table style={S.table}>
             <thead>
               <tr>
@@ -520,7 +528,6 @@ export function RapportTemplate({ data, onReady }: Props) {
             </tbody>
           </table>
 
-          {/* Conclusion card */}
           <div style={S.conclusieCard(alleOk)}>
             <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#AAAAAA', marginBottom: '8px' }}>
               CONCLUSIE & BEOORDELING
@@ -549,7 +556,6 @@ export function RapportTemplate({ data, onReady }: Props) {
             </div>
           </div>
 
-          {/* Signature block */}
           {data.handtekening_b64 && (
             <div style={S.signBlock}>
               <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#636366', fontWeight: '600', marginBottom: '12px' }}>
@@ -576,9 +582,9 @@ export function RapportTemplate({ data, onReady }: Props) {
           )}
         </div>
 
-        <div style={S.footer}>
+        <div style={{ ...S.footer, position: 'absolute' as const, bottom: '0', left: '0', right: '0' }}>
           <span>{data.bedrijf_naam} · {data.bedrijf_adres}</span>
-          <span>{data.bedrijf_email} · {data.bedrijf_website}</span>
+          <span>Pagina {data.elektrodes.length + 2}</span>
         </div>
       </div>
     </div>
