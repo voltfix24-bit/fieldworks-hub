@@ -498,24 +498,18 @@ export default function ProjectReport() {
                 {rs.report_sign_executor !== false && (
                   <div>
                     <p className="text-[10px] text-muted-foreground mb-2">Uitvoerder</p>
-                    <div className="print:hidden">
-                      <HandtekeningPad onChange={setHandtekening} breedte={400} hoogte={140} monteurId={user?.id} />
-                    </div>
-                    {/* Print view: show signature image if available */}
-                    <div className="hidden print:block">
-                      {actieveHandtekening ? (
-                        <img
-                          src={`data:image/png;base64,${actieveHandtekening}`}
-                          alt="Handtekening"
-                          className="w-40 h-16 object-contain"
-                        />
-                      ) : (
-                        <>
-                          <div className="border-b border-foreground/20 mb-1 mt-8" />
-                          <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
-                        </>
-                      )}
-                    </div>
+                    {actieveHandtekening ? (
+                      <img
+                        src={`data:image/png;base64,${actieveHandtekening}`}
+                        alt="Handtekening"
+                        className="w-40 h-16 object-contain"
+                      />
+                    ) : (
+                      <>
+                        <div className="border-b border-foreground/20 mb-1 mt-8" />
+                        <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
+                      </>
+                    )}
                   </div>
                 )}
                 {rs.report_sign_reviewer === true && (
