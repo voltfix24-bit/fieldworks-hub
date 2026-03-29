@@ -331,82 +331,104 @@ export default function PlanningPage() {
       )}
 
       {view === 'calendar' && (
-        <div className="space-y-4">
-          <div className="bg-card rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setCalMonth(m => subMonths(m, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <button onClick={() => { setCalMonth(new Date()); setSelectedDate(new Date()); }}
-                className="text-[15px] font-semibold text-foreground capitalize">
-                {format(calMonth, 'MMMM yyyy', { locale: nl })}
-              </button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setCalMonth(m => addMonths(m, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="grid grid-cols-7 px-2">
-              {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(d => (
-                <div key={d} className="text-center text-[10px] uppercase tracking-wider font-medium text-muted-foreground/30 py-2">{d}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 px-2 pb-3">
-              {Array.from({ length: firstDayOffset }).map((_, i) => <div key={`e-${i}`} className="aspect-square" />)}
-              {calDays.map(day => {
-                const dateKey = format(day, 'yyyy-MM-dd');
-                const dayProjects = projectsByDate.get(dateKey) || [];
-                const today = isToday(day);
-                const selected = isSameDay(day, selectedDate);
-                const hasProjects = dayProjects.length > 0;
-                const past = isPast(day) && !today;
-                return (
-                  <button key={dateKey} onClick={() => setSelectedDate(day)}
-                    className={cn(
-                      'aspect-square flex flex-col items-center justify-center relative rounded-xl transition-all mx-0.5 my-0.5',
-                      selected && today && 'bg-[hsl(var(--tenant-primary))]',
-                      selected && !today && 'bg-muted/50',
-                      !selected && 'active:scale-95',
-                    )}>
-                    <span className={cn(
-                      'text-[13px] font-medium leading-none',
-                      selected && today && 'text-white font-semibold',
-                      !selected && today && 'text-[hsl(var(--tenant-primary))] font-semibold',
-                      !today && !selected && past && 'text-muted-foreground/30',
-                      !today && !selected && !past && 'text-foreground/80',
-                      selected && !today && 'text-foreground font-semibold',
-                    )}>{format(day, 'd')}</span>
-                    {hasProjects && (
-                      <div className="flex items-center gap-[3px] mt-1">
-                        {dayProjects.slice(0, 3).map((_, i) => (
-                          <div key={i} className={cn(
-                            'w-[4px] h-[4px] rounded-full',
-                            selected && today ? 'bg-white/60' : 'bg-[hsl(var(--tenant-primary)/0.4)]',
-                          )} />
-                        ))}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Calendar — left 7 cols */}
+          <div className="col-span-7">
+            <div className="bg-card rounded border border-border overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded" onClick={() => setCalMonth(m => subMonths(m, 1))}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <button onClick={() => { setCalMonth(new Date()); setSelectedDate(new Date()); }}
+                  className="text-[15px] font-display font-bold text-foreground capitalize">
+                  {format(calMonth, 'MMMM yyyy', { locale: nl })}
+                </button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded" onClick={() => setCalMonth(m => addMonths(m, 1))}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-7 px-4 pt-3">
+                {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(d => (
+                  <div key={d} className="text-center text-[11px] uppercase tracking-wider font-bold text-muted-foreground/40 py-2">{d}</div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 px-4 pb-4">
+                {Array.from({ length: firstDayOffset }).map((_, i) => <div key={`e-${i}`} className="aspect-square" />)}
+                {calDays.map(day => {
+                  const dateKey = format(day, 'yyyy-MM-dd');
+                  const dayProjects = projectsByDate.get(dateKey) || [];
+                  const today = isToday(day);
+                  const selected = isSameDay(day, selectedDate);
+                  const hasProjects = dayProjects.length > 0;
+                  const past = isPast(day) && !today;
+                  return (
+                    <button key={dateKey} onClick={() => setSelectedDate(day)}
+                      className={cn(
+                        'aspect-square flex flex-col items-center justify-center relative rounded transition-all mx-0.5 my-0.5',
+                        selected && today && 'bg-[hsl(var(--primary))]',
+                        selected && !today && 'bg-muted/60',
+                        !selected && 'hover:bg-muted/30',
+                      )}>
+                      <span className={cn(
+                        'text-[14px] font-medium leading-none',
+                        selected && today && 'text-white font-bold',
+                        !selected && today && 'text-[hsl(var(--primary))] font-bold',
+                        !today && !selected && past && 'text-muted-foreground/30',
+                        !today && !selected && !past && 'text-foreground/80',
+                        selected && !today && 'text-foreground font-bold',
+                      )}>{format(day, 'd')}</span>
+                      {hasProjects && (
+                        <div className="flex items-center gap-[3px] mt-1">
+                          {dayProjects.slice(0, 3).map((_, i) => (
+                            <div key={i} className={cn(
+                              'w-[5px] h-[5px] rounded-full',
+                              selected && today ? 'bg-white/60' : 'bg-[hsl(var(--primary)/0.5)]',
+                            )} />
+                          ))}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-0.5">
-              <h3 className="text-[13px] font-semibold text-foreground capitalize">{getSelectedDateLabel()}</h3>
-              {selectedProjects.length > 0 && (
-                <span className="text-[11px] text-muted-foreground/40">{selectedProjects.length} {selectedProjects.length === 1 ? 'project' : 'projecten'}</span>
+
+          {/* Day detail — right 5 cols */}
+          <div className="col-span-5">
+            <div className="bg-card rounded border border-border overflow-hidden sticky top-6">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+                <h3 className="text-[14px] font-display font-bold text-foreground capitalize">{getSelectedDateLabel()}</h3>
+                {selectedProjects.length > 0 && (
+                  <span className="text-[11px] text-muted-foreground">{selectedProjects.length} project{selectedProjects.length !== 1 ? 'en' : ''}</span>
+                )}
+              </div>
+              {selectedProjects.length === 0 ? (
+                <div className="py-16 flex flex-col items-center gap-2">
+                  <CalendarIcon className="h-6 w-6 text-muted-foreground/15" />
+                  <p className="text-[12px] text-muted-foreground/40">Geen projecten op deze dag</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {selectedProjects.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => navigate(`/projects/${p.id}`)}
+                      className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors text-left"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-foreground truncate">{p.project_name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-muted-foreground/50 font-mono">{p.project_number}</span>
+                          {p.city && <span className="text-[11px] text-muted-foreground/50 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-            {selectedProjects.length === 0 ? (
-              <div className="py-8 flex flex-col items-center gap-2">
-                <CalendarIcon className="h-5 w-5 text-muted-foreground/15" />
-                <p className="text-[12px] text-muted-foreground/40">Geen projecten op deze dag</p>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                {selectedProjects.map(p => <DesktopProjectRow key={p.id} project={p} onClick={() => navigate(`/projects/${p.id}`)} />)}
-              </div>
-            )}
           </div>
         </div>
       )}
