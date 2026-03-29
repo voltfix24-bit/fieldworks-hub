@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
         supabase.from("electrodes").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("pens").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("depth_measurements").select("*").eq("project_id", project_id).order("sort_order"),
-        supabase.from("tenant_branding").select("*").limit(1).maybeSingle(),
+        supabase.from("tenant_branding").select("*").eq("tenant_id", project_id).maybeSingle(),
       ]);
 
     if (projectRes.error) throw projectRes.error;
