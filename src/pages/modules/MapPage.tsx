@@ -220,56 +220,94 @@ function NewProjectSheet({
   const { profile } = useAuth();
   const { data: technicians = [] } = useTechnicians();
   const { data: clients = [] } = useClients();
-  const queryClient = useQueryClient();
-  const [projectType, setProjectType] = useState<'ms_installatie' | 'compactstation' | 'provisorium'>('ms_installatie');
-  const [form, setForm] = useState({ name: '', city: 'amsterdam', technician_id: '', client_id: '', planned_date: '' });
-  const [saving, setSaving] = useState(false);
+  const { data: equipment = [] } = useEquipmentList();
+  const { data: defaultEquipment } = useDefaultEquipment();
+  const { data: allProjects = [] } = useAllProjects();
+  const createMut = useCreateProject();
+  const activeClients = clients.filter(c => c.is_active);
+  const activeTechs = technicians.filter(t => t.is_active);
+  const activeEquip = equipment.filter(e => e.is_active);
+  const defaultTech = activeTechs.find(t => t.is_default);
 
-  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+  const [form, setForm] = useState({
+    project_number: '', project_name: '', site_name: '',
+    address_line_1: '', postal_code: '', city: '',
+    planned_date: '', client_id: '', technician_id: '', equipment_id: '',
+    notes: '', target_value: '', housing_number: '', cable_material: '',
+  });
+  const [showExtra, setShowExtra] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Auto-fill defaults when sheet opens
+  useEffect(() => {
+    if (open && !initialized) {
+      const year = new Date().getFullYear();
+      const prefix = `P-${year}-`;
+      const existingNumbers = allProjects
+        .map(p => {
+          const match = p.project_number?.match(/^P-\d{4}-(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter(n => n > 0);
+      const nextNum = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+      const techId = defaultTech?.id || activeTechs[0]?.id || '';
+      const equipId = defaultEquipment?.id || (activeEquip.length === 1 ? activeEquip[0].id : '');
+      setForm({
+        project_number: `${prefix}${String(nextNum).padStart(3, '0')}`,
+        project_name: '', site_name: '',
+        address_line_1: '', postal_code: '', city: '',
+        planned_date: format(new Date(), 'yyyy-MM-dd'),
+        client_id: '', technician_id: techId, equipment_id: equipId,
+        notes: '', target_value: '', housing_number: '', cable_material: '',
+      });
+      setShowExtra(false);
+      setInitialized(true);
+    }
+    if (!open) setInitialized(false);
+  }, [open, initialized, allProjects, defaultTech, defaultEquipment, activeTechs, activeEquip]);
+
+  const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) return;
-    setSaving(true);
+    if (!form.project_name.trim() || !profile?.tenant_id) return;
     try {
-      await supabase.from('projects').insert({
-        project_name: form.name.trim(),
-        city: form.city,
-        status: 'planned' as const,
-        technician_id: form.technician_id || null,
-        client_id: form.client_id || null,
+      await createMut.mutateAsync({
+        tenant_id: profile.tenant_id,
+        project_number: form.project_number,
+        project_name: form.project_name,
+        site_name: form.site_name || null,
+        address_line_1: form.address_line_1 || null,
+        postal_code: form.postal_code || null,
+        city: form.city || null,
         planned_date: form.planned_date || null,
-        tenant_id: profile?.tenant_id || '',
-        project_number: 'PRJ-' + Date.now().toString().slice(-6),
+        status: 'planned' as const,
+        client_id: form.client_id || null,
+        technician_id: form.technician_id || null,
+        equipment_id: form.equipment_id || null,
+        notes: form.notes || null,
+        target_value: parseFloat(form.target_value) || null,
+        housing_number: form.housing_number || null,
+        cable_material: form.cable_material || null,
       });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      setForm({ name: '', city: 'amsterdam', technician_id: '', client_id: '', planned_date: '' });
-      setProjectType('ms_installatie');
       onClose();
-    } finally {
-      setSaving(false);
-    }
+    } catch {}
   };
 
   if (!open) return null;
 
   const inputCls = 'w-full bg-[#F4F7FA] rounded-lg px-3.5 py-3 border-none text-[14px] font-semibold text-[#1A2E4A] outline-none focus:ring-2 focus:ring-[#E8541A] focus:ring-offset-0';
   const labelCls = 'block text-[9px] uppercase tracking-[1.5px] text-[#8098B0] font-semibold mb-1.5';
-
-  const types = [
-    { key: 'ms_installatie' as const, label: 'MS-installatie', icon: Zap },
-    { key: 'compactstation' as const, label: 'Compactstation', icon: Building2 },
-    { key: 'provisorium' as const, label: 'Provisorium', icon: Timer },
-  ];
+  const techName = activeTechs.find(t => t.id === form.technician_id)?.full_name;
+  const equipName = activeEquip.find(e => e.id === form.equipment_id)?.device_name;
+  const displayDate = form.planned_date ? format(new Date(form.planned_date), 'd MMM yyyy', { locale: nl }) : '';
 
   return (
     <>
-      {/* Overlay */}
       <div
         className="absolute inset-0 z-[900]"
         style={{ background: 'rgba(26,46,74,0.3)', backdropFilter: 'blur(4px)' }}
         onClick={onClose}
       />
-      {/* Sheet */}
       <div
         className="absolute top-0 right-0 bottom-0 z-[1000] flex flex-col"
         style={{
@@ -295,67 +333,112 @@ function NewProjectSheet({
 
         {/* Form */}
         <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-5">
+          {/* Project */}
           <div>
-            <label className={labelCls}>PROJECTNAAM</label>
-            <input className={inputCls} placeholder="Naam van het project" value={form.name} onChange={e => update('name', e.target.value)} />
-          </div>
-
-          <div>
-            <label className={labelCls}>LOCATIE</label>
-            <select className={inputCls} value={form.city} onChange={e => update('city', e.target.value)}>
-              {['Amsterdam', 'Rotterdam', 'Utrecht', 'Eindhoven', 'Den Haag', 'Groningen', 'Haarlem', 'Breda'].map(c => (
-                <option key={c} value={c.toLowerCase()}>{c}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className={labelCls}>PROJECTTYPE</label>
-            <div className="grid grid-cols-3 gap-2">
-              {types.map(t => {
-                const active = projectType === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => setProjectType(t.key)}
-                    className="flex flex-col items-center gap-1.5 py-3.5 rounded-lg border-2 transition-colors"
-                    style={{
-                      background: active ? '#E8541A' : '#F4F7FA',
-                      color: active ? 'white' : '#4A6080',
-                      borderColor: active ? '#E8541A' : 'transparent',
-                    }}
-                  >
-                    <t.icon className="h-5 w-5" />
-                    <span className="text-[10px] uppercase font-bold">{t.label}</span>
-                  </button>
-                );
-              })}
+            <label className={labelCls}>PROJECT</label>
+            <div className="flex gap-2">
+              <input className={cn(inputCls, 'w-[115px] shrink-0 font-mono text-[13px]')} value={form.project_number} onChange={e => set('project_number', e.target.value)} placeholder="P-2026-001" />
+              <input className={cn(inputCls, 'flex-1')} value={form.project_name} onChange={e => set('project_name', e.target.value)} placeholder="Naam van het project" />
             </div>
           </div>
 
+          {/* Locatie */}
           <div>
-            <label className={labelCls}>MONTEUR</label>
-            <select className={inputCls} value={form.technician_id} onChange={e => update('technician_id', e.target.value)}>
-              <option value="">Selecteer monteur</option>
-              {technicians.map(t => (
-                <option key={t.id} value={t.id}>{t.full_name}</option>
-              ))}
-            </select>
+            <label className={labelCls}>LOCATIE</label>
+            <div className="space-y-2">
+              <input className={inputCls} value={form.address_line_1} onChange={e => set('address_line_1', e.target.value)} placeholder="Straat en huisnummer" />
+              <div className="flex gap-2">
+                <input className={cn(inputCls, 'w-[100px] shrink-0')} value={form.postal_code} onChange={e => set('postal_code', e.target.value)} placeholder="1234 AB" />
+                <input className={cn(inputCls, 'flex-1')} value={form.city} onChange={e => set('city', e.target.value)} placeholder="Plaats" />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className={labelCls}>OPDRACHTGEVER</label>
-            <select className={inputCls} value={form.client_id} onChange={e => update('client_id', e.target.value)}>
-              <option value="">Selecteer opdrachtgever</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>{c.company_name}</option>
-              ))}
-            </select>
-          </div>
-
+          {/* Datum */}
           <div>
             <label className={labelCls}>GEPLANDE DATUM</label>
-            <input type="date" className={inputCls} value={form.planned_date} onChange={e => update('planned_date', e.target.value)} />
+            <div className="relative">
+              <input type="date" className={inputCls} value={form.planned_date} onChange={e => set('planned_date', e.target.value)} />
+            </div>
+          </div>
+
+          {/* Opdrachtgever */}
+          <div>
+            <label className={labelCls}>OPDRACHTGEVER</label>
+            <ClientCombobox
+              value={form.client_id}
+              onChange={id => set('client_id', id)}
+              clients={activeClients}
+              onClientAangemaakt={() => {}}
+            />
+          </div>
+
+          {/* Monteur */}
+          <div>
+            <label className={labelCls}>MONTEUR</label>
+            <Select value={form.technician_id || '__none'} onValueChange={v => set('technician_id', v === '__none' ? '' : v)}>
+              <SelectTrigger className={inputCls}>
+                <span className={cn('truncate', !techName && 'text-[#8098B0]')}>
+                  {techName || 'Selecteer monteur'}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">Geen</SelectItem>
+                {activeTechs.map(t => <SelectItem key={t.id} value={t.id}>{t.full_name}{t.is_default ? ' ★' : ''}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Apparaat */}
+          <div>
+            <label className={labelCls}>APPARAAT</label>
+            <Select value={form.equipment_id || '__none'} onValueChange={v => set('equipment_id', v === '__none' ? '' : v)}>
+              <SelectTrigger className={inputCls}>
+                <span className={cn('truncate', !equipName && 'text-[#8098B0]')}>
+                  {equipName || 'Selecteer apparaat'}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">Geen</SelectItem>
+                {activeEquip.map(e => <SelectItem key={e.id} value={e.id}>{e.device_name}{e.is_default ? ' ★' : ''}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Extra gegevens */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowExtra(v => !v)}
+              className="flex items-center justify-between w-full py-2 text-[11px] font-semibold text-[#4A6080] uppercase tracking-[1px]"
+            >
+              Extra gegevens
+              <ChevronDown className={cn('h-4 w-4 text-[#8098B0] transition-transform', showExtra && 'rotate-180')} />
+            </button>
+            {showExtra && (
+              <div className="space-y-3 mt-2">
+                <div>
+                  <label className={labelCls}>LOCATIENAAM</label>
+                  <input className={inputCls} value={form.site_name} onChange={e => set('site_name', e.target.value)} placeholder="Gebouw of terrein" />
+                </div>
+                <div>
+                  <label className={labelCls}>TOETSWAARDE (Ω)</label>
+                  <input className={inputCls} inputMode="decimal" value={form.target_value} onChange={e => set('target_value', e.target.value)} placeholder="Bijv. 3.00" />
+                </div>
+                <div>
+                  <label className={labelCls}>BEHUIZINGSNUMMER</label>
+                  <input className={inputCls} value={form.housing_number} onChange={e => set('housing_number', e.target.value)} placeholder="Bijv. 12345" />
+                </div>
+                <div>
+                  <label className={labelCls}>LEIDINGMATERIAAL</label>
+                  <input className={inputCls} value={form.cable_material} onChange={e => set('cable_material', e.target.value)} placeholder="Bijv. Koper" />
+                </div>
+                <div>
+                  <label className={labelCls}>NOTITIES</label>
+                  <textarea className={cn(inputCls, 'min-h-[80px] resize-none')} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Eventuele opmerkingen" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -363,11 +446,11 @@ function NewProjectSheet({
         <div className="shrink-0 px-6 py-5 border-t border-[#EEF3F8] space-y-2">
           <button
             onClick={handleSubmit}
-            disabled={!form.name.trim() || saving}
+            disabled={!form.project_name.trim() || createMut.isPending}
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg text-[13px] font-bold uppercase tracking-[0.5px] transition-colors disabled:opacity-50"
             style={{ background: '#E8541A', color: 'white' }}
           >
-            {saving ? 'Aanmaken...' : 'Project aanmaken →'}
+            {createMut.isPending ? 'Aanmaken...' : 'Project aanmaken →'}
           </button>
           <button
             onClick={onClose}
