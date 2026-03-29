@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile({
             id: 'dev-user',
             tenant_id: DEV_TENANT_ID,
-            full_name: 'Dev User',
+            full_name: 'Enes Turhan',
             role: 'tenant_admin',
             status: 'active',
             created_at: new Date().toISOString(),
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile({
           id: 'dev-user',
           tenant_id: DEV_TENANT_ID,
-          full_name: 'Dev User',
+          full_name: 'Enes Turhan',
           role: 'tenant_admin',
           status: 'active',
           created_at: new Date().toISOString(),
