@@ -25,7 +25,6 @@ import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
   const { user } = useAuth();
-  const [handtekening, setHandtekening] = useState<string | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: project, isLoading: projectLoading } = useProject(id);
@@ -34,17 +33,11 @@ export default function ProjectReport() {
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
   const { genereer: genereerBrowser, bezig: browserBezig } = useRapportGeneratorBrowser();
   const { buildRapportData } = useRapportData(id);
-  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening(user?.id);
+  const { opgeslagenHandtekening } = useHandtekening(user?.id);
   const { toast } = useToast();
-  const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
-  const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>('nieuw');
 
-  // Auto-select saved signature when available
-  useEffect(() => {
-    if (heeftOpgeslagen && !handtekening) {
-      setGebruikOpgeslagen(true);
-    }
-  }, [heeftOpgeslagen]);
+  // Handtekening uit wizard wordt automatisch gebruikt
+  const actieveHandtekening = opgeslagenHandtekening;
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
