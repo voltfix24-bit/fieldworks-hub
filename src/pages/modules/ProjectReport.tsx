@@ -95,12 +95,6 @@ export default function ProjectReport() {
       .replace(/\[opdrachtgever\]/g, client?.company_name || '');
   };
 
-  const handlePrint = () => {
-    const originalTitle = document.title;
-    document.title = buildFilename();
-    window.print();
-    setTimeout(() => { document.title = originalTitle; }, 1000);
-  };
 
   // Build conditional row arrays
   const projectRows = [
