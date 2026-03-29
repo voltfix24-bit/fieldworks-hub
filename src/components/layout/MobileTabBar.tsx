@@ -235,7 +235,7 @@ export function MobileTabBar() {
 
           {/* Planning */}
           <button
-            onClick={() => { setSheetOpen(false); navigate('/planning'); }}
+            onClick={() => { setSheetOpen(false); navigate('/planning?view=kalender'); }}
             className="w-full flex items-center gap-3.5 px-4 py-3.5 min-h-[68px] active:bg-foreground/[0.04] transition-colors text-left"
           >
             <div className="h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0 bg-[hsl(0_0%_0%/0.04)]">

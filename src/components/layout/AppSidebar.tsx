@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Planning', url: '/planning', icon: Calendar },
+  { title: 'Planning', url: '/planning?view=kalender', icon: Calendar },
   { title: 'Projecten', url: '/projects', icon: FolderKanban },
   { title: 'Klanten', url: '/clients', icon: Users },
   { title: 'Monteurs', url: '/technicians', icon: HardHat },
