@@ -23,6 +23,10 @@ const CITY_COORDS: Record<string, [number, number]> = {
   groningen: [53.2194, 6.5665],
 };
 const DEFAULT_CENTER: [number, number] = [52.1326, 5.2913];
+const NL_BOUNDS: L.LatLngBoundsExpression = [
+  [50.75, 3.2],  // southwest
+  [53.7, 7.22],  // northeast
+];
 
 type ProjectStatus = 'planned' | 'completed';
 
@@ -218,14 +222,18 @@ export default function MapPage() {
     <div className="relative w-full" style={{ height: 'calc(100vh - 60px)' }}>
       <MapContainer
         center={DEFAULT_CENTER}
-        zoom={7}
+        zoom={8}
+        minZoom={7}
+        maxZoom={18}
+        maxBounds={NL_BOUNDS}
+        maxBoundsViscosity={1.0}
         className="w-full h-full"
         zoomControl={false}
-        attributionControl={true}
+        attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
         />
         {filtered.map(project => {
           const coords = getCoords(project);
