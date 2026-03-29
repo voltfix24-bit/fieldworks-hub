@@ -1,3 +1,4 @@
+// react-leaflet v4 + leaflet v1.9
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
