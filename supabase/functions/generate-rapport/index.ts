@@ -16,6 +16,26 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+/**
+ * Fetch an image URL and return as pure base64 string (no data-URL prefix).
+ * Returns null on any failure.
+ */
+async function urlToBase64(url: string): Promise<string | null> {
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const buf = await resp.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  } catch {
+    return null;
+  }
+}
+
 async function tryGenerateViaExternalApi(
   rapportApiUrl: string,
   rapportData: Record<string, unknown>,
@@ -184,7 +204,6 @@ Deno.serve(async (req) => {
         rvOk = minValue !== null && minValue <= targetValue;
       }
 
-      // Pass URLs directly — Python API downloads them itself
       const fotoDisplayUrl = elPens.find((p) => p.display_photo_url)?.display_photo_url || null;
       const fotoOverzichtUrl = elPens.find((p) => p.overview_photo_url)?.overview_photo_url || null;
 
@@ -201,8 +220,23 @@ Deno.serve(async (req) => {
         metingen,
         foto_display_url: fotoDisplayUrl,
         foto_overzicht_url: fotoOverzichtUrl,
+        // Will be populated below
+        foto_display_b64: null as string | null,
+        foto_overzicht_b64: null as string | null,
       };
     });
+
+    // Convert photo URLs to base64 for the Python API
+    await Promise.all(
+      elektrodes.map(async (el) => {
+        const [displayB64, overzichtB64] = await Promise.all([
+          el.foto_display_url ? urlToBase64(el.foto_display_url) : null,
+          el.foto_overzicht_url ? urlToBase64(el.foto_overzicht_url) : null,
+        ]);
+        el.foto_display_b64 = displayB64;
+        el.foto_overzicht_b64 = overzichtB64;
+      })
+    );
 
     const projectTargetValue = (project as any).target_value
       ? Number((project as any).target_value)
