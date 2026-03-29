@@ -12,8 +12,15 @@ import { useTechnicians } from '@/hooks/use-technicians';
 import { useClients } from '@/hooks/use-clients';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, Plus, Minus, LocateFixed, Shield, ArrowRight, MessageCircle, Building2, Timer, Zap, X } from 'lucide-react';
+import { MapPin, Plus, Minus, LocateFixed, Shield, ArrowRight, MessageCircle, X, ChevronDown } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEquipmentList, useDefaultEquipment } from '@/hooks/use-equipment';
+import { useCreateProject, useProjects as useAllProjects } from '@/hooks/use-projects';
+import { ClientCombobox } from '@/components/ui/ClientCombobox';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
 
 // Fix default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
