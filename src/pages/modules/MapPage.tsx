@@ -5,6 +5,7 @@ import { MapContainer } from 'react-leaflet/MapContainer';
 import { TileLayer } from 'react-leaflet/TileLayer';
 import { Marker } from 'react-leaflet/Marker';
 import { useMap } from 'react-leaflet/hooks';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useProjects } from '@/hooks/use-projects';
@@ -499,26 +500,43 @@ export default function MapPage() {
         attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
         />
-        {filtered.map(project => {
-          const coords = getCoords(project);
-          const icon = createMarkerIcon(project.status as ProjectStatus, selectedId === project.id);
-          return (
-            <Marker
-              key={project.id}
-              position={coords}
-              icon={icon}
-              eventHandlers={{
-                click: (e) => {
-                  e.originalEvent.stopPropagation();
-                  setSelectedId(project.id);
-                },
-              }}
-            />
-          );
-        })}
+        <MarkerClusterGroup
+          chunkedLoading
+          maxClusterRadius={50}
+          spiderfyOnMaxZoom
+          showCoverageOnHover={false}
+          iconCreateFunction={(cluster: any) => {
+            const count = cluster.getChildCount();
+            const size = count < 10 ? 36 : count < 50 ? 44 : 52;
+            return L.divIcon({
+              html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#1A2E4A;color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${size < 40 ? 13 : 15}px;border:3px solid white;box-shadow:0 4px 12px rgba(26,46,74,0.3);">${count}</div>`,
+              className: '',
+              iconSize: L.point(size, size),
+              iconAnchor: [size / 2, size / 2],
+            });
+          }}
+        >
+          {filtered.map(project => {
+            const coords = getCoords(project);
+            const icon = createMarkerIcon(project.status as ProjectStatus, selectedId === project.id);
+            return (
+              <Marker
+                key={project.id}
+                position={coords}
+                icon={icon}
+                eventHandlers={{
+                  click: (e) => {
+                    e.originalEvent.stopPropagation();
+                    setSelectedId(project.id);
+                  },
+                }}
+              />
+            );
+          })}
+        </MarkerClusterGroup>
         <ZoomControls />
       </MapContainer>
 
