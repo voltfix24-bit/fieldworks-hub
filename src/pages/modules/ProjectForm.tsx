@@ -48,20 +48,35 @@ export default function ProjectForm() {
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
 
+  // Auto-generate next project number for new projects
   useEffect(() => {
-    if (!isEdit && !defaultsApplied) {
+    if (!isEdit && !defaultsApplied && allProjects) {
       const laatsteMonteur = localStorage.getItem(MONTEUR_KEY);
       const techId = defaultTech?.id || laatsteMonteur || activeTechs[0]?.id || '';
       const equipId = defaultEquipment?.id || (activeEquip.length === 1 ? activeEquip[0].id : '');
+      
+      // Generate next sequential project number P-YYYY-NNN
+      const year = new Date().getFullYear();
+      const prefix = `P-${year}-`;
+      const existingNumbers = allProjects
+        .map(p => {
+          const match = p.project_number?.match(/^P-\d{4}-(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter(n => n > 0);
+      const nextNum = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+      const nextProjectNumber = `${prefix}${String(nextNum).padStart(3, '0')}`;
+
       setForm(prev => ({
         ...prev,
         planned_date: format(new Date(), 'yyyy-MM-dd'),
         equipment_id: equipId,
         technician_id: techId,
+        project_number: nextProjectNumber,
       }));
       setDefaultsApplied(true);
     }
-  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, activeTechs, activeEquip]);
+  }, [defaultEquipment, defaultTech, isEdit, defaultsApplied, activeTechs, activeEquip, allProjects]);
 
   // Remember last used technician
   useEffect(() => {
