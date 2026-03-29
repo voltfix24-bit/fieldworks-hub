@@ -29,6 +29,7 @@ import BrandingSettings from "@/pages/settings/BrandingSettings";
 import UserProfile from "@/pages/settings/UserProfile";
 import TenantOverview from "@/pages/settings/TenantOverview";
 import PlanningPage from "@/pages/modules/PlanningPage";
+import MapPage from "@/pages/modules/MapPage";
 import MeerPage from "@/pages/modules/MeerPage";
 import NotFound from "@/pages/NotFound";
 
@@ -75,6 +76,7 @@ const App = () => (
                 <Route path="/reports/configurator" element={<RapportConfigurator />} />
 
                 <Route path="/planning" element={<PlanningPage />} />
+                <Route path="/map" element={<MapPage />} />
                 <Route path="/meer" element={<Navigate to="/settings" replace />} />
 
                 <Route path="/settings" element={<SettingsIndex />} />

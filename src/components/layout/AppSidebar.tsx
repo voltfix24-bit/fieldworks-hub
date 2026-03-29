@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, FolderKanban, Users, HardHat,
-  Wrench, FileText, Settings, LogOut, Calendar,
+  Wrench, FileText, Settings, LogOut, Calendar, Map,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTenant } from '@/contexts/TenantContext';
@@ -13,6 +13,7 @@ const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Planning', url: '/planning?view=kalender', icon: Calendar },
   { title: 'Projecten', url: '/projects', icon: FolderKanban },
+  { title: 'Kaartweergave', url: '/map', icon: Map },
   { title: 'Klanten', url: '/clients', icon: Users },
   { title: 'Monteurs', url: '/technicians', icon: HardHat },
   { title: 'Apparatuur', url: '/equipment', icon: Wrench },
