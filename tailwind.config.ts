@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Public Sans', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -77,6 +78,16 @@ export default {
         sm: "calc(var(--radius) - 4px)",
         xl: "calc(var(--radius) + 4px)",
         "2xl": "calc(var(--radius) + 8px)",
+      },
+      colors: {
+        // extend existing with field ops tokens
+        field: {
+          green: "hsl(var(--field-green))",
+          "green-bg": "hsl(var(--field-green-bg))",
+          red: "hsl(var(--field-red))",
+          "red-bg": "hsl(var(--field-red-bg))",
+          "blue-mid": "hsl(var(--field-blue-mid))",
+        },
       },
       keyframes: {
         "accordion-down": {
