@@ -399,29 +399,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Progress masthead */}
-      <div className="bg-card rounded border border-border border-l-8 border-l-[hsl(var(--primary))] p-6 flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-1">
-            Kwartaal Voortgang Metingen
-          </p>
-          <h3 className="font-display text-[24px] font-black text-foreground">74% Gerealiseerd</h3>
-          <div className="mt-3 h-2 rounded-full bg-muted/40 max-w-sm overflow-hidden">
-            <div className="h-full rounded-full bg-[hsl(var(--primary))]" style={{ width: '74%' }} />
-          </div>
-        </div>
-        <div className="flex items-center gap-8 ml-8">
-          <div className="text-center">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Budget</p>
-            <p className="font-display text-[20px] font-black text-foreground">€2.4M</p>
-          </div>
-          <div className="text-center">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Uren</p>
-            <p className="font-display text-[20px] font-black text-foreground">14.2k</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
