@@ -39,6 +39,13 @@ export default function ProjectReport() {
   // Handtekening uit wizard wordt automatisch gebruikt
   const actieveHandtekening = opgeslagenHandtekening;
 
+  // Email state — must be before early returns
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState('');
+  const [emailNaam, setEmailNaam] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
+  const [whatsAppLoading, setWhatsAppLoading] = useState(false);
+
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
 
