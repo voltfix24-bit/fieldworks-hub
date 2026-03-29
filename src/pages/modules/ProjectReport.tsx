@@ -131,8 +131,7 @@ export default function ProjectReport() {
 
   const showSignBlock = rs.report_sign_block === true && sec('ondertekening');
 
-  // Determine active signature
-  const actieveHandtekening = gebruikOpgeslagen ? opgeslagenHandtekening : handtekening;
+  // actieveHandtekening is already set at top level
 
   const handleDownload = async () => {
     try {
