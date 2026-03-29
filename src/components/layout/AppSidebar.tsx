@@ -23,7 +23,7 @@ export function AppSidebar() {
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
-  const { tenant } = useTenant();
+  const { tenant, branding } = useTenant();
   const { signOut } = useAuth();
   const { data: projects } = useProjects();
   const plannedCount = projects?.filter(p => p.status === 'planned').length ?? 0;
