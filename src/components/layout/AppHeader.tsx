@@ -6,8 +6,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
-import { User, Settings, LogOut, Search, Bell, Clock } from 'lucide-react';
+import { User, Settings, LogOut, Search, Bell, Clock, Sun, Moon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/hooks/use-theme';
 
 export function AppHeader() {
   const { user, profile, signOut } = useAuth();
