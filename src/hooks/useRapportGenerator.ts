@@ -159,8 +159,6 @@ export function useRapportGenerator() {
       }
 
       downloadBase64Pdf(data.pdf_base64, data.bestandsnaam || `Aardingsrapport_${projectId}.pdf`);
-
-      doc.save(bestandsnaam);
     } catch (err) {
       const bericht = err instanceof Error ? err.message : "Onbekende fout";
       setError(bericht);
