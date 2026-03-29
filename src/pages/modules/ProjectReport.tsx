@@ -254,68 +254,34 @@ export default function ProjectReport() {
         </div>
       )}
 
-      {/* ─── ONDERTEKENING STAP ─── */}
+      {/* ─── DOWNLOAD SECTIE ─── */}
       {isReady && (
         <div className="print:hidden max-w-lg mx-auto mb-8">
           <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
             <div className="flex items-center gap-2.5 mb-1">
-              <PenTool className="h-4 w-4 text-muted-foreground/50" />
-              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Ondertekening</h2>
+              <Download className="h-4 w-4 text-muted-foreground/50" />
+              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Rapport downloaden</h2>
             </div>
-            <p className="text-[12px] text-muted-foreground/50 mb-5">Teken hieronder ter bevestiging</p>
 
-            {/* Saved signature notice */}
-            {heeftOpgeslagen && !gebruikOpgeslagen && !handtekening && (
-              <div className="rounded-xl bg-muted/20 p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium text-foreground">Opgeslagen handtekening beschikbaar</p>
-                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">Eerder opgeslagen door deze monteur</p>
+            {/* Handtekening preview */}
+            {actieveHandtekening ? (
+              <div className="mb-4 mt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <PenTool className="h-3 w-3 text-muted-foreground/40" />
+                  <span className="text-[11px] text-muted-foreground/50">Handtekening uit meetwizard</span>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => setGebruikOpgeslagen(true)}
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#F4896B]/10 text-[#F4896B] active:scale-[0.96] transition-all"
-                  >
-                    Gebruik opgeslagen
-                  </button>
-                  <button
-                    onClick={() => setGebruikOpgeslagen(false)}
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-muted/30 text-muted-foreground active:scale-[0.96] transition-all"
-                  >
-                    Opnieuw tekenen
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Show saved signature preview */}
-            {gebruikOpgeslagen && opgeslagenHandtekening && (
-              <div className="mb-4">
                 <div className="rounded-xl border border-border bg-white p-3">
                   <img
-                    src={`data:image/png;base64,${opgeslagenHandtekening}`}
+                    src={`data:image/png;base64,${actieveHandtekening}`}
                     alt="Opgeslagen handtekening"
-                    className="w-full h-28 object-contain"
+                    className="w-full h-20 object-contain"
                   />
                 </div>
-                <button
-                  onClick={() => { setGebruikOpgeslagen(false); setHandtekening(null); }}
-                  className="mt-2 text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  Opnieuw tekenen
-                </button>
               </div>
-            )}
-
-            {/* Draw new signature */}
-            {!gebruikOpgeslagen && (
-              <HandtekeningPad
-                onChange={setHandtekening}
-                breedte={460}
-                hoogte={160}
-                monteurId={user?.id}
-              />
+            ) : (
+              <p className="text-[12px] text-amber-600 mt-2 mb-4">
+                Nog geen handtekening — teken deze in de meetwizard bij "Volgende actie".
+              </p>
             )}
 
             {/* Generate + Email buttons */}
