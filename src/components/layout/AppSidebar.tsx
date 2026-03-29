@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, FolderKanban, Users, HardHat,
-  Wrench, FileText, Settings, LogOut, Calendar,
+  Wrench, FileText, Settings, LogOut, Calendar, Map,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTenant } from '@/contexts/TenantContext';

@@ -29,6 +29,7 @@ import BrandingSettings from "@/pages/settings/BrandingSettings";
 import UserProfile from "@/pages/settings/UserProfile";
 import TenantOverview from "@/pages/settings/TenantOverview";
 import PlanningPage from "@/pages/modules/PlanningPage";
+import MapPage from "@/pages/modules/MapPage";
 import MeerPage from "@/pages/modules/MeerPage";
 import NotFound from "@/pages/NotFound";
 
