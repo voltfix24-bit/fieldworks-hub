@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Planning', url: '/planning', icon: Calendar },
+  { title: 'Planning', url: '/planning?view=kalender', icon: Calendar },
   { title: 'Projecten', url: '/projects', icon: FolderKanban },
   { title: 'Klanten', url: '/clients', icon: Users },
   { title: 'Monteurs', url: '/technicians', icon: HardHat },
@@ -31,8 +31,9 @@ export function AppSidebar() {
   if (isMobile) return null;
 
   const isActive = (url: string) => {
-    if (url === '/dashboard') return location.pathname === '/dashboard' || location.pathname === '/';
-    return location.pathname.startsWith(url);
+    const path = url.split('?')[0];
+    if (path === '/dashboard') return location.pathname === '/dashboard' || location.pathname === '/';
+    return location.pathname.startsWith(path);
   };
 
   return (
