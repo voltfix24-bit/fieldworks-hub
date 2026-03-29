@@ -31,8 +31,9 @@ export function AppSidebar() {
   if (isMobile) return null;
 
   const isActive = (url: string) => {
-    if (url === '/dashboard') return location.pathname === '/dashboard' || location.pathname === '/';
-    return location.pathname.startsWith(url);
+    const path = url.split('?')[0];
+    if (path === '/dashboard') return location.pathname === '/dashboard' || location.pathname === '/';
+    return location.pathname.startsWith(path);
   };
 
   return (
