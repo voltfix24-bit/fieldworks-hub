@@ -71,16 +71,6 @@ export default {
           secondary: "hsl(var(--surface-secondary))",
           grouped: "hsl(var(--surface-grouped))",
         },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "calc(var(--radius) + 4px)",
-        "2xl": "calc(var(--radius) + 8px)",
-      },
-      colors: {
-        // extend existing with field ops tokens
         field: {
           green: "hsl(var(--field-green))",
           "green-bg": "hsl(var(--field-green-bg))",
