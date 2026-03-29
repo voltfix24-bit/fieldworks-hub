@@ -6,6 +6,66 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
+const EXTERNAL_API_TIMEOUT_MS = 8000;
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: JSON_HEADERS,
+  });
+}
+
+async function tryGenerateViaExternalApi(
+  rapportApiUrl: string,
+  rapportData: Record<string, unknown>,
+  projectName: string,
+  meetdatum: string,
+) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort("timeout"), EXTERNAL_API_TIMEOUT_MS);
+
+  try {
+    const apiResponse = await fetch(`${rapportApiUrl}/rapport/preview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rapportData),
+      signal: controller.signal,
+    });
+
+    if (!apiResponse.ok) {
+      const detailText = await apiResponse.text().catch(() => "");
+      let detailMsg = `API fout: ${apiResponse.status}`;
+      try {
+        const parsed = JSON.parse(detailText);
+        detailMsg = typeof parsed?.detail === "string"
+          ? parsed.detail
+          : JSON.stringify(parsed?.detail ?? parsed).slice(0, 500);
+      } catch {
+        if (detailText) detailMsg = detailText.slice(0, 500);
+      }
+
+      console.warn("generate-rapport external api mislukt, fallback naar browser-pdf:", detailMsg);
+      return null;
+    }
+
+    const result = await apiResponse.json();
+    const projectClean = projectName.replace(/\s+/g, "_").slice(0, 30);
+    const datumClean = meetdatum.replace(/-/g, "").replace(/\s/g, "").slice(0, 8);
+
+    return {
+      pdf_base64: result.pdf_base64,
+      bestandsnaam: `Aardingsrapport_${projectClean}_${datumClean}.pdf`,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn("generate-rapport external api timeout/fout, fallback naar browser-pdf:", message);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -14,10 +74,7 @@ Deno.serve(async (req) => {
   try {
     const { project_id, handtekening_b64 } = await req.json();
     if (!project_id) {
-      return new Response(JSON.stringify({ error: "project_id is vereist" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "project_id is vereist" }, 400);
     }
 
     const authHeader = req.headers.get("Authorization") ?? "";
@@ -209,47 +266,22 @@ Deno.serve(async (req) => {
       }
       rapportApiUrl = rapportApiUrl.replace(/\/+$/, "");
 
-      const apiResponse = await fetch(`${rapportApiUrl}/rapport/preview`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rapportData),
-      });
+      const externalResult = await tryGenerateViaExternalApi(
+        rapportApiUrl,
+        rapportData as Record<string, unknown>,
+        project.project_name,
+        meetdatum,
+      );
 
-      if (!apiResponse.ok) {
-        const detailText = await apiResponse.text().catch(() => "");
-        let detailMsg = `API fout: ${apiResponse.status}`;
-        try {
-          const parsed = JSON.parse(detailText);
-          detailMsg = typeof parsed?.detail === "string"
-            ? parsed.detail
-            : JSON.stringify(parsed?.detail ?? parsed).slice(0, 500);
-        } catch { /* use default */ }
-        throw new Error(detailMsg);
+      if (externalResult?.pdf_base64) {
+        return jsonResponse(externalResult);
       }
-
-      const result = await apiResponse.json();
-      const projectClean = project.project_name.replace(/\s+/g, "_").slice(0, 30);
-      const datumClean = meetdatum.replace(/-/g, "").replace(/\s/g, "").slice(0, 8);
-
-      return new Response(
-        JSON.stringify({
-          pdf_base64: result.pdf_base64,
-          bestandsnaam: `Aardingsrapport_${projectClean}_${datumClean}.pdf`,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    } else {
-      return new Response(
-        JSON.stringify({ prepared_data: rapportData }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
+
+    return jsonResponse({ prepared_data: rapportData });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Onbekende fout";
     console.error("generate-rapport error:", message);
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: message }, 500);
   }
 });
