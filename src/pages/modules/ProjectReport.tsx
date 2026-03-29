@@ -149,13 +149,6 @@ export default function ProjectReport() {
     }
   };
 
-  // Email state
-  const [emailOpen, setEmailOpen] = useState(false);
-  const [emailTo, setEmailTo] = useState(client?.email || '');
-  const [emailNaam, setEmailNaam] = useState(client?.contact_name || '');
-  const [emailSending, setEmailSending] = useState(false);
-  const [whatsAppLoading, setWhatsAppLoading] = useState(false);
-
   const handleSendEmail = async () => {
     if (!emailTo) return;
     setEmailSending(true);
