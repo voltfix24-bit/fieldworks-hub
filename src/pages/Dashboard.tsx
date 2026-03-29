@@ -310,94 +310,54 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Asymmetric grid */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Left — Recent projects (8 cols) */}
-        <div className="col-span-8">
-          <div className="bg-card rounded border border-border overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h3 className="font-display text-[16px] font-bold text-foreground">Recente Projecten</h3>
+      {/* Recent projects */}
+      <div className="bg-card rounded border border-border overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h3 className="font-display text-[16px] font-bold text-foreground">Recente Projecten</h3>
+          <button
+            onClick={() => navigate('/projects/new')}
+            className="flex items-center gap-2 bg-[hsl(var(--primary))] text-white text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded hover:opacity-90 transition-opacity"
+          >
+            <Plus className="h-3.5 w-3.5" /> Nieuw Project
+          </button>
+        </div>
+
+        {recentProjects.length > 0 ? (
+          <div className="divide-y divide-border/50">
+            {recentProjects.map(p => (
               <button
-                onClick={() => navigate('/projects/new')}
-                className="flex items-center gap-2 bg-[hsl(var(--primary))] text-white text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded hover:opacity-90 transition-opacity"
+                key={p.id}
+                onClick={() => navigate(`/projects/${p.id}`)}
+                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors text-left"
               >
-                <Plus className="h-3.5 w-3.5" /> Nieuw Project
+                <div className="w-10 h-10 rounded bg-muted/40 flex items-center justify-center shrink-0">
+                  <ProjectIcon status={p.status} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-semibold text-foreground truncate">{p.project_name}</p>
+                  <p className="text-[12px] text-muted-foreground truncate">
+                    {[p.city, p.address_line_1].filter(Boolean).join(', ') || p.project_number}
+                  </p>
+                </div>
+                <div className="text-right shrink-0 flex items-center gap-4">
+                  {p.planned_date && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Deadline</p>
+                      <p className="text-[13px] font-medium text-foreground">{formatNlDate(p.planned_date)}</p>
+                    </div>
+                  )}
+                  <ProjectStatusBadge project={p} />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
+                </div>
               </button>
-            </div>
-
-            {recentProjects.length > 0 ? (
-              <div className="divide-y divide-border/50">
-                {recentProjects.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => navigate(`/projects/${p.id}`)}
-                    className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded bg-muted/40 flex items-center justify-center shrink-0">
-                      <ProjectIcon status={p.status} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-foreground truncate">{p.project_name}</p>
-                      <p className="text-[12px] text-muted-foreground truncate">
-                        {[p.city, p.address_line_1].filter(Boolean).join(', ') || p.project_number}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0 flex items-center gap-4">
-                      {p.planned_date && (
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Deadline</p>
-                          <p className="text-[13px] font-medium text-foreground">{formatNlDate(p.planned_date)}</p>
-                        </div>
-                      )}
-                      <ProjectStatusBadge project={p} />
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="px-5 py-12 text-center">
-                <FolderKanban className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Nog geen projecten</p>
-              </div>
-            )}
+            ))}
           </div>
-        </div>
-
-        {/* Right — Info panel (4 cols) */}
-        <div className="col-span-4 space-y-6">
-          {/* Active locations */}
-          <div className="bg-card rounded border border-border overflow-hidden">
-            <div className="px-5 py-4 border-b border-border">
-              <h3 className="font-display text-[16px] font-bold text-foreground">Actieve Locaties</h3>
-            </div>
-            <div className="aspect-[4/3] bg-muted/20 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-[12px] text-muted-foreground/40">Kaart weergave</p>
-              </div>
-            </div>
-            <div className="px-5 py-4 border-t border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-field-green animate-pulse" />
-                <span className="text-[12px] font-semibold text-foreground">Live Team Status</span>
-              </div>
-              <span className="text-[12px] text-muted-foreground">{planned.length} Online</span>
-            </div>
-            <div className="px-5 pb-4 flex items-center -space-x-2">
-              {[...Array(Math.min(3, planned.length || 1))].map((_, i) => (
-                <div key={i} className="w-8 h-8 rounded-full bg-muted border-2 border-card flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-muted-foreground">{String.fromCharCode(65 + i)}</span>
-                </div>
-              ))}
-              {planned.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-muted/60 border-2 border-card flex items-center justify-center">
-                  <span className="text-[9px] font-bold text-muted-foreground">+{planned.length - 3}</span>
-                </div>
-              )}
-            </div>
+        ) : (
+          <div className="px-5 py-12 text-center">
+            <FolderKanban className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Nog geen projecten</p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
