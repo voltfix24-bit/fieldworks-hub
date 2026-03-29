@@ -621,21 +621,12 @@ export default function RapportConfigurator() {
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col" style={{ background: '#F8F9FB' }}>
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#191C1E]/8 bg-white shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#A43700]/10 flex items-center justify-center">
-            <FileText className="h-4 w-4 text-[#A43700]" />
-          </div>
-          <div>
-            <h1 className="text-[15px] font-bold text-[#191C1E]">Rapport Configurator</h1>
-            <p className="text-[11px] text-[#191C1E]/40">Stel je rapport samen en genereer een PDF</p>
-          </div>
-        </div>
+      {/* Full-width generate button */}
+      <div className="px-5 pt-4 pb-3 shrink-0">
         <Button
           onClick={handleGenerate}
           disabled={loading}
-          className="rounded-xl text-[13px] font-semibold px-5 h-9"
+          className="w-full rounded-xl text-[14px] font-semibold h-11 text-white"
           style={{ backgroundColor: '#A43700' }}
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
@@ -657,8 +648,8 @@ export default function RapportConfigurator() {
 
       {/* Main split */}
       <div className="flex-1 flex min-h-0">
-        {/* Left panel — 40% */}
-        <div className="w-[40%] border-r border-[#191C1E]/8 overflow-y-auto p-4">
+        {/* Left panel — 42% */}
+        <div className="w-[42%] border-r border-[#191C1E]/8 overflow-y-auto p-4 sticky top-0">
           <Tabs defaultValue="bedrijf" className="w-full">
             <TabsList className="w-full grid grid-cols-5 rounded-xl h-9 bg-[#191C1E]/[0.04] p-0.5">
               <TabsTrigger value="bedrijf" className="text-[11px] rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
@@ -682,8 +673,8 @@ export default function RapportConfigurator() {
             <TabsContent value="bedrijf" className="mt-4 space-y-3">
               <FormField label="Bedrijfsnaam" value={form.company_name} onChange={(v) => set('company_name', v)} required />
               <FormField label="Adres" value={form.company_address} onChange={(v) => set('company_address', v)} required />
-              <FormField label="E-mail" value={form.company_email} onChange={(v) => set('company_email', v)} type="email" />
-              <FormField label="Website" value={form.company_website} onChange={(v) => set('company_website', v)} />
+              <FormField label="E-mail" value={form.company_email} onChange={(v) => set('company_email', v)} type="email" required />
+              <FormField label="Website" value={form.company_website} onChange={(v) => set('company_website', v)} required />
               <FormField label="KvK nummer" value={form.kvk} onChange={(v) => set('kvk', v)} />
               <FormField label="Certificaten" value={form.certificaten} onChange={(v) => set('certificaten', v)} />
               <div className="space-y-1.5">
@@ -803,8 +794,8 @@ export default function RapportConfigurator() {
           </Tabs>
         </div>
 
-        {/* Right panel — 60% PDF preview */}
-        <div className="w-[60%] flex flex-col bg-[#191C1E]/[0.03]">
+        {/* Right panel — 58% PDF preview */}
+        <div className="w-[58%] flex flex-col bg-[#191C1E]/[0.03]">
           {pdfUrl ? (
             <>
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#191C1E]/8 bg-white shrink-0">
