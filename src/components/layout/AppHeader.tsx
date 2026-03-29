@@ -6,14 +6,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
-import { User, Settings, LogOut, Search, Bell, Clock } from 'lucide-react';
+import { User, Settings, LogOut, Search, Bell, Clock, Sun, Moon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/hooks/use-theme';
 
 export function AppHeader() {
   const { user, profile, signOut } = useAuth();
   const { tenant } = useTenant();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { theme, toggleTheme } = useTheme();
 
   if (isMobile) return null;
 
@@ -39,6 +41,9 @@ export function AppHeader() {
       <div className="flex items-center gap-3">
         <button className="w-9 h-9 rounded flex items-center justify-center hover:bg-card transition-colors">
           <Bell className="h-[18px] w-[18px] text-muted-foreground/60" />
+        </button>
+        <button onClick={toggleTheme} className="w-9 h-9 rounded flex items-center justify-center hover:bg-card transition-colors" title={theme === 'light' ? 'Donkere modus' : 'Lichte modus'}>
+          {theme === 'light' ? <Moon className="h-[18px] w-[18px] text-muted-foreground/60" /> : <Sun className="h-[18px] w-[18px] text-muted-foreground/60" />}
         </button>
         <button className="w-9 h-9 rounded flex items-center justify-center hover:bg-card transition-colors">
           <Clock className="h-[18px] w-[18px] text-muted-foreground/60" />
