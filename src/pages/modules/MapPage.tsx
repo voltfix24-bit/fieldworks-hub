@@ -203,11 +203,183 @@ function DetailPanel({ project, onClose }: { project: any; onClose: () => void }
   );
 }
 
+/* ── New Project Sheet ── */
+function NewProjectSheet({
+  open, onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { profile } = useAuth();
+  const { data: technicians = [] } = useTechnicians();
+  const { data: clients = [] } = useClients();
+  const queryClient = useQueryClient();
+  const [projectType, setProjectType] = useState<'ms_installatie' | 'compactstation' | 'provisorium'>('ms_installatie');
+  const [form, setForm] = useState({ name: '', city: 'amsterdam', technician_id: '', client_id: '', planned_date: '' });
+  const [saving, setSaving] = useState(false);
+
+  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSubmit = async () => {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    try {
+      await supabase.from('projects').insert({
+        project_name: form.name.trim(),
+        city: form.city,
+        status: 'planned' as const,
+        technician_id: form.technician_id || null,
+        client_id: form.client_id || null,
+        planned_date: form.planned_date || null,
+        tenant_id: profile?.tenant_id || '',
+        project_number: 'PRJ-' + Date.now().toString().slice(-6),
+      });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setForm({ name: '', city: 'amsterdam', technician_id: '', client_id: '', planned_date: '' });
+      setProjectType('ms_installatie');
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!open) return null;
+
+  const inputCls = 'w-full bg-[#F4F7FA] rounded-lg px-3.5 py-3 border-none text-[14px] font-semibold text-[#1A2E4A] outline-none focus:ring-2 focus:ring-[#E8541A] focus:ring-offset-0';
+  const labelCls = 'block text-[9px] uppercase tracking-[1.5px] text-[#8098B0] font-semibold mb-1.5';
+
+  const types = [
+    { key: 'ms_installatie' as const, label: 'MS-installatie', icon: Zap },
+    { key: 'compactstation' as const, label: 'Compactstation', icon: Building2 },
+    { key: 'provisorium' as const, label: 'Provisorium', icon: Timer },
+  ];
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 z-[900]"
+        style={{ background: 'rgba(26,46,74,0.3)', backdropFilter: 'blur(4px)' }}
+        onClick={onClose}
+      />
+      {/* Sheet */}
+      <div
+        className="absolute top-0 right-0 bottom-0 z-[1000] flex flex-col"
+        style={{
+          width: 480,
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(20px)',
+          borderLeft: '1px solid rgba(255,255,255,0.5)',
+          boxShadow: '-40px 0 80px rgba(26,46,74,0.15)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="p-6 relative">
+          <p className="text-[10px] uppercase font-bold tracking-[2px] text-[#E8541A] mb-1">NIEUW PROJECT</p>
+          <h2 className="text-[28px] font-black text-[#1A2E4A]">Project toevoegen</h2>
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-6 w-7 h-7 rounded-md flex items-center justify-center text-[#8098B0] hover:bg-[#F4F7FA] hover:text-[#1A2E4A] transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-5">
+          <div>
+            <label className={labelCls}>PROJECTNAAM</label>
+            <input className={inputCls} placeholder="Naam van het project" value={form.name} onChange={e => update('name', e.target.value)} />
+          </div>
+
+          <div>
+            <label className={labelCls}>LOCATIE</label>
+            <select className={inputCls} value={form.city} onChange={e => update('city', e.target.value)}>
+              {['Amsterdam', 'Rotterdam', 'Utrecht', 'Eindhoven', 'Den Haag', 'Groningen', 'Haarlem', 'Breda'].map(c => (
+                <option key={c} value={c.toLowerCase()}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={labelCls}>PROJECTTYPE</label>
+            <div className="grid grid-cols-3 gap-2">
+              {types.map(t => {
+                const active = projectType === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setProjectType(t.key)}
+                    className="flex flex-col items-center gap-1.5 py-3.5 rounded-lg border-2 transition-colors"
+                    style={{
+                      background: active ? '#E8541A' : '#F4F7FA',
+                      color: active ? 'white' : '#4A6080',
+                      borderColor: active ? '#E8541A' : 'transparent',
+                    }}
+                  >
+                    <t.icon className="h-5 w-5" />
+                    <span className="text-[10px] uppercase font-bold">{t.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>MONTEUR</label>
+            <select className={inputCls} value={form.technician_id} onChange={e => update('technician_id', e.target.value)}>
+              <option value="">Selecteer monteur</option>
+              {technicians.map(t => (
+                <option key={t.id} value={t.id}>{t.full_name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={labelCls}>OPDRACHTGEVER</label>
+            <select className={inputCls} value={form.client_id} onChange={e => update('client_id', e.target.value)}>
+              <option value="">Selecteer opdrachtgever</option>
+              {clients.map(c => (
+                <option key={c.id} value={c.id}>{c.company_name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={labelCls}>GEPLANDE DATUM</label>
+            <input type="date" className={inputCls} value={form.planned_date} onChange={e => update('planned_date', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 px-6 py-5 border-t border-[#EEF3F8] space-y-2">
+          <button
+            onClick={handleSubmit}
+            disabled={!form.name.trim() || saving}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg text-[13px] font-bold uppercase tracking-[0.5px] transition-colors disabled:opacity-50"
+            style={{ background: '#E8541A', color: 'white' }}
+          >
+            {saving ? 'Aanmaken...' : 'Project aanmaken →'}
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-lg bg-[#F4F7FA] text-[#4A6080] text-[13px] font-semibold hover:bg-[#EEF3F8] transition-colors"
+          >
+            Annuleren
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ── Main Map Page ── */
 export default function MapPage() {
   const { data: projects = [] } = useProjects();
   const [filters, setFilters] = useState<Record<string, boolean>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const filtered = useMemo(() => {
     return projects.filter(p => filters[p.status] !== false);
@@ -262,9 +434,21 @@ export default function MapPage() {
 
       <FilterPanel filters={filters} setFilters={setFilters} visibleCount={filtered.length} />
       <StatMiniCard count={plannedCount} />
+
+      {/* New project button */}
+      <button
+        onClick={() => setSheetOpen(true)}
+        className="absolute top-[270px] left-4 z-[1000] flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-[0.5px] transition-colors hover:opacity-90"
+        style={{ background: '#1A2E4A', color: 'white' }}
+      >
+        <Plus className="h-3.5 w-3.5" /> Nieuw project
+      </button>
+
       {selectedProject && (
         <DetailPanel project={selectedProject} onClose={() => setSelectedId(null)} />
       )}
+
+      <NewProjectSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </div>
   );
 }
