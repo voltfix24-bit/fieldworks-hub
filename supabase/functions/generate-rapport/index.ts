@@ -104,13 +104,21 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const [projectRes, sessionRes, electrodesRes, pensRes, depthsRes, brandingRes] =
+    // First fetch project to get tenant_id
+    const projectRes = await supabase
+      .from("projects")
+      .select("*, clients(*), technicians(*), equipment(*)")
+      .eq("id", project_id)
+      .single();
+
+    if (projectRes.error) throw projectRes.error;
+    if (!projectRes.data) throw new Error("Project niet gevonden");
+
+    const project = projectRes.data;
+    const tenantId = project.tenant_id;
+
+    const [sessionRes, electrodesRes, pensRes, depthsRes, brandingRes] =
       await Promise.all([
-        supabase
-          .from("projects")
-          .select("*, clients(*), technicians(*), equipment(*)")
-          .eq("id", project_id)
-          .single(),
         supabase
           .from("project_measurement_sessions")
           .select("*")
@@ -121,13 +129,9 @@ Deno.serve(async (req) => {
         supabase.from("electrodes").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("pens").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("depth_measurements").select("*").eq("project_id", project_id).order("sort_order"),
-        supabase.from("tenant_branding").select("*").eq("tenant_id", project_id).maybeSingle(),
+        supabase.from("tenant_branding").select("*").eq("tenant_id", tenantId).maybeSingle(),
       ]);
 
-    if (projectRes.error) throw projectRes.error;
-    if (!projectRes.data) throw new Error("Project niet gevonden");
-
-    const project = projectRes.data;
     const session = sessionRes.data;
     const electrodes = electrodesRes.data || [];
     const pens = pensRes.data || [];
