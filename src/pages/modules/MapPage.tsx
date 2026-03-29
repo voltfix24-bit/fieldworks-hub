@@ -8,7 +8,12 @@ import { useMap } from 'react-leaflet/hooks';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useProjects } from '@/hooks/use-projects';
-import { MapPin, Plus, Minus, LocateFixed, Shield, ArrowRight, MessageCircle } from 'lucide-react';
+import { useTechnicians } from '@/hooks/use-technicians';
+import { useClients } from '@/hooks/use-clients';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { MapPin, Plus, Minus, LocateFixed, Shield, ArrowRight, MessageCircle, Building2, Timer, Zap, X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Fix default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
