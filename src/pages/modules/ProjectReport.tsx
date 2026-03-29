@@ -20,7 +20,6 @@ import { useRapportGeneratorBrowser } from '@/hooks/useRapportGeneratorBrowser';
 import { useRapportData } from '@/hooks/useRapportData';
 import { useHandtekening } from '@/hooks/useHandtekening';
 import { useToast } from '@/hooks/use-toast';
-import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
