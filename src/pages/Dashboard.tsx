@@ -6,7 +6,7 @@ import { useProjects } from '@/hooks/use-projects';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatNlDate, formatNlDateCompact } from '@/lib/nl-date';
 import {
-  FolderKanban, CheckCircle2, Clock,
+  FolderKanban, CheckCircle2, Clock, MapPin,
   Calendar, ChevronRight, ArrowRight, AlertTriangle,
   Plus, FileText, Building2, Zap,
 } from 'lucide-react';
