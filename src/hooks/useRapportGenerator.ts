@@ -149,30 +149,16 @@ export function useRapportGenerator() {
 
       if (fnError) throw new Error(fnError.message);
 
-      // If the edge function returned a PDF (external API configured), use it
-      if (data?.pdf_base64) {
-        downloadBase64Pdf(data.pdf_base64, data.bestandsnaam || `Aardingsrapport_${projectId}.pdf`);
-        return;
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
-      // Otherwise, use prepared_data to generate PDF client-side
-      const rapportData: RapportData = data?.prepared_data || data;
-      if (!rapportData?.project_naam) {
-        throw new Error("Geen rapportdata ontvangen");
+      // The edge function must return a PDF from the external API
+      if (!data?.pdf_base64) {
+        throw new Error("PDF generatie mislukt — geen PDF ontvangen van de server.");
       }
 
-      // Attach signature if provided
-      if (handtekeningB64) {
-        rapportData.handtekening_b64 = handtekeningB64;
-      }
-
-      // Fetch photo URLs and convert to base64 for PDF embedding
-      await laadFotosVoorElektrodes(rapportData.elektrodes);
-
-      const doc = generateRapportPdf(rapportData);
-      const projectClean = rapportData.project_naam.replace(/\s+/g, "_").slice(0, 30);
-      const datumClean = rapportData.meetdatum.replace(/-/g, "").replace(/\s/g, "").slice(0, 8);
-      const bestandsnaam = `Aardingsrapport_${projectClean}_${datumClean}.pdf`;
+      downloadBase64Pdf(data.pdf_base64, data.bestandsnaam || `Aardingsrapport_${projectId}.pdf`);
 
       doc.save(bestandsnaam);
     } catch (err) {
