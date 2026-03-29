@@ -48,12 +48,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }, 0);
         } else {
           // Dev mode: create a mock profile so the app works without auth
-          setProfile({
+          // Dev mode: load profile from database
+          const { data: devProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('tenant_id', DEV_TENANT_ID)
+            .limit(1)
+            .single();
+          setProfile(devProfile ?? {
             id: 'dev-user',
             tenant_id: DEV_TENANT_ID,
             full_name: 'Enes Turhan',
-            role: 'tenant_admin',
-            status: 'active',
+            role: 'tenant_admin' as const,
+            status: 'active' as const,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -77,16 +84,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
       } else {
         // Dev mode mock
-        setProfile({
-          id: 'dev-user',
-          tenant_id: DEV_TENANT_ID,
-          full_name: 'Enes Turhan',
-          role: 'tenant_admin',
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-        setLoading(false);
+        // Dev mode: load profile from database
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('tenant_id', DEV_TENANT_ID)
+          .limit(1)
+          .single()
+          .then(({ data: devProfile }) => {
+            setProfile(devProfile ?? {
+              id: 'dev-user',
+              tenant_id: DEV_TENANT_ID,
+              full_name: 'Enes Turhan',
+              role: 'tenant_admin' as const,
+              status: 'active' as const,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+            setLoading(false);
+          });
       }
     });
 
