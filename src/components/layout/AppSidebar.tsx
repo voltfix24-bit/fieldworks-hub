@@ -1,17 +1,13 @@
 import {
   LayoutDashboard, FolderKanban, Users, HardHat,
-  Wrench, FileText, Settings, LogOut, Building2, Calendar,
+  Wrench, FileText, Settings, LogOut, Calendar,
 } from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
-import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
-  SidebarFooter, useSidebar,
-} from '@/components/ui/sidebar';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTenant } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjects } from '@/hooks/use-projects';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
@@ -24,76 +20,87 @@ const mainNav = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
-  const collapsed = state === 'collapsed';
+  const isMobile = useIsMobile();
   const location = useLocation();
-  const { tenant, branding } = useTenant();
+  const navigate = useNavigate();
+  const { tenant } = useTenant();
   const { signOut } = useAuth();
   const { data: projects } = useProjects();
   const plannedCount = projects?.filter(p => p.status === 'planned').length ?? 0;
 
+  if (isMobile) return null;
+
+  const isActive = (url: string) => {
+    if (url === '/dashboard') return location.pathname === '/dashboard' || location.pathname === '/';
+    return location.pathname.startsWith(url);
+  };
+
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent>
-        <div className="p-4 flex items-center gap-3">
-          {branding?.logo_url ? (
-            <img src={branding.logo_url} alt={tenant?.company_name || 'Logo'} className="h-9 w-9 rounded-lg object-contain shrink-0" />
-          ) : (
-            <div className="h-9 w-9 rounded-lg tenant-primary-bg flex items-center justify-center shrink-0">
-              <Building2 className="h-4 w-4 text-sidebar-primary-foreground" />
-            </div>
+    <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col bg-sidebar text-sidebar-foreground">
+      {/* Logo area */}
+      <div className="px-6 pt-7 pb-6">
+        <h1 className="font-display text-[22px] font-black uppercase tracking-tight text-[hsl(var(--sidebar-primary))]">
+          {tenant?.company_name || 'Aardpen'}
+        </h1>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-white/50 mt-1 font-medium">
+          Safe · Skilled · Solid
+        </p>
+      </div>
+
+      {/* Main nav */}
+      <nav className="flex-1 px-3 space-y-0.5">
+        {mainNav.map((item) => {
+          const active = isActive(item.url);
+          return (
+            <button
+              key={item.title}
+              onClick={() => navigate(item.url)}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-colors',
+                'text-[11px] font-bold uppercase tracking-[0.15em]',
+                active
+                  ? 'text-[hsl(var(--sidebar-primary))] bg-white/5 border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent -ml-px'
+              )}
+            >
+              <item.icon className="h-[18px] w-[18px] shrink-0" />
+              <span>{item.title}</span>
+            </button>
+          );
+        })}
+
+        {/* Separator */}
+        <div className="h-px bg-white/10 my-4 mx-2" />
+
+        {/* Settings */}
+        <button
+          onClick={() => navigate('/settings')}
+          className={cn(
+            'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-colors',
+            'text-[11px] font-bold uppercase tracking-[0.15em]',
+            isActive('/settings')
+              ? 'text-[hsl(var(--sidebar-primary))] bg-white/5 border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px'
+              : 'text-slate-400 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent -ml-px'
           )}
-          {!collapsed && (
-            <div className="min-w-0">
-              <span className="text-[14px] font-bold text-sidebar-foreground truncate block">{tenant?.company_name || 'Uw Bedrijf'}</span>
-              <span className="text-[10px] text-sidebar-foreground/40 truncate block">{plannedCount} actieve projecten</span>
-            </div>
-          )}
-        </div>
+        >
+          <Settings className="h-[18px] w-[18px] shrink-0" />
+          <span>Instellingen</span>
+        </button>
+      </nav>
 
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === '/dashboard'} className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/settings" className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
-                    <Settings className="mr-2 h-4 w-4" />
-                    {!collapsed && <span>Instellingen</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={signOut} className="hover:bg-sidebar-accent cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Uitloggen</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+      {/* Footer */}
+      <div className="px-3 pb-6 pt-2">
+        <button
+          onClick={signOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-colors text-[11px] font-bold uppercase tracking-[0.15em] text-red-400 hover:text-red-300 hover:bg-red-500/10 border-l-[3px] border-transparent -ml-px"
+        >
+          <LogOut className="h-[18px] w-[18px] shrink-0" />
+          <span>Uitloggen</span>
+        </button>
+        <p className="text-[10px] text-white/20 mt-4 px-3">
+          {plannedCount} actieve projecten
+        </p>
+      </div>
+    </aside>
   );
 }
