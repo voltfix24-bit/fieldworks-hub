@@ -23,6 +23,7 @@ import EquipmentPage from "@/pages/modules/EquipmentPage";
 import EquipmentForm from "@/pages/modules/EquipmentForm";
 import EquipmentDetail from "@/pages/modules/EquipmentDetail";
 import ReportsPage from "@/pages/modules/ReportsPage";
+import RapportConfigurator from "@/pages/modules/RapportConfigurator";
 import SettingsIndex from "@/pages/settings/SettingsIndex";
 import BrandingSettings from "@/pages/settings/BrandingSettings";
 import UserProfile from "@/pages/settings/UserProfile";
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/equipment/:id/edit" element={<EquipmentForm />} />
 
                 <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/reports/configurator" element={<RapportConfigurator />} />
 
                 <Route path="/planning" element={<PlanningPage />} />
                 <Route path="/meer" element={<Navigate to="/settings" replace />} />
