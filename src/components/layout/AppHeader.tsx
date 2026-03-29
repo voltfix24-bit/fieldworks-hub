@@ -42,6 +42,9 @@ export function AppHeader() {
         <button className="w-9 h-9 rounded flex items-center justify-center hover:bg-card transition-colors">
           <Bell className="h-[18px] w-[18px] text-muted-foreground/60" />
         </button>
+        <button onClick={toggleTheme} className="w-9 h-9 rounded flex items-center justify-center hover:bg-card transition-colors" title={theme === 'light' ? 'Donkere modus' : 'Lichte modus'}>
+          {theme === 'light' ? <Moon className="h-[18px] w-[18px] text-muted-foreground/60" /> : <Sun className="h-[18px] w-[18px] text-muted-foreground/60" />}
+        </button>
         <button className="w-9 h-9 rounded flex items-center justify-center hover:bg-card transition-colors">
           <Clock className="h-[18px] w-[18px] text-muted-foreground/60" />
         </button>
