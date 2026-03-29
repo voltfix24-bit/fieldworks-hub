@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, RotateCcw, Loader2, Download, Mail, X, MessageCircle, FileDown } from 'lucide-react';
+import { ArrowLeft, Printer, FileText, AlertCircle, PenTool, Loader2, Download, Mail, X, MessageCircle, FileDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
@@ -20,12 +20,10 @@ import { useRapportGeneratorBrowser } from '@/hooks/useRapportGeneratorBrowser';
 import { useRapportData } from '@/hooks/useRapportData';
 import { useHandtekening } from '@/hooks/useHandtekening';
 import { useToast } from '@/hooks/use-toast';
-import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
   const { user } = useAuth();
-  const [handtekening, setHandtekening] = useState<string | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: project, isLoading: projectLoading } = useProject(id);
@@ -34,17 +32,18 @@ export default function ProjectReport() {
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
   const { genereer: genereerBrowser, bezig: browserBezig } = useRapportGeneratorBrowser();
   const { buildRapportData } = useRapportData(id);
-  const { opgeslagenHandtekening, heeftOpgeslagen } = useHandtekening(user?.id);
+  const { opgeslagenHandtekening } = useHandtekening(user?.id);
   const { toast } = useToast();
-  const [gebruikOpgeslagen, setGebruikOpgeslagen] = useState(false);
-  const [tekenModus, setTekenModus] = useState<'keuze' | 'opgeslagen' | 'nieuw'>('nieuw');
 
-  // Auto-select saved signature when available
-  useEffect(() => {
-    if (heeftOpgeslagen && !handtekening) {
-      setGebruikOpgeslagen(true);
-    }
-  }, [heeftOpgeslagen]);
+  // Handtekening uit wizard wordt automatisch gebruikt
+  const actieveHandtekening = opgeslagenHandtekening;
+
+  // Email state — must be before early returns
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState('');
+  const [emailNaam, setEmailNaam] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
+  const [whatsAppLoading, setWhatsAppLoading] = useState(false);
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
@@ -138,8 +137,7 @@ export default function ProjectReport() {
 
   const showSignBlock = rs.report_sign_block === true && sec('ondertekening');
 
-  // Determine active signature
-  const actieveHandtekening = gebruikOpgeslagen ? opgeslagenHandtekening : handtekening;
+  // actieveHandtekening is already set at top level
 
   const handleDownload = async () => {
     try {
@@ -149,13 +147,6 @@ export default function ProjectReport() {
       toast({ title: 'Rapport generatie mislukt', description: err instanceof Error ? err.message : 'Onbekende fout', variant: 'destructive' });
     }
   };
-
-  // Email state
-  const [emailOpen, setEmailOpen] = useState(false);
-  const [emailTo, setEmailTo] = useState(client?.email || '');
-  const [emailNaam, setEmailNaam] = useState(client?.contact_name || '');
-  const [emailSending, setEmailSending] = useState(false);
-  const [whatsAppLoading, setWhatsAppLoading] = useState(false);
 
   const handleSendEmail = async () => {
     if (!emailTo) return;
@@ -262,68 +253,34 @@ export default function ProjectReport() {
         </div>
       )}
 
-      {/* ─── ONDERTEKENING STAP ─── */}
+      {/* ─── DOWNLOAD SECTIE ─── */}
       {isReady && (
         <div className="print:hidden max-w-lg mx-auto mb-8">
           <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
             <div className="flex items-center gap-2.5 mb-1">
-              <PenTool className="h-4 w-4 text-muted-foreground/50" />
-              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Ondertekening</h2>
+              <Download className="h-4 w-4 text-muted-foreground/50" />
+              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Rapport downloaden</h2>
             </div>
-            <p className="text-[12px] text-muted-foreground/50 mb-5">Teken hieronder ter bevestiging</p>
 
-            {/* Saved signature notice */}
-            {heeftOpgeslagen && !gebruikOpgeslagen && !handtekening && (
-              <div className="rounded-xl bg-muted/20 p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium text-foreground">Opgeslagen handtekening beschikbaar</p>
-                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">Eerder opgeslagen door deze monteur</p>
+            {/* Handtekening preview */}
+            {actieveHandtekening ? (
+              <div className="mb-4 mt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <PenTool className="h-3 w-3 text-muted-foreground/40" />
+                  <span className="text-[11px] text-muted-foreground/50">Handtekening uit meetwizard</span>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => setGebruikOpgeslagen(true)}
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#F4896B]/10 text-[#F4896B] active:scale-[0.96] transition-all"
-                  >
-                    Gebruik opgeslagen
-                  </button>
-                  <button
-                    onClick={() => setGebruikOpgeslagen(false)}
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-muted/30 text-muted-foreground active:scale-[0.96] transition-all"
-                  >
-                    Opnieuw tekenen
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Show saved signature preview */}
-            {gebruikOpgeslagen && opgeslagenHandtekening && (
-              <div className="mb-4">
                 <div className="rounded-xl border border-border bg-white p-3">
                   <img
-                    src={`data:image/png;base64,${opgeslagenHandtekening}`}
+                    src={`data:image/png;base64,${actieveHandtekening}`}
                     alt="Opgeslagen handtekening"
-                    className="w-full h-28 object-contain"
+                    className="w-full h-20 object-contain"
                   />
                 </div>
-                <button
-                  onClick={() => { setGebruikOpgeslagen(false); setHandtekening(null); }}
-                  className="mt-2 text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  Opnieuw tekenen
-                </button>
               </div>
-            )}
-
-            {/* Draw new signature */}
-            {!gebruikOpgeslagen && (
-              <HandtekeningPad
-                onChange={setHandtekening}
-                breedte={460}
-                hoogte={160}
-                monteurId={user?.id}
-              />
+            ) : (
+              <p className="text-[12px] text-amber-600 mt-2 mb-4">
+                Nog geen handtekening — teken deze in de meetwizard bij "Volgende actie".
+              </p>
             )}
 
             {/* Generate + Email buttons */}
@@ -540,24 +497,18 @@ export default function ProjectReport() {
                 {rs.report_sign_executor !== false && (
                   <div>
                     <p className="text-[10px] text-muted-foreground mb-2">Uitvoerder</p>
-                    <div className="print:hidden">
-                      <HandtekeningPad onChange={setHandtekening} breedte={400} hoogte={140} monteurId={user?.id} />
-                    </div>
-                    {/* Print view: show signature image if available */}
-                    <div className="hidden print:block">
-                      {actieveHandtekening ? (
-                        <img
-                          src={`data:image/png;base64,${actieveHandtekening}`}
-                          alt="Handtekening"
-                          className="w-40 h-16 object-contain"
-                        />
-                      ) : (
-                        <>
-                          <div className="border-b border-foreground/20 mb-1 mt-8" />
-                          <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
-                        </>
-                      )}
-                    </div>
+                    {actieveHandtekening ? (
+                      <img
+                        src={`data:image/png;base64,${actieveHandtekening}`}
+                        alt="Handtekening"
+                        className="w-40 h-16 object-contain"
+                      />
+                    ) : (
+                      <>
+                        <div className="border-b border-foreground/20 mb-1 mt-8" />
+                        <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
+                      </>
+                    )}
                   </div>
                 )}
                 {rs.report_sign_reviewer === true && (
