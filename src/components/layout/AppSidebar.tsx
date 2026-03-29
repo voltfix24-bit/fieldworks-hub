@@ -39,14 +39,22 @@ export function AppSidebar() {
   return (
     <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col bg-sidebar text-sidebar-foreground">
       {/* Logo area */}
-      <div className="px-6 pt-7 pb-6">
-        <h1 className="font-display text-[22px] font-black uppercase tracking-tight text-[hsl(var(--sidebar-primary))]">
-          {tenant?.company_name || 'Aardpen'}
-        </h1>
+      <button onClick={() => navigate('/dashboard')} className="px-6 pt-7 pb-6 text-left hover:opacity-80 transition-opacity">
+        {branding?.compact_logo_url || branding?.logo_url ? (
+          <img
+            src={branding.compact_logo_url || branding.logo_url!}
+            alt={tenant?.company_name || 'Logo'}
+            className="h-9 w-auto max-w-[180px] object-contain brightness-0 invert"
+          />
+        ) : (
+          <h1 className="font-display text-[22px] font-black uppercase tracking-tight text-[hsl(var(--sidebar-primary))]">
+            {tenant?.company_name || 'Aardpen'}
+          </h1>
+        )}
         <p className="text-[11px] uppercase tracking-[0.2em] text-white/50 mt-1 font-medium">
           Safe · Skilled · Solid
         </p>
-      </div>
+      </button>
 
       {/* Main nav */}
       <nav className="flex-1 px-3 space-y-0.5">
