@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
       company_email: branding?.footer_email || branding?.support_email || "",
       company_website: branding?.footer_website || branding?.website || "",
       kvk: branding?.kvk_number || "",
-      certificaten: "",
+      certificaten: (branding as any)?.certificaten || "",
       brand_color_hex: branding?.primary_color || "#F06A3F",
 
       doc_nummer: `RPT-${new Date().getFullYear()}-${(project.project_number || "00000").replace(/\D/g, "").padStart(5, "0")}`,

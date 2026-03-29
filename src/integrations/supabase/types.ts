@@ -690,6 +690,7 @@ export type Database = {
           accent_color: string
           border_radius: string
           btw_number: string | null
+          certificaten: string | null
           compact_logo_url: string | null
           created_at: string
           dark_logo_url: string | null
@@ -745,6 +746,7 @@ export type Database = {
           accent_color?: string
           border_radius?: string
           btw_number?: string | null
+          certificaten?: string | null
           compact_logo_url?: string | null
           created_at?: string
           dark_logo_url?: string | null
@@ -800,6 +802,7 @@ export type Database = {
           accent_color?: string
           border_radius?: string
           btw_number?: string | null
+          certificaten?: string | null
           compact_logo_url?: string | null
           created_at?: string
           dark_logo_url?: string | null

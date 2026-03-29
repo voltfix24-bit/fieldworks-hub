@@ -1,0 +1,1 @@
+ALTER TABLE public.tenant_branding ADD COLUMN IF NOT EXISTS certificaten text DEFAULT NULL;

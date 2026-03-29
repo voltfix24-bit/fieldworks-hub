@@ -27,10 +27,11 @@ export function BrandTabBedrijf({ form, updateField }: BrandTabBedrijfProps) {
       ],
     },
     {
-      title: 'Registratie',
+      title: 'Registratie & Certificering',
       fields: [
         { key: 'kvk_number', label: 'KvK-nummer', placeholder: '12345678' },
         { key: 'btw_number', label: 'BTW-nummer', placeholder: 'NL123456789B01' },
+        { key: 'certificaten', label: 'Certificaten', placeholder: 'VCA** gecertificeerd · ISO 9001:2015' },
       ],
     },
   ];
