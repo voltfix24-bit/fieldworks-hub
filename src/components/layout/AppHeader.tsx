@@ -15,6 +15,7 @@ export function AppHeader() {
   const { tenant } = useTenant();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { theme, toggleTheme } = useTheme();
 
   if (isMobile) return null;
 
