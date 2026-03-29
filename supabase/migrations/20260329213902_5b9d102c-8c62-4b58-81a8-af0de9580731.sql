@@ -1,0 +1,1 @@
+UPDATE profiles SET full_name = 'Enes Turhan' WHERE id = 'bc6fc74c-435f-4abd-bbc7-3b722d02be16';
