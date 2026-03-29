@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,74 +6,82 @@
 
 @layer base {
   :root {
-    --background: 220 8% 96%;
-    --foreground: 220 14% 10%;
+    /* Industrial field ops palette */
+    --background: 213 33% 96%;
+    --foreground: 213 47% 19%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 14% 10%;
+    --card-foreground: 213 47% 19%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 14% 10%;
+    --popover-foreground: 213 47% 19%;
 
-    --primary: 220 60% 50%;
+    --primary: 17 84% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 8% 90%;
-    --secondary-foreground: 220 14% 10%;
+    --secondary: 213 33% 90%;
+    --secondary-foreground: 213 47% 19%;
 
-    --muted: 220 8% 93%;
-    --muted-foreground: 220 10% 44%;
+    --muted: 213 33% 93%;
+    --muted-foreground: 213 25% 50%;
 
-    --accent: 210 60% 50%;
+    --accent: 17 84% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 50%;
+    --destructive: 4 72% 44%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 89%;
-    --input: 220 10% 89%;
-    --ring: 220 60% 50%;
+    --border: 210 30% 87%;
+    --input: 210 30% 87%;
+    --ring: 17 84% 50%;
 
-    --radius: 0.875rem;
+    --radius: 0.25rem;
 
-    --sidebar-background: 220 14% 10%;
-    --sidebar-foreground: 220 10% 80%;
-    --sidebar-primary: 220 60% 55%;
+    --sidebar-background: 213 47% 19%;
+    --sidebar-foreground: 210 20% 70%;
+    --sidebar-primary: 17 84% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 12% 16%;
-    --sidebar-accent-foreground: 220 10% 92%;
-    --sidebar-border: 220 12% 18%;
-    --sidebar-ring: 220 60% 55%;
+    --sidebar-accent: 213 40% 25%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 213 40% 25%;
+    --sidebar-ring: 17 84% 50%;
 
     /* Tenant-overridable */
-    --tenant-primary: 220 60% 50%;
-    --tenant-secondary: 220 10% 46%;
-    --tenant-accent: 210 60% 50%;
+    --tenant-primary: 17 84% 50%;
+    --tenant-secondary: 213 25% 50%;
+    --tenant-accent: 17 84% 50%;
 
-    /* Status — muted, understated */
-    --status-planned: 220 10% 52%;
+    /* Status */
+    --status-planned: 17 84% 50%;
     --status-in-progress: 210 60% 50%;
-    --status-completed: 152 60% 42%;
-    --status-archived: 220 10% 38%;
+    --status-completed: 140 56% 27%;
+    --status-archived: 213 25% 38%;
 
     /* Measurement tokens */
-    --measure-surface: 220 8% 97%;
-    --measure-row-hover: 220 8% 95%;
-    --measure-highlight: 210 60% 50%;
-    --measure-lowest: 152 60% 42%;
-    --measure-depth-bg: 220 8% 94%;
+    --measure-surface: 213 33% 97%;
+    --measure-row-hover: 213 33% 95%;
+    --measure-highlight: 17 84% 50%;
+    --measure-lowest: 140 56% 27%;
+    --measure-depth-bg: 213 33% 94%;
 
     /* iOS 26 Glass tokens */
     --glass-bg: 0 0% 100% / 0.72;
     --glass-border: 0 0% 100% / 0.45;
     --glass-blur: 24px;
-    --glass-shadow: 0 1px 3px 0 hsl(220 14% 10% / 0.04), 0 8px 24px -4px hsl(220 14% 10% / 0.08);
-    --glass-shadow-elevated: 0 2px 8px 0 hsl(220 14% 10% / 0.06), 0 16px 48px -8px hsl(220 14% 10% / 0.12);
+    --glass-shadow: 0 1px 3px 0 hsl(213 47% 19% / 0.04), 0 8px 24px -4px hsl(213 47% 19% / 0.08);
+    --glass-shadow-elevated: 0 2px 8px 0 hsl(213 47% 19% / 0.06), 0 16px 48px -8px hsl(213 47% 19% / 0.12);
 
     /* Surface hierarchy */
     --surface-primary: 0 0% 100%;
-    --surface-secondary: 220 8% 97%;
-    --surface-grouped: 220 8% 96%;
+    --surface-secondary: 213 33% 97%;
+    --surface-grouped: 213 33% 96%;
+
+    /* Field ops extra tokens */
+    --field-green: 140 56% 27%;
+    --field-green-bg: 90 40% 90%;
+    --field-red: 4 72% 44%;
+    --field-red-bg: 4 80% 95%;
+    --field-blue-mid: 213 35% 30%;
 
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;

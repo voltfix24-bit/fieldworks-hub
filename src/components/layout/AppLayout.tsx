@@ -1,5 +1,4 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
 import { MobileTabBar } from './MobileTabBar';
@@ -17,25 +16,24 @@ export function AppLayout() {
   const isFullscreen = FULLSCREEN_PATTERNS.some(p => p.test(location.pathname));
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        {!isMobile && <AppSidebar />}
+    <div className="min-h-screen flex w-full bg-background">
+      <AppSidebar />
 
-        <div className="flex-1 flex flex-col min-w-0">
-          {!isMobile && <AppHeader />}
-          {isMobile && !isFullscreen && <MobileBrandBar />}
+      <div className="flex-1 flex flex-col min-w-0">
+        <AppHeader />
+        {isMobile && !isFullscreen && <MobileBrandBar />}
 
-          <main className={`flex-1 overflow-auto ${
-            isMobile 
-              ? isFullscreen ? 'p-0' : 'px-4 pt-1 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]' 
-              : 'p-4 sm:p-6 lg:p-8'
-          }`}>
-            <Outlet />
-          </main>
-        </div>
+        <main className={`flex-1 overflow-auto ${
+          isMobile
+            ? isFullscreen ? 'p-0' : 'px-4 pt-1 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]'
+            : 'p-6 lg:p-8'
+        }`}>
+          <Outlet />
+        </main>
       </div>
+
       <MobileTabBar />
-    </SidebarProvider>
+    </div>
   );
 }
 

@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '@/components/ui/page-header';
 import { useTenant } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjects } from '@/hooks/use-projects';
@@ -9,7 +8,7 @@ import { formatNlDate, formatNlDateCompact } from '@/lib/nl-date';
 import {
   FolderKanban, CheckCircle2, Clock, MapPin,
   Calendar, ChevronRight, ArrowRight, AlertTriangle,
-  Plus, FileText,
+  Plus, FileText, Building2, Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO, isPast } from 'date-fns';
@@ -97,31 +96,15 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-          <div className="px-4 mt-5 space-y-2">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="flex items-center gap-3 rounded-xl bg-card p-3 animate-pulse">
-                <div className="w-8 h-8 rounded-full bg-muted/30 shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-3.5 w-3/4 rounded bg-muted/30" />
-                  <div className="h-2.5 w-1/2 rounded bg-muted/20" />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       );
     }
     return (
-      <div className="animate-fade-in max-w-2xl mx-auto space-y-4 pt-4">
-        <div className="h-8 w-48 rounded-lg bg-muted/30 animate-pulse" />
-        <div className="grid grid-cols-3 gap-3">
+      <div className="animate-fade-in space-y-6">
+        <div className="h-8 w-64 rounded bg-muted/30 animate-pulse" />
+        <div className="grid grid-cols-3 gap-5">
           {[1,2,3].map(i => (
-            <div key={i} className="rounded-xl bg-card p-4 h-20 animate-pulse" />
-          ))}
-        </div>
-        <div className="space-y-2">
-          {[1,2,3].map(i => (
-            <div key={i} className="h-16 rounded-xl bg-card animate-pulse" />
+            <div key={i} className="rounded bg-card p-5 h-28 animate-pulse" />
           ))}
         </div>
       </div>
@@ -131,7 +114,6 @@ export default function Dashboard() {
   if (isMobile) {
     return (
       <div className="ios-dash animate-fade-in">
-        {/* Greeting */}
         <div className="ios-dash-greeting">
           <h1 className="ios-dash-greeting-title">
             {greeting}{firstName ? `, ${firstName}` : ''}
@@ -143,7 +125,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Stats */}
         <div className="ios-dash-stats">
           <div className="ios-dash-stat-card">
             <span className="ios-dash-stat-dot ios-dot-orange" />
@@ -164,7 +145,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Quick actions */}
         <div className="grid grid-cols-2 gap-3 px-4 mt-1">
           <button
             onClick={() => navigate('/projects/new')}
@@ -192,12 +172,8 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Alert banner */}
         {overdueProjects.length > 0 && (
-          <button
-            onClick={() => navigate('/planning')}
-            className="ios-dash-alert"
-          >
+          <button onClick={() => navigate('/planning')} className="ios-dash-alert">
             <div className="ios-dash-alert-left">
               <div className="ios-dash-alert-icon">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -213,7 +189,6 @@ export default function Dashboard() {
           </button>
         )}
 
-        {/* Today */}
         {todayProjects.length > 0 ? (
           <section>
             <IosSectionHeader title="Vandaag" />
@@ -237,7 +212,6 @@ export default function Dashboard() {
           </section>
         )}
 
-        {/* Recent projects */}
         <section>
           <IosSectionHeader
             title="Recente projecten"
@@ -264,52 +238,189 @@ export default function Dashboard() {
     );
   }
 
-  // Desktop
-  return (
-    <div className="animate-fade-in">
-      <PageHeader
-        title={`${greeting}${firstName ? `, ${firstName}` : ''}`}
-        description={`${tenant?.company_name || 'Uw bedrijf'} — Veldwerk Dashboard`}
-      />
+  // ── Desktop layout — Industrial Field Ops ──
+  const recentProjects = projects?.slice(0, 6) ?? [];
+  const actionRequired = overdueProjects.length;
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <DesktopStatCard title="Gepland" value={planned.length} sub={todayProjects.length > 0 ? `${todayProjects.length} vandaag` : undefined} />
-        <DesktopStatCard title="Afgerond" value={completed.length} />
-        {overdueProjects.length > 0 ? (
-          <DesktopStatCard title="Achterstallig" value={overdueProjects.length} alert />
-        ) : (
-          <DesktopStatCard title="Totaal" value={projects?.length ?? 0} />
-        )}
+  return (
+    <div className="animate-fade-in space-y-8">
+      {/* Greeting */}
+      <div>
+        <p className="text-sm text-muted-foreground mb-1">
+          {greeting},
+        </p>
+        <h1 className="font-display text-[32px] font-black text-foreground tracking-tight leading-none">
+          {profile?.full_name || 'Gebruiker'}
+        </h1>
       </div>
 
+      {/* Page title */}
       <div>
-        <h2 className="text-[13px] font-semibold text-foreground mb-3">Recente projecten</h2>
-        {projects && projects.length > 0 ? (
-          <div className="rounded-2xl bg-card overflow-hidden divide-y divide-border/30">
-            {projects.slice(0, 8).map(p => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between py-3 px-4 hover:bg-foreground/[0.02] cursor-pointer transition-colors group"
-                onClick={() => navigate(`/projects/${p.id}`)}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground truncate">{p.project_name}</p>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground/40 mt-0.5">
-                    <span className="font-mono">{p.project_number}</span>
-                    {p.city && <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
-                    {p.planned_date && <span className="flex items-center gap-1"><Calendar className="h-2.5 w-2.5" />{formatNlDate(p.planned_date)}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <DashStatusDot project={p} />
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/10 group-hover:text-muted-foreground/25 transition-colors" />
-                </div>
-              </div>
-            ))}
+        <h2 className="font-display text-[22px] font-black text-foreground tracking-tight">
+          Aardingsmeting Dashboard
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Real-time overzicht van lopende metingen en operationele status.
+        </p>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-5">
+        {/* Gepland */}
+        <div className="bg-card rounded border border-border p-5 border-b-4 border-b-[hsl(var(--primary))]">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded bg-[hsl(var(--primary)/0.1)] flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-[hsl(var(--primary))]" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Gepland</span>
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground/40 text-center py-8">Nog geen projecten</p>
-        )}
+          <p className="font-display text-[40px] font-black text-foreground leading-none">{planned.length}</p>
+          <button
+            onClick={() => navigate('/planning')}
+            className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold text-[hsl(var(--primary))] hover:underline"
+          >
+            Bekijk planning <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Afgerond */}
+        <div className="bg-card rounded border border-border p-5 border-b-4 border-b-field-green">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded bg-field-green-bg flex items-center justify-center">
+              <CheckCircle2 className="h-5 w-5 text-field-green" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Afgerond</span>
+          </div>
+          <p className="font-display text-[40px] font-black text-field-green leading-none">{completed.length}</p>
+          <p className="text-[12px] text-muted-foreground mt-3">Laatste 7 dagen</p>
+        </div>
+
+        {/* Actie vereist */}
+        <div className="bg-card rounded border border-border p-5 border-b-4 border-b-field-red">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded bg-field-red-bg flex items-center justify-center">
+              <AlertTriangle className="h-5 w-5 text-field-red" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Actie Vereist</span>
+          </div>
+          <p className="font-display text-[40px] font-black text-field-red leading-none">{actionRequired}</p>
+          <p className="flex items-center gap-1 text-[12px] text-field-red font-semibold mt-3">
+            Directe actie vereist <AlertTriangle className="h-3 w-3" />
+          </p>
+        </div>
+      </div>
+
+      {/* Asymmetric grid */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left — Recent projects (8 cols) */}
+        <div className="col-span-8">
+          <div className="bg-card rounded border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="font-display text-[16px] font-bold text-foreground">Recente Projecten</h3>
+              <button
+                onClick={() => navigate('/projects/new')}
+                className="flex items-center gap-2 bg-[hsl(var(--primary))] text-white text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded hover:opacity-90 transition-opacity"
+              >
+                <Plus className="h-3.5 w-3.5" /> Nieuw Project
+              </button>
+            </div>
+
+            {recentProjects.length > 0 ? (
+              <div className="divide-y divide-border/50">
+                {recentProjects.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => navigate(`/projects/${p.id}`)}
+                    className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors text-left"
+                  >
+                    <div className="w-10 h-10 rounded bg-muted/40 flex items-center justify-center shrink-0">
+                      <ProjectIcon status={p.status} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-semibold text-foreground truncate">{p.project_name}</p>
+                      <p className="text-[12px] text-muted-foreground truncate">
+                        {[p.city, p.address_line_1].filter(Boolean).join(', ') || p.project_number}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0 flex items-center gap-4">
+                      {p.planned_date && (
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Deadline</p>
+                          <p className="text-[13px] font-medium text-foreground">{formatNlDate(p.planned_date)}</p>
+                        </div>
+                      )}
+                      <ProjectStatusBadge project={p} />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-5 py-12 text-center">
+                <FolderKanban className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Nog geen projecten</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right — Info panel (4 cols) */}
+        <div className="col-span-4 space-y-6">
+          {/* Active locations */}
+          <div className="bg-card rounded border border-border overflow-hidden">
+            <div className="px-5 py-4 border-b border-border">
+              <h3 className="font-display text-[16px] font-bold text-foreground">Actieve Locaties</h3>
+            </div>
+            <div className="aspect-[4/3] bg-muted/20 flex items-center justify-center">
+              <div className="text-center">
+                <MapPin className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                <p className="text-[12px] text-muted-foreground/40">Kaart weergave</p>
+              </div>
+            </div>
+            <div className="px-5 py-4 border-t border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-field-green animate-pulse" />
+                <span className="text-[12px] font-semibold text-foreground">Live Team Status</span>
+              </div>
+              <span className="text-[12px] text-muted-foreground">{planned.length} Online</span>
+            </div>
+            <div className="px-5 pb-4 flex items-center -space-x-2">
+              {[...Array(Math.min(3, planned.length || 1))].map((_, i) => (
+                <div key={i} className="w-8 h-8 rounded-full bg-muted border-2 border-card flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-muted-foreground">{String.fromCharCode(65 + i)}</span>
+                </div>
+              ))}
+              {planned.length > 3 && (
+                <div className="w-8 h-8 rounded-full bg-muted/60 border-2 border-card flex items-center justify-center">
+                  <span className="text-[9px] font-bold text-muted-foreground">+{planned.length - 3}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress masthead */}
+      <div className="bg-card rounded border border-border border-l-8 border-l-[hsl(var(--primary))] p-6 flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-1">
+            Kwartaal Voortgang Metingen
+          </p>
+          <h3 className="font-display text-[24px] font-black text-foreground">74% Gerealiseerd</h3>
+          <div className="mt-3 h-2 rounded-full bg-muted/40 max-w-sm overflow-hidden">
+            <div className="h-full rounded-full bg-[hsl(var(--primary))]" style={{ width: '74%' }} />
+          </div>
+        </div>
+        <div className="flex items-center gap-8 ml-8">
+          <div className="text-center">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Budget</p>
+            <p className="font-display text-[20px] font-black text-foreground">€2.4M</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Uren</p>
+            <p className="font-display text-[20px] font-black text-foreground">14.2k</p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -324,20 +435,26 @@ function getGreeting() {
   return 'Goedenavond';
 }
 
-function DesktopStatCard({ title, value, sub, alert }: { title: string; value: number; sub?: string; alert?: boolean }) {
-  return (
-    <div className={cn(
-      'rounded-2xl bg-card px-5 py-4',
-      alert ? 'ring-1 ring-destructive/10' : ''
-    )}>
-      <p className="text-[12px] font-medium text-muted-foreground/50 mb-1">{title}</p>
-      <p className={cn(
-        'text-[28px] font-bold tracking-tight leading-none',
-        alert ? 'text-destructive' : 'text-foreground'
-      )}>{value}</p>
-      {sub && <p className="text-[11px] text-muted-foreground/40 mt-1.5">{sub}</p>}
-    </div>
-  );
+function ProjectIcon({ status }: { status: string }) {
+  if (status === 'completed') return <CheckCircle2 className="h-5 w-5 text-field-green" />;
+  return <Building2 className="h-5 w-5 text-muted-foreground/60" />;
+}
+
+function ProjectStatusBadge({ project }: { project: any }) {
+  if (project.status === 'completed') {
+    return <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-field-green-bg text-field-green">Voldoet</span>;
+  }
+
+  try {
+    if (project.planned_date) {
+      const d = parseISO(project.planned_date);
+      if (isPast(d) && !isToday(d)) {
+        return <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-field-red-bg text-field-red">Afwijking</span>;
+      }
+    }
+  } catch {}
+
+  return <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">Gepland</span>;
 }
 
 function IosSectionHeader({ title, action, actionLabel }: { title: string; action?: () => void; actionLabel?: string }) {
@@ -372,10 +489,7 @@ function DashProjectRow({ project: p, onClick, showDate }: {
   project: any; onClick: () => void; showDate?: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className="ios-dash-project-row"
-    >
+    <button onClick={onClick} className="ios-dash-project-row">
       <DashStatusDot project={p} />
       <div className="ios-dash-project-info">
         <p className="ios-dash-project-name">{p.project_name}</p>

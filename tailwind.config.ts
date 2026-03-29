@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Public Sans', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -69,6 +70,13 @@ export default {
           primary: "hsl(var(--surface-primary))",
           secondary: "hsl(var(--surface-secondary))",
           grouped: "hsl(var(--surface-grouped))",
+        },
+        field: {
+          green: "hsl(var(--field-green))",
+          "green-bg": "hsl(var(--field-green-bg))",
+          red: "hsl(var(--field-red))",
+          "red-bg": "hsl(var(--field-red-bg))",
+          "blue-mid": "hsl(var(--field-blue-mid))",
         },
       },
       borderRadius: {
