@@ -286,8 +286,8 @@ export default function HandtekeningPad({
             </div>
           )}
 
-          {/* Opslaan voor later */}
-          {heeftInhoud && !opgeslagenHandtekening && (
+          {/* Opslaan voor later — altijd tonen als er inhoud is */}
+          {heeftInhoud && (
             <Button
               type="button"
               variant="outline"
@@ -296,7 +296,7 @@ export default function HandtekeningPad({
               disabled={isLoading}
             >
               <Save className="h-3.5 w-3.5 mr-1.5" />
-              {isLoading ? "Opslaan..." : "Opslaan voor later"}
+              {isLoading ? "Opslaan..." : opgeslagenHandtekening ? "Overschrijven" : "Opslaan voor later"}
             </Button>
           )}
         </div>
