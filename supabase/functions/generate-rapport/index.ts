@@ -16,6 +16,26 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+/**
+ * Fetch an image URL and return as pure base64 string (no data-URL prefix).
+ * Returns null on any failure.
+ */
+async function urlToBase64(url: string): Promise<string | null> {
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const buf = await resp.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  } catch {
+    return null;
+  }
+}
+
 async function tryGenerateViaExternalApi(
   rapportApiUrl: string,
   rapportData: Record<string, unknown>,
