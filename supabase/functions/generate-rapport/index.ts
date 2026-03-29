@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
-const EXTERNAL_API_TIMEOUT_MS = 8000;
+const EXTERNAL_API_TIMEOUT_MS = 30000;
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -298,25 +298,27 @@ Deno.serve(async (req) => {
 
     let rapportApiUrl = Deno.env.get("RAPPORT_API_URL");
 
-    if (rapportApiUrl) {
-      if (!rapportApiUrl.startsWith("http://") && !rapportApiUrl.startsWith("https://")) {
-        rapportApiUrl = `https://${rapportApiUrl}`;
-      }
-      rapportApiUrl = rapportApiUrl.replace(/\/+$/, "");
-
-      const externalResult = await tryGenerateViaExternalApi(
-        rapportApiUrl,
-        rapportData as Record<string, unknown>,
-        project.project_name,
-        meetdatum,
-      );
-
-      if (externalResult?.pdf_base64) {
-        return jsonResponse(externalResult);
-      }
+    if (!rapportApiUrl) {
+      return jsonResponse({ error: "RAPPORT_API_URL is niet geconfigureerd" }, 500);
     }
 
-    return jsonResponse({ prepared_data: rapportData });
+    if (!rapportApiUrl.startsWith("http://") && !rapportApiUrl.startsWith("https://")) {
+      rapportApiUrl = `https://${rapportApiUrl}`;
+    }
+    rapportApiUrl = rapportApiUrl.replace(/\/+$/, "");
+
+    const externalResult = await tryGenerateViaExternalApi(
+      rapportApiUrl,
+      rapportData as Record<string, unknown>,
+      project.project_name,
+      meetdatum,
+    );
+
+    if (!externalResult?.pdf_base64) {
+      return jsonResponse({ error: "PDF generatie mislukt — de rapport API reageerde niet of gaf een fout." }, 500);
+    }
+
+    return jsonResponse(externalResult);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Onbekende fout";
     console.error("generate-rapport error:", message);
