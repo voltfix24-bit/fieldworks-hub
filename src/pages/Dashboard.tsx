@@ -238,124 +238,136 @@ export default function Dashboard() {
     );
   }
 
-  // ── Desktop layout — Industrial Field Ops ──
-  const recentProjects = projects?.slice(0, 6) ?? [];
+  // ── Desktop layout — Premium Field Ops ──
+  const recentProjects = projects?.slice(0, 8) ?? [];
   const actionRequired = overdueProjects.length;
 
   return (
-    <div className="animate-fade-in space-y-8">
+    <div className="animate-fade-in max-w-6xl">
       {/* Greeting */}
-      <div>
-        <p className="text-sm text-muted-foreground mb-1">
+      <div className="mb-10">
+        <p className="text-[13px] text-muted-foreground/60 font-medium mb-1.5">
           {greeting},
         </p>
-        <h1 className="font-display text-[32px] font-black text-foreground tracking-tight leading-none">
+        <h1 className="font-display text-[28px] font-black text-foreground tracking-tight leading-none">
           {profile?.full_name || 'Gebruiker'}
         </h1>
-      </div>
-
-      {/* Page title */}
-      <div>
-        <h2 className="font-display text-[22px] font-black text-foreground tracking-tight">
-          Aardingsmeting Dashboard
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Real-time overzicht van lopende metingen en operationele status.
+        <p className="text-[13px] text-muted-foreground/50 mt-2">
+          Operationeel overzicht — {todayProjects.length > 0
+            ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag`
+            : 'geen projecten vandaag gepland'}
         </p>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         {/* Gepland */}
-        <div className="bg-card rounded border border-border p-5 border-b-4 border-b-[hsl(var(--primary))]">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded bg-[hsl(var(--primary)/0.1)] flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-[hsl(var(--primary))]" />
+        <div className="bg-card rounded-lg border border-border/50 p-6 group hover:border-border transition-colors relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-primary" />
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">Gepland</span>
+            <div className="w-9 h-9 rounded-lg bg-primary/[0.08] flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Gepland</span>
           </div>
-          <p className="font-display text-[40px] font-black text-foreground leading-none">{planned.length}</p>
+          <p className="font-display text-[36px] font-black text-foreground leading-none tracking-tight">{planned.length}</p>
           <button
             onClick={() => navigate('/planning?view=kalender')}
-            className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold text-[hsl(var(--primary))] hover:underline"
+            className="flex items-center gap-1.5 mt-4 text-[12px] font-semibold text-primary hover:underline"
           >
             Bekijk planning <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {/* Afgerond */}
-        <div className="bg-card rounded border border-border p-5 border-b-4 border-b-field-green">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded bg-field-green-bg flex items-center justify-center">
-              <CheckCircle2 className="h-5 w-5 text-field-green" />
+        <div className="bg-card rounded-lg border border-border/50 p-6 group hover:border-border transition-colors relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-field-green" />
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">Afgerond</span>
+            <div className="w-9 h-9 rounded-lg bg-field-green-bg flex items-center justify-center">
+              <CheckCircle2 className="h-4 w-4 text-field-green" />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Afgerond</span>
           </div>
-          <p className="font-display text-[40px] font-black text-field-green leading-none">{completed.length}</p>
-          <p className="text-[12px] text-muted-foreground mt-3">Laatste 7 dagen</p>
+          <p className="font-display text-[36px] font-black text-field-green leading-none tracking-tight">{completed.length}</p>
+          <p className="text-[12px] text-muted-foreground/50 mt-4">Totaal afgerond</p>
         </div>
 
         {/* Actie vereist */}
-        <div className="bg-card rounded border border-border p-5 border-b-4 border-b-field-red">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded bg-field-red-bg flex items-center justify-center">
-              <AlertTriangle className="h-5 w-5 text-field-red" />
+        <div className="bg-card rounded-lg border border-border/50 p-6 group hover:border-border transition-colors relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-field-red" />
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">Actie Vereist</span>
+            <div className="w-9 h-9 rounded-lg bg-field-red-bg flex items-center justify-center">
+              <AlertTriangle className="h-4 w-4 text-field-red" />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Actie Vereist</span>
           </div>
-          <p className="font-display text-[40px] font-black text-field-red leading-none">{actionRequired}</p>
-          <p className="flex items-center gap-1 text-[12px] text-field-red font-semibold mt-3">
-            Directe actie vereist <AlertTriangle className="h-3 w-3" />
-          </p>
+          <p className="font-display text-[36px] font-black text-field-red leading-none tracking-tight">{actionRequired}</p>
+          {actionRequired > 0 ? (
+            <p className="flex items-center gap-1 text-[12px] text-field-red font-medium mt-4">
+              Directe actie vereist
+            </p>
+          ) : (
+            <p className="text-[12px] text-muted-foreground/50 mt-4">Alles op schema</p>
+          )}
         </div>
       </div>
 
       {/* Recent projects */}
-      <div className="bg-card rounded border border-border overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h3 className="font-display text-[16px] font-bold text-foreground">Recente Projecten</h3>
+      <div className="bg-card rounded-lg border border-border/50 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
+          <div>
+            <h3 className="font-display text-[15px] font-bold text-foreground">Recente Projecten</h3>
+            <p className="text-[12px] text-muted-foreground/40 mt-0.5">{projects?.length || 0} projecten totaal</p>
+          </div>
           <button
             onClick={() => navigate('/projects/new')}
-            className="flex items-center gap-2 bg-[hsl(var(--primary))] text-white text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 bg-primary text-primary-foreground text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
           >
             <Plus className="h-3.5 w-3.5" /> Nieuw Project
           </button>
         </div>
 
         {recentProjects.length > 0 ? (
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-border/20">
             {recentProjects.map(p => (
               <button
                 key={p.id}
                 onClick={() => navigate(`/projects/${p.id}`)}
-                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors text-left"
+                className="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors text-left group"
               >
-                <div className="w-10 h-10 rounded bg-muted/40 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-muted/30 flex items-center justify-center shrink-0 group-hover:bg-muted/50 transition-colors">
                   <ProjectIcon status={p.status} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-foreground truncate">{p.project_name}</p>
-                  <p className="text-[12px] text-muted-foreground truncate">
-                    {[p.city, p.address_line_1].filter(Boolean).join(', ') || p.project_number}
+                  <p className="text-[13px] font-semibold text-foreground truncate">{p.project_name}</p>
+                  <p className="text-[11px] text-muted-foreground/50 truncate mt-0.5">
+                    {[p.project_number, p.city].filter(Boolean).join(' · ')}
                   </p>
                 </div>
                 <div className="text-right shrink-0 flex items-center gap-4">
                   {p.planned_date && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Deadline</p>
-                      <p className="text-[13px] font-medium text-foreground">{formatNlDate(p.planned_date)}</p>
-                    </div>
+                    <span className="text-[12px] text-muted-foreground/50 hidden lg:block">
+                      {formatNlDate(p.planned_date)}
+                    </span>
                   )}
                   <ProjectStatusBadge project={p} />
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors" />
                 </div>
               </button>
             ))}
           </div>
         ) : (
-          <div className="px-5 py-12 text-center">
-            <FolderKanban className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Nog geen projecten</p>
+          <div className="px-6 py-14 text-center">
+            <FolderKanban className="h-8 w-8 text-muted-foreground/15 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground/50">Nog geen projecten</p>
+          </div>
+        )}
+
+        {projects && projects.length > 8 && (
+          <div className="px-6 py-3 border-t border-border/20">
+            <button onClick={() => navigate('/projects')} className="text-[12px] font-semibold text-primary hover:underline">
+              Alle projecten bekijken →
+            </button>
           </div>
         )}
       </div>
@@ -379,19 +391,19 @@ function ProjectIcon({ status }: { status: string }) {
 
 function ProjectStatusBadge({ project }: { project: any }) {
   if (project.status === 'completed') {
-    return <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-field-green-bg text-field-green">Voldoet</span>;
+    return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-field-green-bg text-field-green uppercase tracking-wider">Voldoet</span>;
   }
 
   try {
     if (project.planned_date) {
       const d = parseISO(project.planned_date);
       if (isPast(d) && !isToday(d)) {
-        return <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-field-red-bg text-field-red">Afwijking</span>;
+        return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-field-red-bg text-field-red uppercase tracking-wider">Afwijking</span>;
       }
     }
   } catch {}
 
-  return <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">Gepland</span>;
+  return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Gepland</span>;
 }
 
 function IosSectionHeader({ title, action, actionLabel }: { title: string; action?: () => void; actionLabel?: string }) {

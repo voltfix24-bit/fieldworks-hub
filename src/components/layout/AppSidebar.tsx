@@ -40,7 +40,7 @@ export function AppSidebar() {
   return (
     <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col bg-sidebar text-sidebar-foreground">
       {/* Logo area */}
-      <button onClick={() => navigate('/dashboard')} className="px-6 pt-7 pb-6 text-left hover:opacity-80 transition-opacity">
+      <button onClick={() => navigate('/dashboard')} className="px-6 pt-8 pb-8 text-left hover:opacity-80 transition-opacity">
         {branding?.compact_logo_url || branding?.logo_url ? (
           <img
             src={branding.compact_logo_url || branding.logo_url!}
@@ -52,13 +52,13 @@ export function AppSidebar() {
             {tenant?.company_name || 'Aardpen'}
           </h1>
         )}
-        <p className="text-[11px] uppercase tracking-[0.2em] text-white/50 mt-1 font-medium">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mt-1.5 font-medium">
           Safe · Skilled · Solid
         </p>
       </button>
 
       {/* Main nav */}
-      <nav className="flex-1 px-3 space-y-0.5">
+      <nav className="flex-1 px-4 space-y-0.5">
         {mainNav.map((item) => {
           const active = isActive(item.url);
           return (
@@ -66,31 +66,34 @@ export function AppSidebar() {
               key={item.title}
               onClick={() => navigate(item.url)}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-colors',
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-all duration-150',
                 'text-[11px] font-bold uppercase tracking-[0.15em]',
                 active
-                  ? 'text-[hsl(var(--sidebar-primary))] bg-white/5 border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent -ml-px'
+                  ? 'text-white bg-white/[0.08] border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-[3px] border-transparent -ml-px'
               )}
             >
-              <item.icon className="h-[18px] w-[18px] shrink-0" />
+              <item.icon className={cn(
+                'h-[18px] w-[18px] shrink-0 transition-colors',
+                active ? 'text-[hsl(var(--sidebar-primary))]' : ''
+              )} />
               <span>{item.title}</span>
             </button>
           );
         })}
 
         {/* Separator */}
-        <div className="h-px bg-white/10 my-4 mx-2" />
+        <div className="h-px bg-white/[0.06] my-5 mx-1" />
 
         {/* Settings */}
         <button
           onClick={() => navigate('/settings')}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-colors',
+            'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-all duration-150',
             'text-[11px] font-bold uppercase tracking-[0.15em]',
             isActive('/settings')
-              ? 'text-[hsl(var(--sidebar-primary))] bg-white/5 border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px'
-              : 'text-slate-400 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent -ml-px'
+              ? 'text-white bg-white/[0.08] border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px'
+              : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-[3px] border-transparent -ml-px'
           )}
         >
           <Settings className="h-[18px] w-[18px] shrink-0" />
@@ -99,15 +102,16 @@ export function AppSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 pb-6 pt-2">
+      <div className="px-4 pb-6 pt-3">
+        <div className="h-px bg-white/[0.06] mb-4 mx-1" />
         <button
           onClick={signOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-colors text-[11px] font-bold uppercase tracking-[0.15em] text-red-400 hover:text-red-300 hover:bg-red-500/10 border-l-[3px] border-transparent -ml-px"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-all duration-150 text-[11px] font-bold uppercase tracking-[0.15em] text-white/25 hover:text-red-400 hover:bg-red-500/[0.06] border-l-[3px] border-transparent -ml-px"
         >
           <LogOut className="h-[18px] w-[18px] shrink-0" />
           <span>Uitloggen</span>
         </button>
-        <p className="text-[10px] text-white/20 mt-4 px-3">
+        <p className="text-[10px] text-white/15 mt-5 px-3 font-medium">
           {plannedCount} actieve projecten
         </p>
       </div>
