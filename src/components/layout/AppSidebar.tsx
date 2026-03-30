@@ -38,27 +38,32 @@ export function AppSidebar() {
   };
 
   return (
-    <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col bg-sidebar text-sidebar-foreground">
-      {/* Logo area */}
-      <button onClick={() => navigate('/dashboard')} className="px-6 pt-8 pb-8 text-left hover:opacity-80 transition-opacity">
-        {branding?.compact_logo_url || branding?.logo_url ? (
-          <img
-            src={branding.compact_logo_url || branding.logo_url!}
-            alt={tenant?.company_name || 'Logo'}
-            className="h-9 w-auto max-w-[180px] object-contain brightness-0 invert"
-          />
-        ) : (
-          <h1 className="font-display text-[22px] font-black uppercase tracking-tight text-[hsl(var(--sidebar-primary))]">
-            {tenant?.company_name || 'Aardpen'}
-          </h1>
-        )}
-        <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mt-1.5 font-medium">
+    <aside className="w-[256px] shrink-0 h-screen sticky top-0 flex flex-col bg-sidebar text-sidebar-foreground border-r border-white/[0.04]">
+      {/* Branding area */}
+      <div className="px-7 pt-8 pb-7">
+        <button onClick={() => navigate('/dashboard')} className="text-left hover:opacity-80 transition-opacity block">
+          {branding?.compact_logo_url || branding?.logo_url ? (
+            <img
+              src={branding.compact_logo_url || branding.logo_url!}
+              alt={tenant?.company_name || 'Logo'}
+              className="h-8 w-auto max-w-[160px] object-contain brightness-0 invert"
+            />
+          ) : (
+            <h1 className="font-display text-[20px] font-black uppercase tracking-tight text-sidebar-primary">
+              {tenant?.company_name || 'Aardpen'}
+            </h1>
+          )}
+        </button>
+        <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 mt-2 font-medium">
           Safe · Skilled · Solid
         </p>
-      </button>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent mx-5 mb-3" />
 
       {/* Main nav */}
-      <nav className="flex-1 px-4 space-y-0.5">
+      <nav className="flex-1 px-4 space-y-[2px] overflow-y-auto scrollbar-none">
         {mainNav.map((item) => {
           const active = isActive(item.url);
           return (
@@ -66,54 +71,61 @@ export function AppSidebar() {
               key={item.title}
               onClick={() => navigate(item.url)}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-all duration-150',
-                'text-[11px] font-bold uppercase tracking-[0.15em]',
+                'w-full flex items-center gap-3.5 px-4 py-[10px] rounded-lg text-left transition-all duration-200',
+                'text-[11px] font-bold uppercase tracking-[0.14em]',
                 active
-                  ? 'text-white bg-white/[0.08] border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-[3px] border-transparent -ml-px'
+                  ? 'text-white bg-sidebar-accent shadow-[0_1px_2px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.06)]'
+                  : 'text-white/35 hover:text-white/65 hover:bg-white/[0.03]'
               )}
             >
               <item.icon className={cn(
-                'h-[18px] w-[18px] shrink-0 transition-colors',
-                active ? 'text-[hsl(var(--sidebar-primary))]' : ''
+                'h-[17px] w-[17px] shrink-0 transition-colors duration-200',
+                active ? 'text-sidebar-primary' : 'text-white/30'
               )} />
-              <span>{item.title}</span>
+              <span className="flex-1">{item.title}</span>
+              {active && (
+                <div className="w-1.5 h-1.5 rounded-full bg-sidebar-primary" />
+              )}
             </button>
           );
         })}
+      </nav>
 
-        {/* Separator */}
-        <div className="h-px bg-white/[0.06] my-5 mx-1" />
+      {/* Bottom section */}
+      <div className="px-4 pb-5 pt-2">
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent mx-1 mb-3" />
 
         {/* Settings */}
         <button
           onClick={() => navigate('/settings')}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-all duration-150',
-            'text-[11px] font-bold uppercase tracking-[0.15em]',
+            'w-full flex items-center gap-3.5 px-4 py-[10px] rounded-lg text-left transition-all duration-200',
+            'text-[11px] font-bold uppercase tracking-[0.14em]',
             isActive('/settings')
-              ? 'text-white bg-white/[0.08] border-l-[3px] border-[hsl(var(--sidebar-primary))] -ml-px'
-              : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-[3px] border-transparent -ml-px'
+              ? 'text-white bg-sidebar-accent'
+              : 'text-white/35 hover:text-white/65 hover:bg-white/[0.03]'
           )}
         >
-          <Settings className="h-[18px] w-[18px] shrink-0" />
+          <Settings className={cn('h-[17px] w-[17px] shrink-0', isActive('/settings') ? 'text-sidebar-primary' : 'text-white/30')} />
           <span>Instellingen</span>
         </button>
-      </nav>
 
-      {/* Footer */}
-      <div className="px-4 pb-6 pt-3">
-        <div className="h-px bg-white/[0.06] mb-4 mx-1" />
+        {/* Logout */}
         <button
           onClick={signOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-left transition-all duration-150 text-[11px] font-bold uppercase tracking-[0.15em] text-white/25 hover:text-red-400 hover:bg-red-500/[0.06] border-l-[3px] border-transparent -ml-px"
+          className="w-full flex items-center gap-3.5 px-4 py-[10px] rounded-lg text-left transition-all duration-200 text-[11px] font-bold uppercase tracking-[0.14em] text-white/20 hover:text-destructive hover:bg-destructive/[0.08]"
         >
-          <LogOut className="h-[18px] w-[18px] shrink-0" />
+          <LogOut className="h-[17px] w-[17px] shrink-0" />
           <span>Uitloggen</span>
         </button>
-        <p className="text-[10px] text-white/15 mt-5 px-3 font-medium">
-          {plannedCount} actieve projecten
-        </p>
+
+        {/* Project counter */}
+        <div className="mt-4 mx-2 px-3 py-2.5 rounded-lg bg-white/[0.03]">
+          <p className="text-[10px] text-white/25 font-medium">
+            <span className="text-sidebar-primary font-bold">{plannedCount}</span> actieve projecten
+          </p>
+        </div>
       </div>
     </aside>
   );

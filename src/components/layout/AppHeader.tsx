@@ -26,42 +26,47 @@ export function AppHeader() {
   const rolLabel = 'Beheerder';
 
   return (
-    <header className="h-14 border-b border-border/30 bg-background/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+    <header className="h-[56px] border-b border-border/25 bg-card/50 backdrop-blur-xl flex items-center justify-between px-7 shrink-0">
       {/* Search */}
-      <div className="flex items-center gap-2.5 bg-card/60 border border-border/40 rounded-lg px-3.5 py-2 max-w-sm w-full transition-colors focus-within:border-border focus-within:bg-card">
-        <Search className="h-4 w-4 text-muted-foreground/40" />
+      <div className="flex items-center gap-2.5 bg-background/60 border border-border/30 rounded-xl px-4 py-[7px] max-w-md w-full transition-all duration-200 focus-within:border-primary/30 focus-within:bg-card focus-within:shadow-[0_0_0_3px_hsl(var(--primary)/0.06)]">
+        <Search className="h-[15px] w-[15px] text-muted-foreground/35" />
         <input
           type="text"
           placeholder="Zoek project, klant of locatie..."
-          className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground/35 outline-none flex-1"
+          className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/30 outline-none flex-1"
         />
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-1.5">
-        <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted/50 transition-colors">
-          <Bell className="h-[17px] w-[17px] text-muted-foreground/50" />
-        </button>
-        <button onClick={toggleTheme} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted/50 transition-colors" title={theme === 'light' ? 'Donkere modus' : 'Lichte modus'}>
-          {theme === 'light' ? <Moon className="h-[17px] w-[17px] text-muted-foreground/50" /> : <Sun className="h-[17px] w-[17px] text-muted-foreground/50" />}
-        </button>
-        <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted/50 transition-colors">
-          <Clock className="h-[17px] w-[17px] text-muted-foreground/50" />
-        </button>
+      <div className="flex items-center gap-1">
+        {[
+          { icon: Bell, onClick: undefined, title: 'Notificaties' },
+          { icon: theme === 'light' ? Moon : Sun, onClick: toggleTheme, title: theme === 'light' ? 'Donkere modus' : 'Lichte modus' },
+          { icon: Clock, onClick: undefined, title: 'Recente activiteit' },
+        ].map(({ icon: Icon, onClick, title }) => (
+          <button
+            key={title}
+            onClick={onClick}
+            title={title}
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-muted/40 transition-all duration-150 group"
+          >
+            <Icon className="h-[16px] w-[16px] text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors" />
+          </button>
+        ))}
 
-        <div className="w-px h-6 bg-border/30 mx-2" />
+        <div className="w-px h-7 bg-border/20 mx-2.5" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/40 transition-colors">
+            <button className="flex items-center gap-3 rounded-xl px-2.5 py-1.5 hover:bg-muted/30 transition-all duration-150">
               <div className="text-right hidden sm:block">
                 <p className="text-[13px] font-semibold text-foreground leading-tight">
                   {profile?.full_name || 'Gebruiker'}
                 </p>
-                <p className="text-[11px] text-muted-foreground/40">{rolLabel}</p>
+                <p className="text-[10px] text-muted-foreground/35 font-medium">{rolLabel}</p>
               </div>
-              <Avatar className="h-8 w-8 border border-border/50">
-                <AvatarFallback className="bg-sidebar text-white text-[11px] font-bold">
+              <Avatar className="h-8 w-8 ring-2 ring-border/20 ring-offset-1 ring-offset-card">
+                <AvatarFallback className="bg-sidebar text-white text-[10px] font-bold tracking-wide">
                   {initials}
                 </AvatarFallback>
               </Avatar>

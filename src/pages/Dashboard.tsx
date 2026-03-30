@@ -243,134 +243,169 @@ export default function Dashboard() {
   const actionRequired = overdueProjects.length;
 
   return (
-    <div className="animate-fade-in max-w-6xl">
+    <div className="animate-fade-in max-w-[1100px]">
       {/* Greeting */}
       <div className="mb-10">
-        <p className="text-[13px] text-muted-foreground/60 font-medium mb-1.5">
-          {greeting},
-        </p>
-        <h1 className="font-display text-[28px] font-black text-foreground tracking-tight leading-none">
-          {profile?.full_name || 'Gebruiker'}
-        </h1>
-        <p className="text-[13px] text-muted-foreground/50 mt-2">
-          Operationeel overzicht — {todayProjects.length > 0
-            ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag`
-            : 'geen projecten vandaag gepland'}
-        </p>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {/* Gepland */}
-        <div className="bg-card rounded-lg border border-border/50 p-6 group hover:border-border transition-colors relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-primary" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">Gepland</span>
-            <div className="w-9 h-9 rounded-lg bg-primary/[0.08] flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-primary" />
-            </div>
-          </div>
-          <p className="font-display text-[36px] font-black text-foreground leading-none tracking-tight">{planned.length}</p>
-          <button
-            onClick={() => navigate('/planning?view=kalender')}
-            className="flex items-center gap-1.5 mt-4 text-[12px] font-semibold text-primary hover:underline"
-          >
-            Bekijk planning <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
-
-        {/* Afgerond */}
-        <div className="bg-card rounded-lg border border-border/50 p-6 group hover:border-border transition-colors relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-field-green" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">Afgerond</span>
-            <div className="w-9 h-9 rounded-lg bg-field-green-bg flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4 text-field-green" />
-            </div>
-          </div>
-          <p className="font-display text-[36px] font-black text-field-green leading-none tracking-tight">{completed.length}</p>
-          <p className="text-[12px] text-muted-foreground/50 mt-4">Totaal afgerond</p>
-        </div>
-
-        {/* Actie vereist */}
-        <div className="bg-card rounded-lg border border-border/50 p-6 group hover:border-border transition-colors relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-field-red" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">Actie Vereist</span>
-            <div className="w-9 h-9 rounded-lg bg-field-red-bg flex items-center justify-center">
-              <AlertTriangle className="h-4 w-4 text-field-red" />
-            </div>
-          </div>
-          <p className="font-display text-[36px] font-black text-field-red leading-none tracking-tight">{actionRequired}</p>
-          {actionRequired > 0 ? (
-            <p className="flex items-center gap-1 text-[12px] text-field-red font-medium mt-4">
-              Directe actie vereist
-            </p>
-          ) : (
-            <p className="text-[12px] text-muted-foreground/50 mt-4">Alles op schema</p>
-          )}
-        </div>
-      </div>
-
-      {/* Recent projects */}
-      <div className="bg-card rounded-lg border border-border/50 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
+        <div className="flex items-end justify-between">
           <div>
-            <h3 className="font-display text-[15px] font-bold text-foreground">Recente Projecten</h3>
-            <p className="text-[12px] text-muted-foreground/40 mt-0.5">{projects?.length || 0} projecten totaal</p>
+            <p className="text-[12px] text-muted-foreground/50 font-medium uppercase tracking-[0.15em] mb-2">
+              {greeting}
+            </p>
+            <h1 className="font-display text-[26px] font-black text-foreground tracking-tight leading-none">
+              {profile?.full_name || 'Gebruiker'}
+            </h1>
+            <p className="text-[13px] text-muted-foreground/40 mt-2 font-normal">
+              {todayProjects.length > 0
+                ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag gepland`
+                : 'Geen projecten vandaag gepland'}
+            </p>
           </div>
           <button
             onClick={() => navigate('/projects/new')}
-            className="flex items-center gap-2 bg-primary text-primary-foreground text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-xl hover:opacity-90 transition-all duration-150 shadow-sm"
           >
             <Plus className="h-3.5 w-3.5" /> Nieuw Project
           </button>
         </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-5 mb-10">
+        <StatCard
+          label="Gepland"
+          value={planned.length}
+          icon={Calendar}
+          color="primary"
+          action={{ label: 'Bekijk planning', onClick: () => navigate('/planning?view=kalender') }}
+        />
+        <StatCard
+          label="Afgerond"
+          value={completed.length}
+          icon={CheckCircle2}
+          color="green"
+          subtitle="Totaal afgerond"
+        />
+        <StatCard
+          label="Actie Vereist"
+          value={actionRequired}
+          icon={AlertTriangle}
+          color="red"
+          subtitle={actionRequired > 0 ? 'Directe actie vereist' : 'Alles op schema'}
+        />
+      </div>
+
+      {/* Overdue alert */}
+      {overdueProjects.length > 0 && (
+        <button
+          onClick={() => navigate('/planning?view=kalender')}
+          className="w-full flex items-center gap-4 bg-field-red-bg/50 border border-field-red/10 rounded-xl px-5 py-3.5 mb-6 hover:bg-field-red-bg/70 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-lg bg-field-red/10 flex items-center justify-center shrink-0">
+            <AlertTriangle className="h-4 w-4 text-field-red" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-[13px] font-semibold text-field-red">
+              {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
+            </p>
+            <p className="text-[11px] text-field-red/60 mt-0.5">Bekijk in de planning</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-field-red/40 group-hover:text-field-red/70 transition-colors" />
+        </button>
+      )}
+
+      {/* Recent projects */}
+      <div className="bg-card rounded-xl border border-border/30 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/20">
+          <div>
+            <h3 className="font-display text-[14px] font-bold text-foreground tracking-tight">Recente Projecten</h3>
+            <p className="text-[11px] text-muted-foreground/35 mt-0.5">{projects?.length || 0} projecten totaal</p>
+          </div>
+          {projects && projects.length > 0 && (
+            <button
+              onClick={() => navigate('/projects')}
+              className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors uppercase tracking-[0.1em]"
+            >
+              Alle projecten →
+            </button>
+          )}
+        </div>
 
         {recentProjects.length > 0 ? (
-          <div className="divide-y divide-border/20">
-            {recentProjects.map(p => (
+          <div>
+            {recentProjects.map((p, i) => (
               <button
                 key={p.id}
                 onClick={() => navigate(`/projects/${p.id}`)}
-                className="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors text-left group"
+                className={cn(
+                  'w-full flex items-center gap-4 px-6 py-3 hover:bg-muted/15 transition-all duration-150 text-left group',
+                  i < recentProjects.length - 1 && 'border-b border-border/10'
+                )}
               >
-                <div className="w-9 h-9 rounded-lg bg-muted/30 flex items-center justify-center shrink-0 group-hover:bg-muted/50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-muted/25 flex items-center justify-center shrink-0 group-hover:bg-muted/40 transition-colors">
                   <ProjectIcon status={p.status} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-foreground truncate">{p.project_name}</p>
-                  <p className="text-[11px] text-muted-foreground/50 truncate mt-0.5">
+                  <p className="text-[11px] text-muted-foreground/40 truncate mt-0.5">
                     {[p.project_number, p.city].filter(Boolean).join(' · ')}
                   </p>
                 </div>
-                <div className="text-right shrink-0 flex items-center gap-4">
+                <div className="shrink-0 flex items-center gap-4">
                   {p.planned_date && (
-                    <span className="text-[12px] text-muted-foreground/50 hidden lg:block">
+                    <span className="text-[11px] text-muted-foreground/40 hidden lg:block font-medium">
                       {formatNlDate(p.planned_date)}
                     </span>
                   )}
                   <ProjectStatusBadge project={p} />
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/15 group-hover:text-muted-foreground/35 transition-colors" />
                 </div>
               </button>
             ))}
           </div>
         ) : (
-          <div className="px-6 py-14 text-center">
-            <FolderKanban className="h-8 w-8 text-muted-foreground/15 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground/50">Nog geen projecten</p>
-          </div>
-        )}
-
-        {projects && projects.length > 8 && (
-          <div className="px-6 py-3 border-t border-border/20">
-            <button onClick={() => navigate('/projects')} className="text-[12px] font-semibold text-primary hover:underline">
-              Alle projecten bekijken →
-            </button>
+          <div className="px-6 py-16 text-center">
+            <FolderKanban className="h-7 w-7 text-muted-foreground/12 mx-auto mb-3" />
+            <p className="text-[13px] text-muted-foreground/40">Nog geen projecten</p>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── StatCard ── */
+function StatCard({ label, value, icon: Icon, color, subtitle, action }: {
+  label: string;
+  value: number;
+  icon: any;
+  color: 'primary' | 'green' | 'red';
+  subtitle?: string;
+  action?: { label: string; onClick: () => void };
+}) {
+  const colorMap = {
+    primary: { bar: 'bg-primary', iconBg: 'bg-primary/[0.07]', iconText: 'text-primary', valueText: 'text-foreground', actionText: 'text-primary' },
+    green: { bar: 'bg-field-green', iconBg: 'bg-field-green-bg', iconText: 'text-field-green', valueText: 'text-field-green', actionText: 'text-field-green' },
+    red: { bar: 'bg-field-red', iconBg: 'bg-field-red-bg', iconText: 'text-field-red', valueText: 'text-field-red', actionText: 'text-field-red' },
+  };
+  const c = colorMap[color];
+
+  return (
+    <div className="bg-card rounded-xl border border-border/30 p-6 relative overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)] hover:border-border/50 transition-all duration-200 group">
+      <div className={`absolute top-0 left-0 w-full h-[2px] ${c.bar}`} />
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/50">{label}</span>
+        <div className={`w-9 h-9 rounded-xl ${c.iconBg} flex items-center justify-center`}>
+          <Icon className={`h-4 w-4 ${c.iconText}`} />
+        </div>
+      </div>
+      <p className={`font-display text-[34px] font-black leading-none tracking-tight ${c.valueText}`}>{value}</p>
+      {action ? (
+        <button onClick={action.onClick} className={`flex items-center gap-1.5 mt-4 text-[11px] font-semibold ${c.actionText} hover:underline`}>
+          {action.label} <ArrowRight className="h-3 w-3" />
+        </button>
+      ) : (
+        <p className="text-[11px] text-muted-foreground/40 mt-4">{subtitle}</p>
+      )}
     </div>
   );
 }
