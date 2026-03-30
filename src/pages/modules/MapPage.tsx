@@ -595,9 +595,17 @@ export default function MapPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  // Geocode all project addresses
+  const geocodedCoords = useGeocodedCoords(projects);
+
   const filtered = useMemo(() => {
     return projects.filter(p => filters[p.status] !== false);
   }, [projects, filters]);
+
+  // Only show projects that have coordinates
+  const mappableProjects = useMemo(() => {
+    return filtered.filter(p => geocodedCoords[p.id]);
+  }, [filtered, geocodedCoords]);
 
   const plannedCount = projects.filter(p => p.status === 'planned').length;
   const selectedProject = projects.find(p => p.id === selectedId);
@@ -642,8 +650,8 @@ export default function MapPage() {
             });
           }}
         >
-          {filtered.map(project => {
-            const coords = getCoords(project);
+          {mappableProjects.map(project => {
+            const coords = geocodedCoords[project.id];
             const icon = createMarkerIcon(project.status as ProjectStatus, selectedId === project.id);
             return (
               <Marker
