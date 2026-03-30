@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import ResetPassword from "@/pages/ResetPassword";
+import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import ProjectsPage from "@/pages/modules/ProjectsPage";
 import ProjectForm from "@/pages/modules/ProjectForm";
@@ -46,7 +47,7 @@ const App = () => (
             <Routes>
               <Route path="/login" element={<Navigate to="/dashboard" replace />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Index />} />
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
 
