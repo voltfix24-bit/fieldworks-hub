@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import ResetPassword from "@/pages/ResetPassword";
+import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import ProjectsPage from "@/pages/modules/ProjectsPage";
 import ProjectForm from "@/pages/modules/ProjectForm";
