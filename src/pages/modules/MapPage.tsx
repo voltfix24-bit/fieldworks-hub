@@ -671,7 +671,7 @@ export default function MapPage() {
         <ZoomControls />
       </MapContainer>
 
-      <FilterPanel filters={filters} setFilters={setFilters} visibleCount={filtered.length} />
+      <FilterPanel filters={filters} setFilters={setFilters} visibleCount={mappableProjects.length} />
       <StatMiniCard count={plannedCount} />
 
       {/* New project button */}
