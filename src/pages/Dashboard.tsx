@@ -373,6 +373,43 @@ export default function Dashboard() {
   );
 }
 
+/* ── StatCard ── */
+function StatCard({ label, value, icon: Icon, color, subtitle, action }: {
+  label: string;
+  value: number;
+  icon: any;
+  color: 'primary' | 'green' | 'red';
+  subtitle?: string;
+  action?: { label: string; onClick: () => void };
+}) {
+  const colorMap = {
+    primary: { bar: 'bg-primary', iconBg: 'bg-primary/[0.07]', iconText: 'text-primary', valueText: 'text-foreground', actionText: 'text-primary' },
+    green: { bar: 'bg-field-green', iconBg: 'bg-field-green-bg', iconText: 'text-field-green', valueText: 'text-field-green', actionText: 'text-field-green' },
+    red: { bar: 'bg-field-red', iconBg: 'bg-field-red-bg', iconText: 'text-field-red', valueText: 'text-field-red', actionText: 'text-field-red' },
+  };
+  const c = colorMap[color];
+
+  return (
+    <div className="bg-card rounded-xl border border-border/30 p-6 relative overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)] hover:border-border/50 transition-all duration-200 group">
+      <div className={`absolute top-0 left-0 w-full h-[2px] ${c.bar}`} />
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/50">{label}</span>
+        <div className={`w-9 h-9 rounded-xl ${c.iconBg} flex items-center justify-center`}>
+          <Icon className={`h-4 w-4 ${c.iconText}`} />
+        </div>
+      </div>
+      <p className={`font-display text-[34px] font-black leading-none tracking-tight ${c.valueText}`}>{value}</p>
+      {action ? (
+        <button onClick={action.onClick} className={`flex items-center gap-1.5 mt-4 text-[11px] font-semibold ${c.actionText} hover:underline`}>
+          {action.label} <ArrowRight className="h-3 w-3" />
+        </button>
+      ) : (
+        <p className="text-[11px] text-muted-foreground/40 mt-4">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+
 /* ── Helpers ── */
 function getGreeting() {
   const h = new Date().getHours();
