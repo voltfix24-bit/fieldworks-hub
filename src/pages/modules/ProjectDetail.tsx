@@ -341,141 +341,231 @@ export default function ProjectDetail() {
   // ═══════════════════════════════════════════════════════
   // DESKTOP
   // ═══════════════════════════════════════════════════════
+
+  // Determine the primary next action
+  const nextAction = !hasSession
+    ? { label: 'Meting starten', sub: 'Start de meetopstelling voor dit project', icon: Play }
+    : !metingKlaar
+    ? { label: 'Doorgaan met meten', sub: `${metReadyCount}/${metRequiredTotal} onderdelen gereed`, icon: Play }
+    : project.status === 'planned'
+    ? { label: 'Project afronden', sub: 'Alle metingen en gegevens zijn compleet', icon: CheckCircle2 }
+    : null;
+
   return (
     <div className="animate-fade-in max-w-5xl">
-      {/* ── Top bar: back + actions ── */}
-      <div className="flex items-center justify-between mb-6">
+      {/* ── Breadcrumb + actions ── */}
+      <div className="flex items-center justify-between mb-5">
         <button onClick={() => navigate('/projects')}
-          className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors group">
+          className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground/45 hover:text-foreground transition-colors group">
           <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
           Projecten
         </button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="rounded-lg h-9 px-4 text-[12px] font-semibold border-border/40" onClick={() => navigate(`/projects/${id}/edit`)}>
-            <Pencil className="mr-1.5 h-3.5 w-3.5" /> Bewerken
+        <div className="flex items-center gap-1.5">
+          <Button variant="ghost" size="sm" className="rounded-lg h-8 px-3 text-[11px] font-semibold text-muted-foreground/50 hover:text-foreground" onClick={() => navigate(`/projects/${id}/edit`)}>
+            <Pencil className="mr-1.5 h-3 w-3" /> Bewerken
           </Button>
-          <Button variant="outline" size="sm" className="rounded-lg h-9 px-4 text-[12px] font-semibold border-border/40" onClick={() => navigate(`/projects/${id}/report`)}>
-            <FileText className="mr-1.5 h-3.5 w-3.5" /> Rapport
+          <Button variant="ghost" size="sm" className="rounded-lg h-8 px-3 text-[11px] font-semibold text-muted-foreground/50 hover:text-foreground" onClick={() => navigate(`/projects/${id}/report`)}>
+            <FileText className="mr-1.5 h-3 w-3" /> Rapport
           </Button>
-          <Button size="sm" className="rounded-lg h-9 px-5 text-[12px] font-bold tracking-wide shadow-[0_2px_8px_hsl(var(--primary)/0.2)]" onClick={() => navigate(`/projects/${id}/measurements`)}>
-            <Play className="mr-1.5 h-3.5 w-3.5" /> METINGEN
+          <div className="w-px h-5 bg-border/25 mx-1" />
+          <Button size="sm" className="rounded-lg h-8 px-4 text-[11px] font-bold tracking-wide" onClick={() => navigate(`/projects/${id}/measurements`)}>
+            <Play className="mr-1.5 h-3 w-3" /> METINGEN
           </Button>
         </div>
       </div>
 
-      {/* ── Project hero header ── */}
-      <div className="bg-card rounded-xl border border-border/50 shadow-sm px-6 py-5 mb-5">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-1.5">
-              <h1 className="text-[22px] font-display font-extrabold tracking-tight text-foreground leading-none truncate">{project.project_name}</h1>
-              <StatusBadge status={project.status} />
-            </div>
-            <div className="flex items-center gap-3 text-[12px]">
-              <span className="font-mono text-muted-foreground/40 tabular-nums">{project.project_number}</span>
-              {project.city && (
-                <>
-                  <span className="w-px h-3 bg-border/30" />
-                  <span className="text-muted-foreground/40 flex items-center gap-1">
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground/20" />
-                    {[project.address_line_1, project.city].filter(Boolean).join(', ')}
-                  </span>
-                </>
-              )}
-              {session?.measurement_date && (
-                <>
-                  <span className="w-px h-3 bg-border/30" />
-                  <span className="text-muted-foreground/40 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    Gemeten {formatNlDate(session.measurement_date)}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Progress ring */}
-          {hasSession && (
-            <div className="flex items-center gap-4 ml-6">
-              <div className="text-right">
-                <span className="text-[22px] font-display font-extrabold text-foreground leading-none tabular-nums">{metReadyCount}/{metRequiredTotal}</span>
-                <p className="text-[10px] text-muted-foreground/35 font-medium mt-0.5">GEREED</p>
+      {/* ── Project hero ── */}
+      <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden mb-5">
+        <div className="px-6 py-5">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-[22px] font-display font-extrabold tracking-tight text-foreground leading-none truncate">{project.project_name}</h1>
+                <StatusBadge status={project.status} />
+              </div>
+              <div className="flex items-center gap-3 flex-wrap text-[11px]">
+                <span className="font-mono text-muted-foreground/35 tabular-nums">{project.project_number}</span>
+                {project.city && (
+                  <>
+                    <span className="w-[3px] h-[3px] rounded-full bg-border/60" />
+                    <span className="text-muted-foreground/40">{[project.address_line_1, project.city].filter(Boolean).join(', ')}</span>
+                  </>
+                )}
+                {session?.measurement_date && (
+                  <>
+                    <span className="w-[3px] h-[3px] rounded-full bg-border/60" />
+                    <span className="text-muted-foreground/40 flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Gemeten {formatNlDate(session.measurement_date)}
+                    </span>
+                  </>
+                )}
+                {project.planned_date && !session?.measurement_date && (
+                  <>
+                    <span className="w-[3px] h-[3px] rounded-full bg-border/60" />
+                    <span className="text-muted-foreground/40 flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Gepland {formatNlDate(project.planned_date)}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
-          )}
+
+            {/* Stats cluster */}
+            <div className="flex items-center gap-5 ml-6 shrink-0">
+              {[
+                { val: electrodes.length, label: 'Elektrodes', active: hasElectrodes },
+                { val: reportData?.stats.measurementCount || 0, label: 'Metingen', active: hasMeasurements },
+                { val: reportData?.stats.photosCount || 0, label: "Foto's", active: (reportData?.stats.photosCount || 0) > 0 },
+              ].map(s => (
+                <div key={s.label} className="text-center">
+                  <span className={cn(
+                    'text-[18px] font-display font-extrabold leading-none tabular-nums block',
+                    s.active ? 'text-foreground' : 'text-muted-foreground/20',
+                  )}>{s.val}</span>
+                  <span className="text-[9px] text-muted-foreground/30 font-semibold uppercase tracking-wider mt-1 block">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Quick stats row */}
-        {hasSession && (
-          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/20">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center">
-                <GroundingIcon size={16} />
-              </div>
-              <div>
-                <span className="text-[15px] font-bold text-foreground tabular-nums leading-none">{electrodes.length}</span>
-                <p className="text-[10px] text-muted-foreground/35 font-medium">Elektrodes</p>
-              </div>
+        {/* Next action banner */}
+        {nextAction && (
+          <button
+            onClick={() => {
+              if (nextAction.label === 'Project afronden') handleStatusChange('completed');
+              else navigate(`/projects/${id}/measurements`);
+            }}
+            disabled={nextAction.label === 'Project afronden' && (updateMut.isPending || !isReportReady)}
+            className="w-full flex items-center gap-4 px-6 py-3.5 border-t border-primary/10 bg-primary/[0.03] hover:bg-primary/[0.06] transition-colors text-left group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
+              <nextAction.icon className="h-4 w-4 text-primary" />
             </div>
-            <div className="w-px h-8 bg-border/20" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center">
-                <GroundingIcon size={16} />
-              </div>
-              <div>
-                <span className="text-[15px] font-bold text-foreground tabular-nums leading-none">{reportData?.stats.measurementCount || 0}</span>
-                <p className="text-[10px] text-muted-foreground/35 font-medium">Metingen</p>
-              </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-[13px] font-bold text-primary block">{nextAction.label}</span>
+              <span className="text-[11px] text-muted-foreground/40">{nextAction.sub}</span>
             </div>
-            <div className="w-px h-8 bg-border/20" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center">
-                <FileText className="h-4 w-4 text-muted-foreground/30" />
-              </div>
-              <div>
-                <span className="text-[15px] font-bold text-foreground tabular-nums leading-none">{reportData?.stats.photosCount || 0}</span>
-                <p className="text-[10px] text-muted-foreground/35 font-medium">Foto's</p>
-              </div>
-            </div>
-          </div>
+            <ChevronRight className="h-4 w-4 text-primary/30 group-hover:text-primary/50 transition-colors shrink-0" />
+          </button>
         )}
       </div>
 
-      {/* ── Info grid ── */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <DSection title="Projectoverzicht" icon="📋">
-          <DInfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
-          {project.completed_date && <DInfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
-          <DInfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ') || null} />
-          {project.cable_material && <DInfoRow label="Kabelmateriaal" value={project.cable_material} />}
-          {project.target_value && <DInfoRow label="Streefwaarde" value={`${project.target_value} Ω`} />}
-        </DSection>
+      {/* ── Two-column layout: info + checklist ── */}
+      <div className="grid grid-cols-12 gap-4 mb-5">
+        {/* Left: info cards */}
+        <div className="col-span-8 grid grid-cols-2 gap-3">
+          <DSection title="Projectoverzicht">
+            <DInfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
+            {project.completed_date && <DInfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
+            <DInfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ') || null} />
+            {project.cable_material && <DInfoRow label="Kabelmateriaal" value={project.cable_material} />}
+            {project.target_value && <DInfoRow label="Streefwaarde" value={`${project.target_value} Ω`} />}
+          </DSection>
 
-        <DSection title="Klant" icon="🏢"
-          action={client && <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] text-muted-foreground/40 hover:text-foreground" onClick={() => navigate(`/clients/${project.client_id}`)}>Bekijk →</Button>}>
-          {client ? (
-            <><DInfoRow label="Bedrijf" value={client.company_name} highlight /><DInfoRow label="Contact" value={client.contact_name} /><DInfoRow label="E-mail" value={client.email} /><DInfoRow label="Telefoon" value={client.phone} /></>
-          ) : <p className="text-[12px] text-muted-foreground/30 py-2">Geen klant toegewezen</p>}
-        </DSection>
+          <DSection title="Klant"
+            action={client && <button className="text-[10px] font-semibold text-primary/50 hover:text-primary transition-colors" onClick={() => navigate(`/clients/${project.client_id}`)}>Bekijk →</button>}>
+            {client ? (
+              <><DInfoRow label="Bedrijf" value={client.company_name} highlight /><DInfoRow label="Contact" value={client.contact_name} /><DInfoRow label="E-mail" value={client.email} /><DInfoRow label="Telefoon" value={client.phone} /></>
+            ) : <EmptyField text="Geen klant toegewezen" />}
+          </DSection>
 
-        <DSection title="Monteur" icon="👷"
-          action={tech && <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] text-muted-foreground/40 hover:text-foreground" onClick={() => navigate(`/technicians/${project.technician_id}`)}>Bekijk →</Button>}>
-          {tech ? (
-            <><DInfoRow label="Naam" value={tech.full_name} highlight /><DInfoRow label="Code" value={tech.employee_code} /></>
-          ) : <p className="text-[12px] text-muted-foreground/30 py-2">Geen monteur toegewezen</p>}
-        </DSection>
+          <DSection title="Monteur"
+            action={tech && <button className="text-[10px] font-semibold text-primary/50 hover:text-primary transition-colors" onClick={() => navigate(`/technicians/${project.technician_id}`)}>Bekijk →</button>}>
+            {tech ? (
+              <><DInfoRow label="Naam" value={tech.full_name} highlight /><DInfoRow label="Code" value={tech.employee_code} /></>
+            ) : <EmptyField text="Geen monteur toegewezen" />}
+          </DSection>
 
-        <DSection title="Apparatuur" icon="🔧"
-          action={equip && <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] text-muted-foreground/40 hover:text-foreground" onClick={() => navigate(`/equipment/${project.equipment_id}`)}>Bekijk →</Button>}>
-          {equip ? (
-            <><DInfoRow label="Apparaat" value={equip.device_name} highlight /><DInfoRow label="Merk/Model" value={[equip.brand, equip.model].filter(Boolean).join(' ') || null} /><DInfoRow label="Serienummer" value={equip.serial_number} /></>
-          ) : <p className="text-[12px] text-muted-foreground/30 py-2">Geen apparatuur toegewezen</p>}
-        </DSection>
+          <DSection title="Apparatuur"
+            action={equip && <button className="text-[10px] font-semibold text-primary/50 hover:text-primary transition-colors" onClick={() => navigate(`/equipment/${project.equipment_id}`)}>Bekijk →</button>}>
+            {equip ? (
+              <><DInfoRow label="Apparaat" value={equip.device_name} highlight /><DInfoRow label="Merk/Model" value={[equip.brand, equip.model].filter(Boolean).join(' ') || null} /><DInfoRow label="Serienr." value={equip.serial_number} /></>
+            ) : <EmptyField text="Geen apparatuur toegewezen" />}
+          </DSection>
+        </div>
+
+        {/* Right: gereedheid panel */}
+        <div className="col-span-4">
+          <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden sticky top-6">
+            {/* Header */}
+            <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
+              <h3 className="text-[11px] font-bold text-muted-foreground/45 uppercase tracking-[0.08em]">Gereedheid</h3>
+              <span className={cn(
+                'text-[10px] font-bold px-2.5 py-1 rounded-md tabular-nums',
+                allRequiredMet
+                  ? 'bg-[hsl(var(--status-completed))]/10 text-[hsl(var(--status-completed))]'
+                  : 'bg-muted/40 text-muted-foreground/40',
+              )}>
+                {allRequiredMet ? '✓ GEREED' : `${metReadyCount} / ${metRequiredTotal}`}
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="px-5 pt-4 pb-2">
+              <div className="w-full h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500',
+                    allRequiredMet ? 'bg-[hsl(var(--status-completed))]' : 'bg-primary/50',
+                  )}
+                  style={{ width: `${(metReadyCount / metRequiredTotal) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Checklist */}
+            <div className="px-4 pb-4">
+              {readinessItems.map((item, i) => (
+                <div key={item.label} className={cn(
+                  'flex items-center gap-2.5 px-1 py-2.5',
+                  i < readinessItems.length - 1 && 'border-b border-border/8',
+                )}>
+                  {item.met ? (
+                    <div className="w-5 h-5 rounded-md bg-[hsl(var(--status-completed))]/12 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--status-completed))]" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-md border-2 border-border/25 shrink-0" />
+                  )}
+                  <span className={cn(
+                    'text-[12px] flex-1 leading-tight',
+                    item.met ? 'text-foreground/70 font-medium' : 'text-muted-foreground/30',
+                  )}>{item.label}</span>
+                  {item.optional && (
+                    <span className="text-[8px] text-muted-foreground/20 font-bold uppercase tracking-widest">opt</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Workflow steps */}
+            <div className="border-t border-border/20">
+              {[
+                { step: 1, label: 'Meetopstelling', done: hasSession, detail: hasSession ? `${electrodes.length} elektrodes · ${reportData?.stats.measurementCount || 0} metingen` : 'Nog niet gestart', onClick: () => navigate(`/projects/${id}/measurements`) },
+                { step: 2, label: 'Rapport', done: isReportReady, detail: isReportReady ? 'Alle gegevens compleet' : 'Voltooi eerst de metingen', onClick: () => navigate(`/projects/${id}/report`) },
+              ].map(wf => (
+                <button key={wf.step} onClick={wf.onClick}
+                  className="w-full flex items-center gap-3 px-5 py-3 border-b border-border/10 last:border-0 hover:bg-muted/20 transition-colors text-left group">
+                  <span className={cn(
+                    'w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0',
+                    wf.done ? 'bg-[hsl(var(--status-completed))]/12 text-[hsl(var(--status-completed))]' : 'bg-muted/50 text-muted-foreground/25',
+                  )}>{wf.done ? '✓' : wf.step}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[12px] font-semibold text-foreground/80 block">{wf.label}</span>
+                    <span className="text-[10px] text-muted-foreground/30 block truncate">{wf.detail}</span>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/15 group-hover:text-muted-foreground/40 transition-colors shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Notes */}
       {project.notes && (
-        <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5 mb-5">
+        <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5 mb-4">
           <h3 className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.08em] mb-2">Notities</h3>
           <p className="text-[13px] text-foreground/80 whitespace-pre-wrap leading-relaxed">{project.notes}</p>
         </div>
@@ -486,7 +576,7 @@ export default function ProjectDetail() {
         const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
         if (projectBestanden.length === 0) return null;
         return (
-          <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden mb-5">
+          <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden mb-4">
             <div className="px-5 py-3 border-b border-border/30 bg-muted/15">
               <h3 className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.08em]">Projectbestanden</h3>
             </div>
@@ -509,146 +599,27 @@ export default function ProjectDetail() {
         );
       })()}
 
-      {/* ── Workflow section ── */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        {/* Meetopstelling */}
-        <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold',
-                hasSession ? 'bg-[hsl(var(--status-completed))]/15 text-[hsl(var(--status-completed))]' : 'bg-muted/60 text-muted-foreground/30',
-              )}>1</span>
-              <h3 className="text-[12px] font-bold text-foreground">Meetopstelling</h3>
-            </div>
-            <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] px-3" onClick={() => navigate(`/projects/${id}/measurements`)}>
-              {hasSession ? 'Openen' : 'Starten'} →
-            </Button>
-          </div>
-          <div className="p-5">
-            {hasSession ? (
-              <div className="space-y-0">
-                <DInfoRow label="Datum" value={formatNlDate(session?.measurement_date)} />
-                <DInfoRow label="Elektrodes" value={String(electrodes.length)} />
-                <DInfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} />
-              </div>
-            ) : (
-              <div className="py-4 text-center">
-                <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center mx-auto mb-2">
-                  <Play className="h-4 w-4 text-muted-foreground/20" />
-                </div>
-                <p className="text-[12px] text-muted-foreground/30">Nog niet gestart</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Rapport */}
-        <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold',
-                isReportReady ? 'bg-[hsl(var(--status-completed))]/15 text-[hsl(var(--status-completed))]' : 'bg-muted/60 text-muted-foreground/30',
-              )}>2</span>
-              <h3 className="text-[12px] font-bold text-foreground">Rapport</h3>
-            </div>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] px-3" onClick={() => navigate(`/projects/${id}/report`)}>
-                Bekijk →
-              </Button>
-            </div>
-          </div>
-          <div className="p-5">
-            {isReportReady ? (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[hsl(var(--status-completed))]/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-[hsl(var(--status-completed))]" />
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-foreground">Rapport gereed</p>
-                  <p className="text-[11px] text-muted-foreground/35">Alle gegevens compleet</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/8 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-amber-500/60" />
-                </div>
-                <div>
-                  <p className="text-[13px] font-medium text-foreground/70">Niet compleet</p>
-                  <p className="text-[11px] text-muted-foreground/35">Voltooi eerst de metingen</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Gereedheid */}
-        <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold',
-                allRequiredMet ? 'bg-[hsl(var(--status-completed))]/15 text-[hsl(var(--status-completed))]' : 'bg-muted/60 text-muted-foreground/30',
-              )}>3</span>
-              <h3 className="text-[12px] font-bold text-foreground">Gereedheid</h3>
-            </div>
-            <span className={cn(
-              'text-[10px] font-bold px-2 py-0.5 rounded-md tabular-nums',
-              allRequiredMet
-                ? 'bg-[hsl(var(--status-completed))]/10 text-[hsl(var(--status-completed))]'
-                : 'bg-muted/40 text-muted-foreground/40',
-            )}>
-              {allRequiredMet ? '✓ GEREED' : `${metReadyCount}/${metRequiredTotal}`}
-            </span>
-          </div>
-          <div className="p-4">
-            {readinessItems.map((item, i) => (
-              <div key={item.label} className={cn(
-                'flex items-center gap-2.5 py-2',
-                i < readinessItems.length - 1 && 'border-b border-border/10',
-              )}>
-                {item.met ? (
-                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))] shrink-0" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border-2 border-border/30 shrink-0" />
-                )}
-                <span className={cn(
-                  'text-[12px] flex-1',
-                  item.met ? 'text-foreground/70 font-medium' : 'text-muted-foreground/35',
-                  item.optional && !item.met && 'italic',
-                )}>{item.label}</span>
-                {item.optional && (
-                  <span className="text-[9px] text-muted-foreground/25 font-medium uppercase tracking-wider">opt</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Bottom actions ── */}
-      <div className="bg-card rounded-xl border border-border/50 shadow-sm px-5 py-4 flex items-center justify-between">
-        <div>
+      {/* ── Bottom action bar ── */}
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-3">
           {project.status === 'planned' ? (
-            <Button className="rounded-lg h-10 px-6 font-bold text-[13px] tracking-wide shadow-[0_2px_8px_hsl(var(--primary)/0.2)]"
+            <Button className="rounded-lg h-9 px-5 font-bold text-[12px] tracking-wide shadow-sm"
               onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending || !isReportReady}>
-              <CheckCircle2 className="mr-2 h-4 w-4" /> PROJECT AFRONDEN
+              <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> PROJECT AFRONDEN
             </Button>
           ) : (
-            <Button variant="outline" className="rounded-lg h-10 px-5 text-[13px] font-semibold"
+            <Button variant="outline" className="rounded-lg h-9 px-4 text-[12px] font-semibold"
               onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}>
-              <RotateCcw className="mr-2 h-4 w-4" /> Heropenen
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Heropenen
             </Button>
           )}
           {!isReportReady && project.status === 'planned' && (
-            <span className="ml-3 text-[11px] text-muted-foreground/30">Voltooi eerst alle vereiste onderdelen</span>
+            <span className="text-[11px] text-muted-foreground/25">Voltooi eerst alle vereiste onderdelen</span>
           )}
         </div>
         <button onClick={() => setShowDeleteConfirm(true)} disabled={deleteMut.isPending}
-          className="flex items-center gap-1.5 text-[11px] font-medium text-destructive/40 hover:text-destructive/70 transition-colors">
-          <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+          className="flex items-center gap-1.5 text-[11px] font-medium text-destructive/30 hover:text-destructive/60 transition-colors">
+          <Trash2 className="h-3 w-3" /> Verwijderen
         </button>
       </div>
 
@@ -688,30 +659,29 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function DSection({ title, icon, children, action }: { title: string; icon?: string; children: React.ReactNode; action?: React.ReactNode }) {
+function EmptyField({ text }: { text: string }) {
+  return <p className="text-[11px] text-muted-foreground/25 py-3">{text}</p>;
+}
+
+function DSection({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-      <div className="px-5 py-3 border-b border-border/30 bg-muted/15 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold text-muted-foreground/45 uppercase tracking-[0.08em] flex items-center gap-2">
-          {icon && <span className="text-[13px]">{icon}</span>}
-          {title}
-        </h3>
+    <div className="bg-card rounded-xl border border-border/40 shadow-sm overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-border/20 bg-muted/10 flex items-center justify-between">
+        <h3 className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.08em]">{title}</h3>
         {action}
       </div>
-      <div className="p-5">
-        {children}
-      </div>
+      <div className="px-4 py-3">{children}</div>
     </div>
   );
 }
 
 function DInfoRow({ label, value, highlight = false }: { label: string; value?: string | null; highlight?: boolean }) {
   return (
-    <div className="flex items-center py-2 border-b border-border/10 last:border-0">
-      <span className="text-[12px] text-muted-foreground/40 w-32 shrink-0">{label}</span>
+    <div className="flex items-center py-1.5 border-b border-border/8 last:border-0">
+      <span className="text-[11px] text-muted-foreground/35 w-28 shrink-0">{label}</span>
       <span className={cn(
-        'text-[12px]',
-        value ? (highlight ? 'text-foreground font-semibold' : 'text-foreground/80') : 'text-muted-foreground/20',
+        'text-[11px]',
+        value ? (highlight ? 'text-foreground font-semibold' : 'text-foreground/75') : 'text-muted-foreground/15',
       )}>{value || '—'}</span>
     </div>
   );
