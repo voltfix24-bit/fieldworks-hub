@@ -1,5 +1,5 @@
 // react-leaflet v4 + leaflet v1.9
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer } from 'react-leaflet/MapContainer';
 import { TileLayer } from 'react-leaflet/TileLayer';
@@ -34,6 +34,46 @@ const CITY_COORDS: Record<string, [number, number]> = {
   eindhoven: [51.4416, 5.4697],
   'den haag': [52.0705, 4.3007],
   groningen: [53.2194, 6.5665],
+  tilburg: [51.5555, 5.0913],
+  almere: [52.3508, 5.2647],
+  breda: [51.5719, 4.7683],
+  nijmegen: [51.8426, 5.8527],
+  arnhem: [51.9851, 5.8987],
+  haarlem: [52.3874, 4.6462],
+  enschede: [52.2215, 6.8937],
+  apeldoorn: [52.2112, 5.9699],
+  amersfoort: [52.1561, 5.3878],
+  'den bosch': [51.6998, 5.3049],
+  "'s-hertogenbosch": [51.6998, 5.3049],
+  zwolle: [52.5168, 6.0830],
+  zoetermeer: [52.0575, 4.4931],
+  leiden: [52.1601, 4.4970],
+  maastricht: [50.8514, 5.6910],
+  dordrecht: [51.8133, 4.6901],
+  delft: [52.0116, 4.3571],
+  alkmaar: [52.6324, 4.7534],
+  deventer: [52.2551, 6.1639],
+  leeuwarden: [53.2012, 5.7999],
+  hilversum: [52.2292, 5.1669],
+  venlo: [51.3704, 6.1724],
+  heerlen: [50.8882, 5.9815],
+  roosendaal: [51.5308, 4.4655],
+  oss: [51.7654, 5.5183],
+  gouda: [52.0115, 4.7104],
+  zaandam: [52.4389, 4.8264],
+  ede: [52.0478, 5.6651],
+  emmen: [52.7792, 6.9008],
+  bergen_op_zoom: [51.4949, 4.2882],
+  veenendaal: [52.0281, 5.5567],
+  helmond: [51.4792, 5.6571],
+  purmerend: [52.5050, 4.9597],
+  schiedam: [51.9217, 4.3989],
+  vlaardingen: [51.9120, 4.3421],
+  almelo: [52.3564, 6.6625],
+  hoorn: [52.6424, 5.0594],
+  hoofddorp: [52.3040, 4.6911],
+  capelle_aan_den_ijssel: [51.9291, 4.5781],
+  spijkenisse: [51.8450, 4.3290],
 };
 const DEFAULT_CENTER: [number, number] = [52.1326, 5.2913];
 const NL_BOUNDS: L.LatLngBoundsExpression = [
@@ -43,10 +83,93 @@ const NL_BOUNDS: L.LatLngBoundsExpression = [
 
 type ProjectStatus = 'planned' | 'completed';
 
-function getCoords(project: any): [number, number] {
-  if (project.latitude && project.longitude) return [project.latitude, project.longitude];
-  const city = (project.city || '').toLowerCase().trim();
-  return CITY_COORDS[city] || DEFAULT_CENTER;
+/* ── Geocoding via PDOK Locatieserver (free Dutch gov API) ── */
+const geocodeCache = new Map<string, [number, number] | null>();
+
+function buildAddressQuery(project: any): string | null {
+  const parts: string[] = [];
+  if (project.address_line_1) parts.push(project.address_line_1);
+  if (project.postal_code) parts.push(project.postal_code);
+  if (project.city) parts.push(project.city);
+  if (parts.length === 0) return null;
+  return parts.join(' ');
+}
+
+async function geocodeAddress(query: string): Promise<[number, number] | null> {
+  if (geocodeCache.has(query)) return geocodeCache.get(query)!;
+  try {
+    const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(query)}&rows=1&fq=type:adres OR type:postcode OR type:woonplaats`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('PDOK fetch failed');
+    const data = await res.json();
+    const doc = data?.response?.docs?.[0];
+    if (doc?.centroide_ll) {
+      // PDOK returns "POINT(lng lat)"
+      const match = doc.centroide_ll.match(/POINT\(([\d.]+)\s+([\d.]+)\)/);
+      if (match) {
+        const lng = parseFloat(match[1]);
+        const lat = parseFloat(match[2]);
+        if (lat >= 50.5 && lat <= 53.8 && lng >= 3.0 && lng <= 7.5) {
+          const coords: [number, number] = [lat, lng]; // Leaflet expects [lat, lng]
+          geocodeCache.set(query, coords);
+          return coords;
+        }
+      }
+    }
+    geocodeCache.set(query, null);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function getCoordsFallback(project: any): [number, number] | null {
+  const city = (project.city || '').toLowerCase().trim().replace(/['']/g, '').replace(/\s+/g, '_');
+  return CITY_COORDS[city] || CITY_COORDS[city.replace(/_/g, ' ')] || null;
+}
+
+/** Hook: geocode all projects and return a map of id → [lat, lng] */
+function useGeocodedCoords(projects: any[]) {
+  const [coords, setCoords] = useState<Record<string, [number, number]>>({});
+  const processed = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (!projects.length) return;
+    let cancelled = false;
+
+    const geocodeAll = async () => {
+      const updates: Record<string, [number, number]> = {};
+      // Process in small batches to avoid hammering the API
+      for (const project of projects) {
+        if (cancelled) break;
+        if (processed.current.has(project.id)) continue;
+        processed.current.add(project.id);
+
+        const query = buildAddressQuery(project);
+        if (query) {
+          const result = await geocodeAddress(query);
+          if (result) {
+            updates[project.id] = result;
+            continue;
+          }
+        }
+        // Fallback to city lookup
+        const fallback = getCoordsFallback(project);
+        if (fallback) {
+          updates[project.id] = fallback;
+        }
+        // else: no coords — project won't show on map
+      }
+      if (!cancelled && Object.keys(updates).length > 0) {
+        setCoords(prev => ({ ...prev, ...updates }));
+      }
+    };
+
+    geocodeAll();
+    return () => { cancelled = true; };
+  }, [projects]);
+
+  return coords;
 }
 
 function createMarkerIcon(status: ProjectStatus, selected: boolean) {
@@ -472,9 +595,17 @@ export default function MapPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  // Geocode all project addresses
+  const geocodedCoords = useGeocodedCoords(projects);
+
   const filtered = useMemo(() => {
     return projects.filter(p => filters[p.status] !== false);
   }, [projects, filters]);
+
+  // Only show projects that have coordinates
+  const mappableProjects = useMemo(() => {
+    return filtered.filter(p => geocodedCoords[p.id]);
+  }, [filtered, geocodedCoords]);
 
   const plannedCount = projects.filter(p => p.status === 'planned').length;
   const selectedProject = projects.find(p => p.id === selectedId);
@@ -519,8 +650,8 @@ export default function MapPage() {
             });
           }}
         >
-          {filtered.map(project => {
-            const coords = getCoords(project);
+          {mappableProjects.map(project => {
+            const coords = geocodedCoords[project.id];
             const icon = createMarkerIcon(project.status as ProjectStatus, selectedId === project.id);
             return (
               <Marker
@@ -540,7 +671,7 @@ export default function MapPage() {
         <ZoomControls />
       </MapContainer>
 
-      <FilterPanel filters={filters} setFilters={setFilters} visibleCount={filtered.length} />
+      <FilterPanel filters={filters} setFilters={setFilters} visibleCount={mappableProjects.length} />
       <StatMiniCard count={plannedCount} />
 
       {/* New project button */}
