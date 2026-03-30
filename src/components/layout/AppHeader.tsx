@@ -1,5 +1,4 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useTenant } from '@/contexts/TenantContext';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -12,7 +11,6 @@ import { useTheme } from '@/hooks/use-theme';
 
 export function AppHeader() {
   const { user, profile, signOut } = useAuth();
-  const { tenant } = useTenant();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { theme, toggleTheme } = useTheme();
@@ -23,59 +21,54 @@ export function AppHeader() {
     ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : user?.email?.[0]?.toUpperCase() || '?';
 
-  const rolLabel = 'Beheerder';
-
   return (
-    <header className="h-[56px] border-b border-border/25 bg-card/50 backdrop-blur-xl flex items-center justify-between px-7 shrink-0">
+    <header className="h-14 border-b border-border/20 bg-card/40 backdrop-blur-xl flex items-center px-7 shrink-0 gap-6">
       {/* Search */}
-      <div className="flex items-center gap-2.5 bg-background/60 border border-border/30 rounded-xl px-4 py-[7px] max-w-md w-full transition-all duration-200 focus-within:border-primary/30 focus-within:bg-card focus-within:shadow-[0_0_0_3px_hsl(var(--primary)/0.06)]">
-        <Search className="h-[15px] w-[15px] text-muted-foreground/35" />
+      <div className="flex items-center gap-3 flex-1 max-w-lg bg-background/50 border border-border/25 rounded-xl px-4 py-[7px] transition-all duration-200 focus-within:border-primary/25 focus-within:bg-card focus-within:shadow-[0_0_0_3px_hsl(var(--primary)/0.05)]">
+        <Search className="h-[14px] w-[14px] text-muted-foreground/30 shrink-0" />
         <input
           type="text"
-          placeholder="Zoek project, klant of locatie..."
-          className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/30 outline-none flex-1"
+          placeholder="Zoek project, klant of locatie…"
+          className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/25 outline-none w-full"
         />
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-1">
-        {[
-          { icon: Bell, onClick: undefined, title: 'Notificaties' },
-          { icon: theme === 'light' ? Moon : Sun, onClick: toggleTheme, title: theme === 'light' ? 'Donkere modus' : 'Lichte modus' },
-          { icon: Clock, onClick: undefined, title: 'Recente activiteit' },
-        ].map(({ icon: Icon, onClick, title }) => (
-          <button
-            key={title}
-            onClick={onClick}
-            title={title}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-muted/40 transition-all duration-150 group"
-          >
-            <Icon className="h-[16px] w-[16px] text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors" />
-          </button>
-        ))}
+      {/* Spacer */}
+      <div className="flex-1" />
 
-        <div className="w-px h-7 bg-border/20 mx-2.5" />
+      {/* Actions */}
+      <div className="flex items-center">
+        <HeaderIconButton icon={Bell} title="Notificaties" />
+        <HeaderIconButton
+          icon={theme === 'light' ? Moon : Sun}
+          title={theme === 'light' ? 'Donkere modus' : 'Lichte modus'}
+          onClick={toggleTheme}
+        />
+        <HeaderIconButton icon={Clock} title="Recente activiteit" />
 
+        <div className="w-px h-5 bg-border/15 mx-3" />
+
+        {/* Profile */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 rounded-xl px-2.5 py-1.5 hover:bg-muted/30 transition-all duration-150">
+            <button className="flex items-center gap-2.5 rounded-xl px-2 py-1 hover:bg-muted/25 transition-colors">
               <div className="text-right hidden sm:block">
-                <p className="text-[13px] font-semibold text-foreground leading-tight">
+                <p className="text-[12px] font-semibold text-foreground leading-tight">
                   {profile?.full_name || 'Gebruiker'}
                 </p>
-                <p className="text-[10px] text-muted-foreground/35 font-medium">{rolLabel}</p>
+                <p className="text-[10px] text-muted-foreground/30 font-medium">Beheerder</p>
               </div>
-              <Avatar className="h-8 w-8 ring-2 ring-border/20 ring-offset-1 ring-offset-card">
-                <AvatarFallback className="bg-sidebar text-white text-[10px] font-bold tracking-wide">
+              <Avatar className="h-[30px] w-[30px] ring-[1.5px] ring-border/25 ring-offset-1 ring-offset-background">
+                <AvatarFallback className="bg-sidebar text-white text-[10px] font-bold tracking-wider">
                   {initials}
                 </AvatarFallback>
               </Avatar>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuLabel>
-              <p className="font-medium">{profile?.full_name || user?.email}</p>
-              <p className="text-xs text-muted-foreground/50 font-normal">{user?.email}</p>
+              <p className="font-medium text-[13px]">{profile?.full_name || user?.email}</p>
+              <p className="text-[11px] text-muted-foreground/45 font-normal">{user?.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/settings/profile')}>
@@ -92,5 +85,17 @@ export function AppHeader() {
         </DropdownMenu>
       </div>
     </header>
+  );
+}
+
+function HeaderIconButton({ icon: Icon, title, onClick }: { icon: any; title: string; onClick?: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground/35 hover:text-muted-foreground/60 hover:bg-muted/30 transition-all duration-150"
+    >
+      <Icon className="h-[15px] w-[15px]" />
+    </button>
   );
 }
