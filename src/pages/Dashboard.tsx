@@ -243,38 +243,43 @@ export default function Dashboard() {
   const actionRequired = overdueProjects.length;
 
   return (
-    <div className="animate-fade-in max-w-[1080px]">
-      {/* Page intro */}
-      <div className="flex items-start justify-between mb-12">
-        <div>
-          <p className="text-[11px] text-muted-foreground/40 font-semibold uppercase tracking-[0.2em] mb-3">
-            {greeting}
-          </p>
-          <h1 className="font-display text-[28px] font-black text-foreground tracking-[-0.02em] leading-[1.1]">
-            {profile?.full_name || 'Gebruiker'}
-          </h1>
-          <p className="text-[13px] text-muted-foreground/35 mt-2.5 leading-relaxed">
-            {todayProjects.length > 0
-              ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag gepland`
-              : 'Geen projecten vandaag gepland'}{actionRequired > 0 ? ` · ${actionRequired} achterstallig` : ''}
-          </p>
+    <div className="animate-fade-in max-w-[1140px]">
+      {/* ── Hero strip ── */}
+      <div className="relative bg-card rounded-2xl border border-border/15 p-8 pb-7 mb-8 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)]">
+        {/* Decorative accent line */}
+        <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary via-primary/60 to-transparent" />
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-[0.25em] mb-2">
+              {greeting}
+            </p>
+            <h1 className="font-display text-[34px] font-black text-foreground tracking-[-0.03em] leading-[1]">
+              {profile?.full_name || 'Gebruiker'}
+            </h1>
+            <p className="text-[13px] text-muted-foreground/40 mt-3 leading-relaxed font-medium">
+              {todayProjects.length > 0
+                ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag gepland`
+                : 'Geen projecten vandaag gepland'}
+              {actionRequired > 0 ? ` · ${actionRequired} actie vereist` : ''}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/projects/new')}
+            className="flex items-center gap-2.5 bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-xl hover:brightness-110 transition-all shadow-[0_2px_8px_hsl(var(--primary)/0.3)] hover:shadow-[0_4px_16px_hsl(var(--primary)/0.35)]"
+          >
+            <Plus className="h-4 w-4" /> Nieuw Project
+          </button>
         </div>
-        <button
-          onClick={() => navigate('/projects/new')}
-          className="flex items-center gap-2 bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-[10px] hover:opacity-90 transition-all shadow-[0_1px_2px_hsl(var(--primary)/0.25)] mt-1"
-        >
-          <Plus className="h-3.5 w-3.5" /> Nieuw Project
-        </button>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-3 gap-5 mb-8">
         <DeskStatCard
           label="Gepland"
           value={planned.length}
           icon={Calendar}
           accentClass="text-primary"
-          accentBg="bg-primary/[0.06]"
+          accentBg="bg-primary/[0.08]"
           barClass="bg-primary"
           action={() => navigate('/planning?view=kalender')}
           actionLabel="Bekijk planning"
@@ -284,7 +289,7 @@ export default function Dashboard() {
           value={completed.length}
           icon={CheckCircle2}
           accentClass="text-field-green"
-          accentBg="bg-field-green-bg"
+          accentBg="bg-field-green/[0.08]"
           barClass="bg-field-green"
           valueClass="text-field-green"
           footnote="Totaal afgerond"
@@ -294,43 +299,43 @@ export default function Dashboard() {
           value={actionRequired}
           icon={AlertTriangle}
           accentClass="text-field-red"
-          accentBg="bg-field-red-bg"
+          accentBg="bg-field-red/[0.08]"
           barClass="bg-field-red"
           valueClass="text-field-red"
           footnote={actionRequired > 0 ? 'Directe actie vereist' : 'Alles op schema'}
         />
       </div>
 
-      {/* Overdue alert */}
+      {/* ── Overdue alert ── */}
       {overdueProjects.length > 0 && (
         <button
           onClick={() => navigate('/planning?view=kalender')}
-          className="w-full flex items-center gap-4 bg-field-red-bg/40 border border-field-red/[0.08] rounded-[10px] px-5 py-3 mb-8 hover:bg-field-red-bg/60 transition-colors group text-left"
+          className="w-full flex items-center gap-4 bg-field-red/[0.04] border border-field-red/10 rounded-xl px-6 py-4 mb-8 hover:bg-field-red/[0.07] transition-all group text-left"
         >
-          <div className="w-8 h-8 rounded-lg bg-field-red/[0.08] flex items-center justify-center shrink-0">
-            <AlertTriangle className="h-[14px] w-[14px] text-field-red" />
+          <div className="w-10 h-10 rounded-xl bg-field-red/[0.08] flex items-center justify-center shrink-0">
+            <AlertTriangle className="h-4 w-4 text-field-red" />
           </div>
           <div className="flex-1">
-            <p className="text-[12px] font-semibold text-field-red">
+            <p className="text-[13px] font-bold text-field-red">
               {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
             </p>
-            <p className="text-[10px] text-field-red/50 mt-0.5">Bekijk in de planning</p>
+            <p className="text-[11px] text-field-red/40 mt-0.5 font-medium">Bekijk in de planning →</p>
           </div>
-          <ArrowRight className="h-3.5 w-3.5 text-field-red/30 group-hover:text-field-red/60 transition-colors" />
+          <ArrowRight className="h-4 w-4 text-field-red/20 group-hover:text-field-red/50 group-hover:translate-x-0.5 transition-all" />
         </button>
       )}
 
-      {/* Recent projects */}
-      <div className="bg-card rounded-[10px] border border-border/20 overflow-hidden shadow-[0_1px_2px_hsl(var(--foreground)/0.02)]">
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-border/[0.08]">
+      {/* ── Recent projects table ── */}
+      <div className="bg-card rounded-2xl border border-border/15 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)]">
+        <div className="flex items-center justify-between px-7 py-5 border-b border-border/10">
           <div>
-            <h3 className="text-[13px] font-bold text-foreground tracking-tight">Recente Projecten</h3>
-            <p className="text-[10px] text-muted-foreground/30 mt-0.5 font-medium">{projects?.length || 0} projecten totaal</p>
+            <h3 className="text-[15px] font-bold text-foreground tracking-[-0.01em]">Recente Projecten</h3>
+            <p className="text-[11px] text-muted-foreground/25 mt-1 font-medium">{projects?.length || 0} projecten totaal</p>
           </div>
           {projects && projects.length > 0 && (
             <button
               onClick={() => navigate('/projects')}
-              className="text-[10px] font-bold text-primary/70 hover:text-primary transition-colors uppercase tracking-[0.12em]"
+              className="text-[10px] font-bold text-primary/60 hover:text-primary transition-colors uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg hover:bg-primary/[0.04]"
             >
               Alle projecten →
             </button>
@@ -339,12 +344,12 @@ export default function Dashboard() {
 
         {/* Column labels */}
         {recentProjects.length > 0 && (
-          <div className="flex items-center px-6 py-2 border-b border-border/[0.06] bg-muted/[0.02]">
-            <div className="w-8 mr-4" />
-            <span className="flex-1 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/20">Project</span>
-            <span className="w-28 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/20 text-right hidden lg:block">Datum</span>
-            <span className="w-24 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/20 text-center">Status</span>
-            <span className="w-5" />
+          <div className="flex items-center px-7 py-2.5 border-b border-border/[0.06] bg-muted/[0.015]">
+            <div className="w-10 mr-4" />
+            <span className="flex-1 text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground/20">Project</span>
+            <span className="w-32 text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground/20 text-right hidden lg:block">Datum</span>
+            <span className="w-28 text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground/20 text-center">Status</span>
+            <span className="w-6" />
           </div>
         )}
 
@@ -355,33 +360,33 @@ export default function Dashboard() {
                 key={p.id}
                 onClick={() => navigate(`/projects/${p.id}`)}
                 className={cn(
-                  'w-full flex items-center px-6 py-2.5 hover:bg-muted/[0.06] transition-all duration-100 text-left group',
-                  i < recentProjects.length - 1 && 'border-b border-border/[0.05]'
+                  'w-full flex items-center px-7 py-3.5 hover:bg-muted/[0.04] transition-all duration-150 text-left group',
+                  i < recentProjects.length - 1 && 'border-b border-border/[0.04]'
                 )}
               >
-                <div className="w-8 h-8 rounded-lg bg-muted/15 flex items-center justify-center shrink-0 mr-4 group-hover:bg-muted/30 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-muted/10 flex items-center justify-center shrink-0 mr-4 group-hover:bg-muted/20 transition-colors">
                   <ProjectIcon status={p.status} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12.5px] font-semibold text-foreground truncate leading-tight">{p.project_name}</p>
-                  <p className="text-[10.5px] text-muted-foreground/30 truncate mt-0.5">
+                  <p className="text-[13px] font-semibold text-foreground truncate leading-tight">{p.project_name}</p>
+                  <p className="text-[11px] text-muted-foreground/25 truncate mt-1 font-medium">
                     {[p.project_number, p.city].filter(Boolean).join(' · ')}
                   </p>
                 </div>
-                <span className="w-28 text-[11px] text-muted-foreground/30 text-right hidden lg:block font-medium shrink-0">
+                <span className="w-32 text-[11px] text-muted-foreground/30 text-right hidden lg:block font-medium shrink-0">
                   {p.planned_date ? formatNlDate(p.planned_date) : '—'}
                 </span>
-                <span className="w-24 flex justify-center shrink-0">
+                <span className="w-28 flex justify-center shrink-0">
                   <ProjectStatusBadge project={p} />
                 </span>
-                <ChevronRight className="w-5 h-3.5 text-muted-foreground/10 group-hover:text-muted-foreground/25 transition-colors shrink-0" />
+                <ChevronRight className="w-6 h-4 text-muted-foreground/8 group-hover:text-muted-foreground/20 group-hover:translate-x-0.5 transition-all shrink-0" />
               </button>
             ))}
           </div>
         ) : (
-          <div className="px-6 py-16 text-center">
-            <FolderKanban className="h-6 w-6 text-muted-foreground/10 mx-auto mb-3" />
-            <p className="text-[12px] text-muted-foreground/25">Nog geen projecten</p>
+          <div className="px-7 py-20 text-center">
+            <FolderKanban className="h-7 w-7 text-muted-foreground/8 mx-auto mb-3" />
+            <p className="text-[13px] text-muted-foreground/20 font-medium">Nog geen projecten</p>
           </div>
         )}
       </div>
@@ -397,21 +402,21 @@ function DeskStatCard({ label, value, icon: Icon, accentClass, accentBg, barClas
   action?: () => void; actionLabel?: string;
 }) {
   return (
-    <div className="bg-card rounded-[10px] border border-border/20 p-5 relative overflow-hidden shadow-[0_1px_2px_hsl(var(--foreground)/0.02)] hover:shadow-[0_2px_8px_hsl(var(--foreground)/0.04)] hover:border-border/30 transition-all duration-200">
-      <div className={`absolute top-0 left-0 w-full h-[2px] ${barClass} opacity-80`} />
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/35">{label}</span>
-        <div className={`w-8 h-8 rounded-lg ${accentBg} flex items-center justify-center`}>
-          <Icon className={`h-[14px] w-[14px] ${accentClass}`} />
+    <div className="bg-card rounded-2xl border border-border/15 p-6 relative overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)] hover:shadow-[0_4px_16px_hsl(var(--foreground)/0.06)] hover:border-border/25 transition-all duration-300 group">
+      <div className={`absolute top-0 left-0 w-full h-[3px] ${barClass} opacity-70 group-hover:opacity-100 transition-opacity`} />
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-muted-foreground/30">{label}</span>
+        <div className={`w-10 h-10 rounded-xl ${accentBg} flex items-center justify-center transition-transform group-hover:scale-105`}>
+          <Icon className={`h-4 w-4 ${accentClass}`} />
         </div>
       </div>
-      <p className={`font-display text-[32px] font-black leading-none tracking-tight ${valueClass || 'text-foreground'}`}>{value}</p>
+      <p className={`font-display text-[40px] font-black leading-none tracking-[-0.02em] ${valueClass || 'text-foreground'}`}>{value}</p>
       {action ? (
-        <button onClick={action} className={`flex items-center gap-1 mt-4 text-[10px] font-semibold ${accentClass} hover:underline`}>
-          {actionLabel} <ArrowRight className="h-2.5 w-2.5" />
+        <button onClick={action} className={`flex items-center gap-1.5 mt-5 text-[10px] font-bold ${accentClass} hover:underline uppercase tracking-[0.1em]`}>
+          {actionLabel} <ArrowRight className="h-3 w-3" />
         </button>
       ) : (
-        <p className="text-[10px] text-muted-foreground/25 mt-4 font-medium">{footnote}</p>
+        <p className="text-[10px] text-muted-foreground/20 mt-5 font-semibold tracking-wide">{footnote}</p>
       )}
     </div>
   );
