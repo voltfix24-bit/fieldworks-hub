@@ -239,57 +239,63 @@ export default function Dashboard() {
   }
 
   // ── Desktop layout ──
-  const recentProjects = projects?.slice(0, 8) ?? [];
+  const recentProjects = projects?.slice(0, 10) ?? [];
   const actionRequired = overdueProjects.length;
 
   return (
-    <div className="animate-fade-in max-w-[1140px]">
-      {/* ── Hero strip ── */}
-      <div className="relative bg-card rounded-2xl border border-border/15 p-8 pb-7 mb-8 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)]">
-        {/* Decorative accent line */}
-        <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-[0.25em] mb-2">
-              {greeting}
-            </p>
-            <h1 className="font-display text-[34px] font-black text-foreground tracking-[-0.03em] leading-[1]">
-              {profile?.full_name || 'Gebruiker'}
-            </h1>
-            <p className="text-[13px] text-muted-foreground/40 mt-3 leading-relaxed font-medium">
-              {todayProjects.length > 0
-                ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag gepland`
-                : 'Geen projecten vandaag gepland'}
-              {actionRequired > 0 ? ` · ${actionRequired} actie vereist` : ''}
-            </p>
+    <div className="animate-fade-in max-w-[1100px]">
+      {/* ── Hero strip — compact, structured ── */}
+      <div className="relative bg-card rounded-xl border border-border/20 px-7 py-5 mb-6 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.04)]">
+        <div className="absolute top-0 left-0 w-28 h-[3px] bg-primary rounded-br-full" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <div className="w-11 h-11 rounded-xl bg-primary/[0.07] flex items-center justify-center shrink-0">
+              <Zap className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3 mb-0.5">
+                <h1 className="font-display text-[22px] font-black text-foreground tracking-[-0.02em] leading-none">
+                  {greeting}, {firstName || 'Gebruiker'}
+                </h1>
+                {todayProjects.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-md bg-primary/[0.08] text-primary text-[9px] font-bold uppercase tracking-[0.1em]">
+                    {todayProjects.length} vandaag
+                  </span>
+                )}
+              </div>
+              <p className="text-[12px] text-muted-foreground/45 font-medium mt-1">
+                {planned.length} gepland · {completed.length} afgerond
+                {actionRequired > 0 && <span className="text-field-red"> · {actionRequired} actie vereist</span>}
+              </p>
+            </div>
           </div>
           <button
             onClick={() => navigate('/projects/new')}
-            className="flex items-center gap-2.5 bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-xl hover:brightness-110 transition-all shadow-[0_2px_8px_hsl(var(--primary)/0.3)] hover:shadow-[0_4px_16px_hsl(var(--primary)/0.35)]"
+            className="flex items-center gap-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-lg hover:brightness-110 transition-all shadow-[0_2px_6px_hsl(var(--primary)/0.25)]"
           >
-            <Plus className="h-4 w-4" /> Nieuw Project
+            <Plus className="h-3.5 w-3.5" /> Nieuw Project
           </button>
         </div>
       </div>
 
-      {/* ── Stat cards ── */}
-      <div className="grid grid-cols-3 gap-5 mb-8">
+      {/* ── Stat cards — compact, dense ── */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <DeskStatCard
           label="Gepland"
           value={planned.length}
           icon={Calendar}
           accentClass="text-primary"
-          accentBg="bg-primary/[0.08]"
+          accentBg="bg-primary/[0.07]"
           barClass="bg-primary"
           action={() => navigate('/planning?view=kalender')}
-          actionLabel="Bekijk planning"
+          actionLabel="Planning →"
         />
         <DeskStatCard
           label="Afgerond"
           value={completed.length}
           icon={CheckCircle2}
           accentClass="text-field-green"
-          accentBg="bg-field-green/[0.08]"
+          accentBg="bg-field-green/[0.07]"
           barClass="bg-field-green"
           valueClass="text-field-green"
           footnote="Totaal afgerond"
@@ -299,10 +305,10 @@ export default function Dashboard() {
           value={actionRequired}
           icon={AlertTriangle}
           accentClass="text-field-red"
-          accentBg="bg-field-red/[0.08]"
+          accentBg="bg-field-red/[0.07]"
           barClass="bg-field-red"
           valueClass="text-field-red"
-          footnote={actionRequired > 0 ? 'Directe actie vereist' : 'Alles op schema'}
+          footnote={actionRequired > 0 ? 'Directe actie nodig' : 'Alles op schema'}
         />
       </div>
 
@@ -310,32 +316,38 @@ export default function Dashboard() {
       {overdueProjects.length > 0 && (
         <button
           onClick={() => navigate('/planning?view=kalender')}
-          className="w-full flex items-center gap-4 bg-field-red/[0.04] border border-field-red/10 rounded-xl px-6 py-4 mb-8 hover:bg-field-red/[0.07] transition-all group text-left"
+          className="w-full flex items-center gap-3.5 bg-field-red/[0.05] border border-field-red/12 rounded-lg px-5 py-3 mb-6 hover:bg-field-red/[0.08] transition-all group text-left"
         >
-          <div className="w-10 h-10 rounded-xl bg-field-red/[0.08] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-field-red/10 flex items-center justify-center shrink-0">
             <AlertTriangle className="h-4 w-4 text-field-red" />
           </div>
-          <div className="flex-1">
-            <p className="text-[13px] font-bold text-field-red">
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-bold text-field-red leading-tight">
               {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
             </p>
-            <p className="text-[11px] text-field-red/40 mt-0.5 font-medium">Bekijk in de planning →</p>
+            <p className="text-[10px] text-field-red/35 mt-0.5 font-medium">Bekijk in de planning</p>
           </div>
-          <ArrowRight className="h-4 w-4 text-field-red/20 group-hover:text-field-red/50 group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="h-3.5 w-3.5 text-field-red/20 group-hover:text-field-red/50 group-hover:translate-x-0.5 transition-all shrink-0" />
         </button>
       )}
 
-      {/* ── Recent projects table ── */}
-      <div className="bg-card rounded-2xl border border-border/15 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)]">
-        <div className="flex items-center justify-between px-7 py-5 border-b border-border/10">
-          <div>
-            <h3 className="text-[15px] font-bold text-foreground tracking-[-0.01em]">Recente Projecten</h3>
-            <p className="text-[11px] text-muted-foreground/25 mt-1 font-medium">{projects?.length || 0} projecten totaal</p>
+      {/* ── Recent projects ── */}
+      <div className="bg-card rounded-xl border border-border/20 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.04)]">
+        {/* Section header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/12">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-muted/20 flex items-center justify-center">
+              <FolderKanban className="h-4 w-4 text-muted-foreground/40" />
+            </div>
+            <div>
+              <h3 className="text-[14px] font-bold text-foreground tracking-[-0.01em] leading-tight">Recente Projecten</h3>
+              <p className="text-[10px] text-muted-foreground/30 mt-0.5 font-medium">{projects?.length || 0} totaal</p>
+            </div>
           </div>
           {projects && projects.length > 0 && (
             <button
               onClick={() => navigate('/projects')}
-              className="text-[10px] font-bold text-primary/60 hover:text-primary transition-colors uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg hover:bg-primary/[0.04]"
+              className="text-[10px] font-bold text-primary/60 hover:text-primary transition-colors uppercase tracking-[0.12em] px-3 py-1.5 rounded-md hover:bg-primary/[0.05]"
             >
               Alle projecten →
             </button>
@@ -344,12 +356,12 @@ export default function Dashboard() {
 
         {/* Column labels */}
         {recentProjects.length > 0 && (
-          <div className="flex items-center px-7 py-2.5 border-b border-border/[0.06] bg-muted/[0.015]">
-            <div className="w-10 mr-4" />
-            <span className="flex-1 text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground/20">Project</span>
-            <span className="w-32 text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground/20 text-right hidden lg:block">Datum</span>
-            <span className="w-28 text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground/20 text-center">Status</span>
-            <span className="w-6" />
+          <div className="flex items-center px-6 py-2 border-b border-border/8 bg-muted/[0.03]">
+            <div className="w-9 mr-3.5" />
+            <span className="flex-1 text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/25">Project</span>
+            <span className="w-28 text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/25 text-right hidden lg:block">Datum</span>
+            <span className="w-24 text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/25 text-center">Status</span>
+            <span className="w-5" />
           </div>
         )}
 
@@ -360,33 +372,34 @@ export default function Dashboard() {
                 key={p.id}
                 onClick={() => navigate(`/projects/${p.id}`)}
                 className={cn(
-                  'w-full flex items-center px-7 py-3.5 hover:bg-muted/[0.04] transition-all duration-150 text-left group',
-                  i < recentProjects.length - 1 && 'border-b border-border/[0.04]'
+                  'w-full flex items-center px-6 py-3 hover:bg-muted/[0.05] transition-all duration-100 text-left group',
+                  i < recentProjects.length - 1 && 'border-b border-border/[0.06]',
+                  i % 2 === 1 && 'bg-muted/[0.015]'
                 )}
               >
-                <div className="w-10 h-10 rounded-xl bg-muted/10 flex items-center justify-center shrink-0 mr-4 group-hover:bg-muted/20 transition-colors">
+                <div className="w-9 h-9 rounded-lg bg-muted/12 flex items-center justify-center shrink-0 mr-3.5 group-hover:bg-muted/25 transition-colors">
                   <ProjectIcon status={p.status} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground truncate leading-tight">{p.project_name}</p>
-                  <p className="text-[11px] text-muted-foreground/25 truncate mt-1 font-medium">
+                  <p className="text-[12.5px] font-semibold text-foreground truncate leading-tight">{p.project_name}</p>
+                  <p className="text-[10.5px] text-muted-foreground/30 truncate mt-0.5 font-medium">
                     {[p.project_number, p.city].filter(Boolean).join(' · ')}
                   </p>
                 </div>
-                <span className="w-32 text-[11px] text-muted-foreground/30 text-right hidden lg:block font-medium shrink-0">
+                <span className="w-28 text-[11px] text-muted-foreground/35 text-right hidden lg:block font-medium shrink-0">
                   {p.planned_date ? formatNlDate(p.planned_date) : '—'}
                 </span>
-                <span className="w-28 flex justify-center shrink-0">
+                <span className="w-24 flex justify-center shrink-0">
                   <ProjectStatusBadge project={p} />
                 </span>
-                <ChevronRight className="w-6 h-4 text-muted-foreground/8 group-hover:text-muted-foreground/20 group-hover:translate-x-0.5 transition-all shrink-0" />
+                <ChevronRight className="w-5 h-3.5 text-muted-foreground/10 group-hover:text-muted-foreground/25 group-hover:translate-x-0.5 transition-all shrink-0" />
               </button>
             ))}
           </div>
         ) : (
-          <div className="px-7 py-20 text-center">
-            <FolderKanban className="h-7 w-7 text-muted-foreground/8 mx-auto mb-3" />
-            <p className="text-[13px] text-muted-foreground/20 font-medium">Nog geen projecten</p>
+          <div className="px-6 py-16 text-center">
+            <FolderKanban className="h-6 w-6 text-muted-foreground/10 mx-auto mb-3" />
+            <p className="text-[12px] text-muted-foreground/25 font-medium">Nog geen projecten</p>
           </div>
         )}
       </div>
@@ -402,21 +415,23 @@ function DeskStatCard({ label, value, icon: Icon, accentClass, accentBg, barClas
   action?: () => void; actionLabel?: string;
 }) {
   return (
-    <div className="bg-card rounded-2xl border border-border/15 p-6 relative overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.03)] hover:shadow-[0_4px_16px_hsl(var(--foreground)/0.06)] hover:border-border/25 transition-all duration-300 group">
-      <div className={`absolute top-0 left-0 w-full h-[3px] ${barClass} opacity-70 group-hover:opacity-100 transition-opacity`} />
-      <div className="flex items-center justify-between mb-5">
-        <span className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-muted-foreground/30">{label}</span>
-        <div className={`w-10 h-10 rounded-xl ${accentBg} flex items-center justify-center transition-transform group-hover:scale-105`}>
-          <Icon className={`h-4 w-4 ${accentClass}`} />
+    <div className="bg-card rounded-xl border border-border/20 p-5 relative overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.04)] hover:shadow-[0_3px_12px_hsl(var(--foreground)/0.06)] hover:border-border/30 transition-all duration-200 group">
+      <div className={`absolute top-0 left-0 w-full h-[2px] ${barClass} opacity-60 group-hover:opacity-100 transition-opacity`} />
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/35 block">{label}</span>
+          <p className={`font-display text-[36px] font-black leading-none tracking-[-0.02em] mt-2 ${valueClass || 'text-foreground'}`}>{value}</p>
+        </div>
+        <div className={`w-9 h-9 rounded-lg ${accentBg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105`}>
+          <Icon className={`h-[15px] w-[15px] ${accentClass}`} />
         </div>
       </div>
-      <p className={`font-display text-[40px] font-black leading-none tracking-[-0.02em] ${valueClass || 'text-foreground'}`}>{value}</p>
       {action ? (
-        <button onClick={action} className={`flex items-center gap-1.5 mt-5 text-[10px] font-bold ${accentClass} hover:underline uppercase tracking-[0.1em]`}>
-          {actionLabel} <ArrowRight className="h-3 w-3" />
+        <button onClick={(e) => { e.stopPropagation(); action(); }} className={`flex items-center gap-1.5 text-[10px] font-bold ${accentClass} hover:underline uppercase tracking-[0.08em] mt-1`}>
+          {actionLabel} <ArrowRight className="h-2.5 w-2.5" />
         </button>
       ) : (
-        <p className="text-[10px] text-muted-foreground/20 mt-5 font-semibold tracking-wide">{footnote}</p>
+        <p className="text-[10px] text-muted-foreground/25 font-semibold tracking-wide mt-1">{footnote}</p>
       )}
     </div>
   );
