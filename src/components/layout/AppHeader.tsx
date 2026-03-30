@@ -23,16 +23,6 @@ export function AppHeader() {
 
   return (
     <header className="h-14 border-b border-border/20 bg-card/40 backdrop-blur-xl flex items-center px-7 shrink-0 gap-6">
-      {/* Search */}
-      <div className="flex items-center gap-3 flex-1 max-w-lg bg-background/50 border border-border/25 rounded-xl px-4 py-[7px] transition-all duration-200 focus-within:border-primary/25 focus-within:bg-card focus-within:shadow-[0_0_0_3px_hsl(var(--primary)/0.05)]">
-        <Search className="h-[14px] w-[14px] text-muted-foreground/30 shrink-0" />
-        <input
-          type="text"
-          placeholder="Zoek project, klant of locatie…"
-          className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/25 outline-none w-full"
-        />
-      </div>
-
       {/* Spacer */}
       <div className="flex-1" />
 
