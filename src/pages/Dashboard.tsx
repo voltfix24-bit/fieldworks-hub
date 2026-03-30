@@ -244,48 +244,48 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fade-in max-w-[1100px]">
-      {/* ── Hero strip — compact, structured ── */}
-      <div className="relative bg-card rounded-xl border border-border/20 px-7 py-5 mb-6 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.04)]">
-        <div className="absolute top-0 left-0 w-28 h-[3px] bg-primary rounded-br-full" />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <div className="w-11 h-11 rounded-xl bg-primary/[0.07] flex items-center justify-center shrink-0">
+      {/* ── Hero strip ── */}
+      <div className="relative bg-[hsl(215_50%_12%)] rounded-xl px-7 py-5 mb-5 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.12] via-transparent to-transparent" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <div className="flex items-center gap-3 mb-0.5">
-                <h1 className="font-display text-[22px] font-black text-foreground tracking-[-0.02em] leading-none">
+              <div className="flex items-center gap-3">
+                <h1 className="font-display text-[20px] font-black text-white tracking-[-0.01em] leading-none">
                   {greeting}, {firstName || 'Gebruiker'}
                 </h1>
                 {todayProjects.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-md bg-primary/[0.08] text-primary text-[9px] font-bold uppercase tracking-[0.1em]">
+                  <span className="px-2 py-0.5 rounded bg-primary/25 text-primary text-[9px] font-bold uppercase tracking-[0.08em]">
                     {todayProjects.length} vandaag
                   </span>
                 )}
               </div>
-              <p className="text-[12px] text-muted-foreground/45 font-medium mt-1">
+              <p className="text-[11px] text-white/35 font-medium mt-1.5">
                 {planned.length} gepland · {completed.length} afgerond
-                {actionRequired > 0 && <span className="text-field-red"> · {actionRequired} actie vereist</span>}
+                {actionRequired > 0 && <span className="text-red-400/80"> · {actionRequired} actie vereist</span>}
               </p>
             </div>
           </div>
           <button
             onClick={() => navigate('/projects/new')}
-            className="flex items-center gap-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-lg hover:brightness-110 transition-all shadow-[0_2px_6px_hsl(var(--primary)/0.25)]"
+            className="flex items-center gap-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-lg hover:brightness-110 transition-all shadow-[0_2px_8px_hsl(var(--primary)/0.4)]"
           >
             <Plus className="h-3.5 w-3.5" /> Nieuw Project
           </button>
         </div>
       </div>
 
-      {/* ── Stat cards — compact, dense ── */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-3 gap-3.5 mb-5">
         <DeskStatCard
           label="Gepland"
           value={planned.length}
           icon={Calendar}
           accentClass="text-primary"
-          accentBg="bg-primary/[0.07]"
+          accentBg="bg-primary/10"
           barClass="bg-primary"
           action={() => navigate('/planning?view=kalender')}
           actionLabel="Planning →"
@@ -295,7 +295,7 @@ export default function Dashboard() {
           value={completed.length}
           icon={CheckCircle2}
           accentClass="text-field-green"
-          accentBg="bg-field-green/[0.07]"
+          accentBg="bg-field-green/10"
           barClass="bg-field-green"
           valueClass="text-field-green"
           footnote="Totaal afgerond"
@@ -305,7 +305,7 @@ export default function Dashboard() {
           value={actionRequired}
           icon={AlertTriangle}
           accentClass="text-field-red"
-          accentBg="bg-field-red/[0.07]"
+          accentBg="bg-field-red/10"
           barClass="bg-field-red"
           valueClass="text-field-red"
           footnote={actionRequired > 0 ? 'Directe actie nodig' : 'Alles op schema'}
@@ -316,92 +316,161 @@ export default function Dashboard() {
       {overdueProjects.length > 0 && (
         <button
           onClick={() => navigate('/planning?view=kalender')}
-          className="w-full flex items-center gap-3.5 bg-field-red/[0.05] border border-field-red/12 rounded-lg px-5 py-3 mb-6 hover:bg-field-red/[0.08] transition-all group text-left"
+          className="w-full flex items-center gap-3 bg-field-red/[0.06] border border-field-red/15 rounded-lg px-5 py-3 mb-5 hover:bg-field-red/[0.1] transition-all group text-left"
         >
-          <div className="w-9 h-9 rounded-lg bg-field-red/10 flex items-center justify-center shrink-0">
-            <AlertTriangle className="h-4 w-4 text-field-red" />
+          <div className="w-8 h-8 rounded-lg bg-field-red/12 flex items-center justify-center shrink-0">
+            <AlertTriangle className="h-3.5 w-3.5 text-field-red" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-bold text-field-red leading-tight">
-              {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
-            </p>
-            <p className="text-[10px] text-field-red/35 mt-0.5 font-medium">Bekijk in de planning</p>
-          </div>
+          <p className="flex-1 text-[12px] font-bold text-field-red">
+            {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
+            <span className="font-medium text-field-red/40 ml-2">— Bekijk planning</span>
+          </p>
           <ArrowRight className="h-3.5 w-3.5 text-field-red/20 group-hover:text-field-red/50 group-hover:translate-x-0.5 transition-all shrink-0" />
         </button>
       )}
 
-      {/* ── Recent projects ── */}
-      <div className="bg-card rounded-xl border border-border/20 overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.04)]">
-        {/* Section header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/12">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-muted/20 flex items-center justify-center">
+      {/* ── Two-column: Projects + Today sidebar ── */}
+      <div className="grid grid-cols-[1fr_280px] gap-4">
+        {/* Main: Recent projects */}
+        <div className="bg-card rounded-xl border border-border/25 overflow-hidden shadow-[0_1px_4px_hsl(var(--foreground)/0.05)]">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/15 bg-muted/[0.04]">
+            <div className="flex items-center gap-2.5">
               <FolderKanban className="h-4 w-4 text-muted-foreground/40" />
+              <h3 className="text-[13px] font-bold text-foreground">Recente Projecten</h3>
+              <span className="text-[10px] text-muted-foreground/25 font-medium ml-1">{projects?.length || 0}</span>
             </div>
-            <div>
-              <h3 className="text-[14px] font-bold text-foreground tracking-[-0.01em] leading-tight">Recente Projecten</h3>
-              <p className="text-[10px] text-muted-foreground/30 mt-0.5 font-medium">{projects?.length || 0} totaal</p>
-            </div>
+            {projects && projects.length > 0 && (
+              <button
+                onClick={() => navigate('/projects')}
+                className="text-[10px] font-bold text-primary/60 hover:text-primary transition-colors uppercase tracking-[0.1em] px-2.5 py-1 rounded hover:bg-primary/[0.05]"
+              >
+                Alles →
+              </button>
+            )}
           </div>
-          {projects && projects.length > 0 && (
-            <button
-              onClick={() => navigate('/projects')}
-              className="text-[10px] font-bold text-primary/60 hover:text-primary transition-colors uppercase tracking-[0.12em] px-3 py-1.5 rounded-md hover:bg-primary/[0.05]"
-            >
-              Alle projecten →
-            </button>
+
+          {/* Column labels */}
+          {recentProjects.length > 0 && (
+            <div className="flex items-center px-5 py-1.5 border-b border-border/8">
+              <div className="w-8 mr-3" />
+              <span className="flex-1 text-[8px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/20">Project</span>
+              <span className="w-24 text-[8px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/20 text-right hidden lg:block">Datum</span>
+              <span className="w-20 text-[8px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/20 text-center">Status</span>
+              <span className="w-4" />
+            </div>
+          )}
+
+          {recentProjects.length > 0 ? (
+            <div>
+              {recentProjects.map((p, i) => (
+                <button
+                  key={p.id}
+                  onClick={() => navigate(`/projects/${p.id}`)}
+                  className={cn(
+                    'w-full flex items-center px-5 py-2.5 hover:bg-primary/[0.02] transition-all duration-100 text-left group',
+                    i < recentProjects.length - 1 && 'border-b border-border/[0.07]',
+                    i % 2 === 0 && 'bg-muted/[0.02]'
+                  )}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-muted/15 flex items-center justify-center shrink-0 mr-3 group-hover:bg-muted/30 transition-colors">
+                    <ProjectIcon status={p.status} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-foreground truncate leading-tight">{p.project_name}</p>
+                    <p className="text-[10px] text-muted-foreground/35 truncate mt-0.5">
+                      {[p.project_number, p.city].filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
+                  <span className="w-24 text-[10px] text-muted-foreground/40 text-right hidden lg:block font-medium shrink-0">
+                    {p.planned_date ? formatNlDate(p.planned_date) : '—'}
+                  </span>
+                  <span className="w-20 flex justify-center shrink-0">
+                    <ProjectStatusBadge project={p} />
+                  </span>
+                  <ChevronRight className="w-4 h-3.5 text-muted-foreground/10 group-hover:text-muted-foreground/30 transition-all shrink-0" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="px-5 py-14 text-center">
+              <FolderKanban className="h-5 w-5 text-muted-foreground/10 mx-auto mb-2" />
+              <p className="text-[11px] text-muted-foreground/25 font-medium">Nog geen projecten</p>
+            </div>
           )}
         </div>
 
-        {/* Column labels */}
-        {recentProjects.length > 0 && (
-          <div className="flex items-center px-6 py-2 border-b border-border/8 bg-muted/[0.03]">
-            <div className="w-9 mr-3.5" />
-            <span className="flex-1 text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/25">Project</span>
-            <span className="w-28 text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/25 text-right hidden lg:block">Datum</span>
-            <span className="w-24 text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/25 text-center">Status</span>
-            <span className="w-5" />
-          </div>
-        )}
-
-        {recentProjects.length > 0 ? (
-          <div>
-            {recentProjects.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => navigate(`/projects/${p.id}`)}
-                className={cn(
-                  'w-full flex items-center px-6 py-3 hover:bg-muted/[0.05] transition-all duration-100 text-left group',
-                  i < recentProjects.length - 1 && 'border-b border-border/[0.06]',
-                  i % 2 === 1 && 'bg-muted/[0.015]'
+        {/* Sidebar: Today + Quick actions */}
+        <div className="space-y-4">
+          {/* Today's projects */}
+          <div className="bg-card rounded-xl border border-border/25 overflow-hidden shadow-[0_1px_4px_hsl(var(--foreground)/0.05)]">
+            <div className="px-4 py-3 border-b border-border/15 bg-muted/[0.04]">
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5 text-primary/60" />
+                <h3 className="text-[12px] font-bold text-foreground">Vandaag</h3>
+                {todayProjects.length > 0 && (
+                  <span className="ml-auto text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                    {todayProjects.length}
+                  </span>
                 )}
-              >
-                <div className="w-9 h-9 rounded-lg bg-muted/12 flex items-center justify-center shrink-0 mr-3.5 group-hover:bg-muted/25 transition-colors">
-                  <ProjectIcon status={p.status} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12.5px] font-semibold text-foreground truncate leading-tight">{p.project_name}</p>
-                  <p className="text-[10.5px] text-muted-foreground/30 truncate mt-0.5 font-medium">
-                    {[p.project_number, p.city].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-                <span className="w-28 text-[11px] text-muted-foreground/35 text-right hidden lg:block font-medium shrink-0">
-                  {p.planned_date ? formatNlDate(p.planned_date) : '—'}
-                </span>
-                <span className="w-24 flex justify-center shrink-0">
-                  <ProjectStatusBadge project={p} />
-                </span>
-                <ChevronRight className="w-5 h-3.5 text-muted-foreground/10 group-hover:text-muted-foreground/25 group-hover:translate-x-0.5 transition-all shrink-0" />
-              </button>
-            ))}
+              </div>
+            </div>
+            {todayProjects.length > 0 ? (
+              <div>
+                {todayProjects.slice(0, 5).map((p, i) => (
+                  <button
+                    key={p.id}
+                    onClick={() => navigate(`/projects/${p.id}`)}
+                    className={cn(
+                      'w-full px-4 py-2.5 text-left hover:bg-primary/[0.03] transition-colors group',
+                      i < Math.min(todayProjects.length, 5) - 1 && 'border-b border-border/[0.06]'
+                    )}
+                  >
+                    <p className="text-[11px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">{p.project_name}</p>
+                    <p className="text-[9px] text-muted-foreground/30 truncate mt-0.5">
+                      {[p.project_number, p.city].filter(Boolean).join(' · ')}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-center">
+                <p className="text-[10px] text-muted-foreground/25 font-medium">Geen projecten vandaag</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="px-6 py-16 text-center">
-            <FolderKanban className="h-6 w-6 text-muted-foreground/10 mx-auto mb-3" />
-            <p className="text-[12px] text-muted-foreground/25 font-medium">Nog geen projecten</p>
+
+          {/* Quick nav */}
+          <div className="bg-card rounded-xl border border-border/25 overflow-hidden shadow-[0_1px_4px_hsl(var(--foreground)/0.05)]">
+            <div className="px-4 py-3 border-b border-border/15 bg-muted/[0.04]">
+              <h3 className="text-[12px] font-bold text-foreground">Snelle acties</h3>
+            </div>
+            <div className="p-2">
+              {[
+                { label: 'Nieuw project', icon: Plus, onClick: () => navigate('/projects/new') },
+                { label: 'Rapporten', icon: FileText, onClick: () => navigate('/reports') },
+                { label: 'Kaart', icon: MapPin, onClick: () => navigate('/map') },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.onClick}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-muted/[0.06] transition-colors group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-muted/15 flex items-center justify-center shrink-0 group-hover:bg-primary/[0.08] transition-colors">
+                    <item.icon className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-foreground/70 group-hover:text-foreground transition-colors">{item.label}</span>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/10 ml-auto" />
+                </button>
+              ))}
+            </div>
           </div>
-        )}
+
+          {/* Planned count */}
+          <div className="bg-[hsl(215_50%_12%)] rounded-xl p-4 text-center">
+            <p className="font-display text-[28px] font-black text-white leading-none">{planned.length}</p>
+            <p className="text-[9px] text-white/30 font-bold uppercase tracking-[0.15em] mt-1.5">Actieve projecten</p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -415,23 +484,21 @@ function DeskStatCard({ label, value, icon: Icon, accentClass, accentBg, barClas
   action?: () => void; actionLabel?: string;
 }) {
   return (
-    <div className="bg-card rounded-xl border border-border/20 p-5 relative overflow-hidden shadow-[0_1px_3px_hsl(var(--foreground)/0.04)] hover:shadow-[0_3px_12px_hsl(var(--foreground)/0.06)] hover:border-border/30 transition-all duration-200 group">
-      <div className={`absolute top-0 left-0 w-full h-[2px] ${barClass} opacity-60 group-hover:opacity-100 transition-opacity`} />
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/35 block">{label}</span>
-          <p className={`font-display text-[36px] font-black leading-none tracking-[-0.02em] mt-2 ${valueClass || 'text-foreground'}`}>{value}</p>
-        </div>
-        <div className={`w-9 h-9 rounded-lg ${accentBg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105`}>
-          <Icon className={`h-[15px] w-[15px] ${accentClass}`} />
+    <div className="bg-card rounded-xl border border-border/25 p-4 relative overflow-hidden shadow-[0_1px_4px_hsl(var(--foreground)/0.05)] hover:shadow-[0_3px_12px_hsl(var(--foreground)/0.07)] hover:border-border/35 transition-all duration-200 group">
+      <div className={`absolute top-0 left-0 w-full h-[2px] ${barClass} opacity-50 group-hover:opacity-100 transition-opacity`} />
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground/40">{label}</span>
+        <div className={`w-8 h-8 rounded-md ${accentBg} flex items-center justify-center shrink-0`}>
+          <Icon className={`h-[14px] w-[14px] ${accentClass}`} />
         </div>
       </div>
+      <p className={`font-display text-[32px] font-black leading-none tracking-[-0.02em] ${valueClass || 'text-foreground'}`}>{value}</p>
       {action ? (
-        <button onClick={(e) => { e.stopPropagation(); action(); }} className={`flex items-center gap-1.5 text-[10px] font-bold ${accentClass} hover:underline uppercase tracking-[0.08em] mt-1`}>
+        <button onClick={(e) => { e.stopPropagation(); action(); }} className={`flex items-center gap-1 text-[9px] font-bold ${accentClass} hover:underline uppercase tracking-[0.08em] mt-2`}>
           {actionLabel} <ArrowRight className="h-2.5 w-2.5" />
         </button>
       ) : (
-        <p className="text-[10px] text-muted-foreground/25 font-semibold tracking-wide mt-1">{footnote}</p>
+        <p className="text-[9px] text-muted-foreground/30 font-semibold tracking-wide mt-2">{footnote}</p>
       )}
     </div>
   );
