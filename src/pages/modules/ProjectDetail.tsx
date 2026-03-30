@@ -338,128 +338,329 @@ export default function ProjectDetail() {
     );
   }
 
-  // ── Desktop ──
+  // ═══════════════════════════════════════════════════════
+  // DESKTOP
+  // ═══════════════════════════════════════════════════════
   return (
-    <div className="animate-fade-in max-w-4xl">
-      <div className="mb-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/projects')}><ArrowLeft className="mr-2 h-4 w-4" /> Projecten</Button>
+    <div className="animate-fade-in max-w-5xl">
+      {/* ── Top bar: back + actions ── */}
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={() => navigate('/projects')}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors group">
+          <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
+          Projecten
+        </button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-lg h-9 px-4 text-[12px] font-semibold border-border/40" onClick={() => navigate(`/projects/${id}/edit`)}>
+            <Pencil className="mr-1.5 h-3.5 w-3.5" /> Bewerken
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-lg h-9 px-4 text-[12px] font-semibold border-border/40" onClick={() => navigate(`/projects/${id}/report`)}>
+            <FileText className="mr-1.5 h-3.5 w-3.5" /> Rapport
+          </Button>
+          <Button size="sm" className="rounded-lg h-9 px-5 text-[12px] font-bold tracking-wide shadow-[0_2px_8px_hsl(var(--primary)/0.2)]" onClick={() => navigate(`/projects/${id}/measurements`)}>
+            <Play className="mr-1.5 h-3.5 w-3.5" /> METINGEN
+          </Button>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">{project.project_name}</h1>
-            <StatusIndicator status={project.status} />
+      {/* ── Project hero header ── */}
+      <div className="bg-card rounded-xl border border-border/50 shadow-sm px-6 py-5 mb-5">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-1.5">
+              <h1 className="text-[22px] font-display font-extrabold tracking-tight text-foreground leading-none truncate">{project.project_name}</h1>
+              <StatusBadge status={project.status} />
+            </div>
+            <div className="flex items-center gap-3 text-[12px]">
+              <span className="font-mono text-muted-foreground/40 tabular-nums">{project.project_number}</span>
+              {project.city && (
+                <>
+                  <span className="w-px h-3 bg-border/30" />
+                  <span className="text-muted-foreground/40 flex items-center gap-1">
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/20" />
+                    {[project.address_line_1, project.city].filter(Boolean).join(', ')}
+                  </span>
+                </>
+              )}
+              {session?.measurement_date && (
+                <>
+                  <span className="w-px h-3 bg-border/30" />
+                  <span className="text-muted-foreground/40 flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Gemeten {formatNlDate(session.measurement_date)}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground/50 font-mono">{project.project_number}</p>
-          {session?.measurement_date && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground/30" />
-              <span className="text-[12px] text-muted-foreground/40">
-                Gemeten op {formatNlDate(session.measurement_date)}
-              </span>
+
+          {/* Progress ring */}
+          {hasSession && (
+            <div className="flex items-center gap-4 ml-6">
+              <div className="text-right">
+                <span className="text-[22px] font-display font-extrabold text-foreground leading-none tabular-nums">{metReadyCount}/{metRequiredTotal}</span>
+                <p className="text-[10px] text-muted-foreground/35 font-medium mt-0.5">GEREED</p>
+              </div>
             </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/projects/${id}/edit`)}><Pencil className="mr-2 h-3.5 w-3.5" /> Bewerken</Button>
-          <Button size="sm" className="rounded-xl" onClick={() => navigate(`/projects/${id}/measurements`)}><Play className="mr-2 h-3.5 w-3.5" /> Metingen</Button>
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/projects/${id}/report`)}><FileText className="mr-2 h-3.5 w-3.5" /> Rapport</Button>
-        </div>
+
+        {/* Quick stats row */}
+        {hasSession && (
+          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/20">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center">
+                <GroundingIcon size={16} />
+              </div>
+              <div>
+                <span className="text-[15px] font-bold text-foreground tabular-nums leading-none">{electrodes.length}</span>
+                <p className="text-[10px] text-muted-foreground/35 font-medium">Elektrodes</p>
+              </div>
+            </div>
+            <div className="w-px h-8 bg-border/20" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center">
+                <GroundingIcon size={16} />
+              </div>
+              <div>
+                <span className="text-[15px] font-bold text-foreground tabular-nums leading-none">{reportData?.stats.measurementCount || 0}</span>
+                <p className="text-[10px] text-muted-foreground/35 font-medium">Metingen</p>
+              </div>
+            </div>
+            <div className="w-px h-8 bg-border/20" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center">
+                <FileText className="h-4 w-4 text-muted-foreground/30" />
+              </div>
+              <div>
+                <span className="text-[15px] font-bold text-foreground tabular-nums leading-none">{reportData?.stats.photosCount || 0}</span>
+                <p className="text-[10px] text-muted-foreground/35 font-medium">Foto's</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <DesktopSection title="Projectoverzicht">
-          <DesktopInfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
-          {project.completed_date && <DesktopInfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
-          <DesktopInfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ') || null} />
-        </DesktopSection>
-        <DesktopSection title="Klant" action={client && <Button variant="ghost" size="sm" className="rounded-lg" onClick={() => navigate(`/clients/${project.client_id}`)}>Bekijk</Button>}>
-          {client ? (<><DesktopInfoRow label="Bedrijf" value={client.company_name} /><DesktopInfoRow label="Contact" value={client.contact_name} /></>) : <p className="text-sm text-muted-foreground/40">Geen klant toegewezen</p>}
-        </DesktopSection>
-        <DesktopSection title="Monteur" action={tech && <Button variant="ghost" size="sm" className="rounded-lg" onClick={() => navigate(`/technicians/${project.technician_id}`)}>Bekijk</Button>}>
-          {tech ? (<><DesktopInfoRow label="Naam" value={tech.full_name} /><DesktopInfoRow label="Code" value={tech.employee_code} /></>) : <p className="text-sm text-muted-foreground/40">Geen monteur toegewezen</p>}
-        </DesktopSection>
-        <DesktopSection title="Apparatuur" action={equip && <Button variant="ghost" size="sm" className="rounded-lg" onClick={() => navigate(`/equipment/${project.equipment_id}`)}>Bekijk</Button>}>
-          {equip ? (<><DesktopInfoRow label="Apparaat" value={equip.device_name} /><DesktopInfoRow label="Merk/Model" value={[equip.brand, equip.model].filter(Boolean).join(' ') || null} /></>) : <p className="text-sm text-muted-foreground/40">Geen apparatuur toegewezen</p>}
-        </DesktopSection>
+      {/* ── Info grid ── */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <DSection title="Projectoverzicht" icon="📋">
+          <DInfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
+          {project.completed_date && <DInfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
+          <DInfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ') || null} />
+          {project.cable_material && <DInfoRow label="Kabelmateriaal" value={project.cable_material} />}
+          {project.target_value && <DInfoRow label="Streefwaarde" value={`${project.target_value} Ω`} />}
+        </DSection>
+
+        <DSection title="Klant" icon="🏢"
+          action={client && <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] text-muted-foreground/40 hover:text-foreground" onClick={() => navigate(`/clients/${project.client_id}`)}>Bekijk →</Button>}>
+          {client ? (
+            <><DInfoRow label="Bedrijf" value={client.company_name} highlight /><DInfoRow label="Contact" value={client.contact_name} /><DInfoRow label="E-mail" value={client.email} /><DInfoRow label="Telefoon" value={client.phone} /></>
+          ) : <p className="text-[12px] text-muted-foreground/30 py-2">Geen klant toegewezen</p>}
+        </DSection>
+
+        <DSection title="Monteur" icon="👷"
+          action={tech && <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] text-muted-foreground/40 hover:text-foreground" onClick={() => navigate(`/technicians/${project.technician_id}`)}>Bekijk →</Button>}>
+          {tech ? (
+            <><DInfoRow label="Naam" value={tech.full_name} highlight /><DInfoRow label="Code" value={tech.employee_code} /></>
+          ) : <p className="text-[12px] text-muted-foreground/30 py-2">Geen monteur toegewezen</p>}
+        </DSection>
+
+        <DSection title="Apparatuur" icon="🔧"
+          action={equip && <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] text-muted-foreground/40 hover:text-foreground" onClick={() => navigate(`/equipment/${project.equipment_id}`)}>Bekijk →</Button>}>
+          {equip ? (
+            <><DInfoRow label="Apparaat" value={equip.device_name} highlight /><DInfoRow label="Merk/Model" value={[equip.brand, equip.model].filter(Boolean).join(' ') || null} /><DInfoRow label="Serienummer" value={equip.serial_number} /></>
+          ) : <p className="text-[12px] text-muted-foreground/30 py-2">Geen apparatuur toegewezen</p>}
+        </DSection>
       </div>
 
+      {/* Notes */}
       {project.notes && (
-        <DesktopSection title="Notities">
-          <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{project.notes}</p>
-        </DesktopSection>
+        <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5 mb-5">
+          <h3 className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.08em] mb-2">Notities</h3>
+          <p className="text-[13px] text-foreground/80 whitespace-pre-wrap leading-relaxed">{project.notes}</p>
+        </div>
       )}
 
+      {/* Project files */}
       {(() => {
         const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
         if (projectBestanden.length === 0) return null;
         return (
-          <DesktopSection title="Projectbestanden">
-            {projectBestanden.map((bestand: any) => (
-              <div key={bestand.id} className="flex items-center py-2 border-b border-border/15 last:border-0">
-                <span className="text-sm text-foreground flex-1 truncate">{bestand.caption || 'Bestand'}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-lg"
+          <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden mb-5">
+            <div className="px-5 py-3 border-b border-border/30 bg-muted/15">
+              <h3 className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.08em]">Projectbestanden</h3>
+            </div>
+            {projectBestanden.map((bestand: any, i: number) => (
+              <div key={bestand.id} className={cn('flex items-center px-5 py-3', i < projectBestanden.length - 1 && 'border-b border-border/15')}>
+                <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center mr-3 shrink-0">
+                  <FileText className="h-3.5 w-3.5 text-primary/50" />
+                </div>
+                <span className="text-[13px] text-foreground flex-1 truncate font-medium">{bestand.caption || 'Bestand'}</span>
+                <Button variant="ghost" size="sm" className="rounded-lg h-8 text-[11px]"
                   onClick={async () => {
                     const { data } = await supabase.storage.from('project-files').createSignedUrl(bestand.file_url, 3600);
                     if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-                  }}
-                >
+                  }}>
                   <Download className="h-3.5 w-3.5 mr-1" /> Openen
                 </Button>
               </div>
             ))}
-          </DesktopSection>
+          </div>
         );
       })()}
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <DesktopSection title="Meetopstelling" action={
-          <Button variant="outline" size="sm" className="rounded-lg" onClick={() => navigate(`/projects/${id}/measurements`)}>{hasSession ? 'Openen' : 'Starten'}</Button>
-        }>
-          {hasSession ? (<><DesktopInfoRow label="Datum" value={formatNlDate(session?.measurement_date)} /><DesktopInfoRow label="Elektrodes" value={String(electrodes.length)} /><DesktopInfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} /></>) : <p className="text-sm text-muted-foreground/40">Nog geen meetsessie.</p>}
-        </DesktopSection>
-        <DesktopSection title="Rapport" action={
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" className="rounded-lg" onClick={() => navigate(`/projects/${id}/report`)}>Bekijk</Button>
-            {isReportReady && <Button size="sm" className="rounded-lg" onClick={() => { navigate(`/projects/${id}/report`); setTimeout(() => window.print(), 500); }}><Printer className="h-3.5 w-3.5" /></Button>}
+      {/* ── Workflow section ── */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {/* Meetopstelling */}
+        <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold',
+                hasSession ? 'bg-[hsl(var(--status-completed))]/15 text-[hsl(var(--status-completed))]' : 'bg-muted/60 text-muted-foreground/30',
+              )}>1</span>
+              <h3 className="text-[12px] font-bold text-foreground">Meetopstelling</h3>
+            </div>
+            <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] px-3" onClick={() => navigate(`/projects/${id}/measurements`)}>
+              {hasSession ? 'Openen' : 'Starten'} →
+            </Button>
           </div>
-        }>
-          {isReportReady ? (
+          <div className="p-5">
+            {hasSession ? (
+              <div className="space-y-0">
+                <DInfoRow label="Datum" value={formatNlDate(session?.measurement_date)} />
+                <DInfoRow label="Elektrodes" value={String(electrodes.length)} />
+                <DInfoRow label="Metingen" value={String(reportData?.stats.measurementCount || 0)} />
+              </div>
+            ) : (
+              <div className="py-4 text-center">
+                <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center mx-auto mb-2">
+                  <Play className="h-4 w-4 text-muted-foreground/20" />
+                </div>
+                <p className="text-[12px] text-muted-foreground/30">Nog niet gestart</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Rapport */}
+        <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))]" />
-              <span className="text-sm font-medium text-foreground">Gereed</span>
+              <span className={cn(
+                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold',
+                isReportReady ? 'bg-[hsl(var(--status-completed))]/15 text-[hsl(var(--status-completed))]' : 'bg-muted/60 text-muted-foreground/30',
+              )}>2</span>
+              <h3 className="text-[12px] font-bold text-foreground">Rapport</h3>
             </div>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="sm" className="rounded-lg h-7 text-[11px] px-3" onClick={() => navigate(`/projects/${id}/report`)}>
+                Bekijk →
+              </Button>
+            </div>
+          </div>
+          <div className="p-5">
+            {isReportReady ? (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[hsl(var(--status-completed))]/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-[hsl(var(--status-completed))]" />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-foreground">Rapport gereed</p>
+                  <p className="text-[11px] text-muted-foreground/35">Alle gegevens compleet</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/8 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-amber-500/60" />
+                </div>
+                <div>
+                  <p className="text-[13px] font-medium text-foreground/70">Niet compleet</p>
+                  <p className="text-[11px] text-muted-foreground/35">Voltooi eerst de metingen</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Gereedheid */}
+        <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-border/30 bg-muted/15 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold',
+                allRequiredMet ? 'bg-[hsl(var(--status-completed))]/15 text-[hsl(var(--status-completed))]' : 'bg-muted/60 text-muted-foreground/30',
+              )}>3</span>
+              <h3 className="text-[12px] font-bold text-foreground">Gereedheid</h3>
+            </div>
+            <span className={cn(
+              'text-[10px] font-bold px-2 py-0.5 rounded-md tabular-nums',
+              allRequiredMet
+                ? 'bg-[hsl(var(--status-completed))]/10 text-[hsl(var(--status-completed))]'
+                : 'bg-muted/40 text-muted-foreground/40',
+            )}>
+              {allRequiredMet ? '✓ GEREED' : `${metReadyCount}/${metRequiredTotal}`}
+            </span>
+          </div>
+          <div className="p-4">
+            {readinessItems.map((item, i) => (
+              <div key={item.label} className={cn(
+                'flex items-center gap-2.5 py-2',
+                i < readinessItems.length - 1 && 'border-b border-border/10',
+              )}>
+                {item.met ? (
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--status-completed))] shrink-0" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-border/30 shrink-0" />
+                )}
+                <span className={cn(
+                  'text-[12px] flex-1',
+                  item.met ? 'text-foreground/70 font-medium' : 'text-muted-foreground/35',
+                  item.optional && !item.met && 'italic',
+                )}>{item.label}</span>
+                {item.optional && (
+                  <span className="text-[9px] text-muted-foreground/25 font-medium uppercase tracking-wider">opt</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Bottom actions ── */}
+      <div className="bg-card rounded-xl border border-border/50 shadow-sm px-5 py-4 flex items-center justify-between">
+        <div>
+          {project.status === 'planned' ? (
+            <Button className="rounded-lg h-10 px-6 font-bold text-[13px] tracking-wide shadow-[0_2px_8px_hsl(var(--primary)/0.2)]"
+              onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending || !isReportReady}>
+              <CheckCircle2 className="mr-2 h-4 w-4" /> PROJECT AFRONDEN
+            </Button>
           ) : (
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500/70" />
-              <span className="text-sm text-muted-foreground/50">Voltooi eerst de metingen</span>
-            </div>
+            <Button variant="outline" className="rounded-lg h-10 px-5 text-[13px] font-semibold"
+              onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}>
+              <RotateCcw className="mr-2 h-4 w-4" /> Heropenen
+            </Button>
           )}
-        </DesktopSection>
-        <ReadinessChecklist items={readinessItems} />
+          {!isReportReady && project.status === 'planned' && (
+            <span className="ml-3 text-[11px] text-muted-foreground/30">Voltooi eerst alle vereiste onderdelen</span>
+          )}
+        </div>
+        <button onClick={() => setShowDeleteConfirm(true)} disabled={deleteMut.isPending}
+          className="flex items-center gap-1.5 text-[11px] font-medium text-destructive/40 hover:text-destructive/70 transition-colors">
+          <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+        </button>
       </div>
 
-      <div className="mt-8 flex gap-2">
-        {project.status === 'planned' ? (
-          <Button className="rounded-xl" onClick={() => handleStatusChange('completed')} disabled={updateMut.isPending || !isReportReady}><CheckCircle2 className="mr-2 h-4 w-4" /> Afronden</Button>
-        ) : (
-          <Button variant="outline" className="rounded-xl" onClick={() => handleStatusChange('planned')} disabled={updateMut.isPending}><RotateCcw className="mr-2 h-4 w-4" /> Heropenen</Button>
-        )}
-        <Button variant="ghost" className="text-destructive/50 rounded-xl" onClick={() => setShowDeleteConfirm(true)} disabled={deleteMut.isPending}><Trash2 className="mr-2 h-4 w-4" /> Verwijderen</Button>
-      </div>
-
+      {/* Delete confirm */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="bg-card rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold mb-2">Project verwijderen?</h3>
-            <p className="text-sm text-muted-foreground mb-6">Dit kan niet ongedaan worden gemaakt.</p>
+          <div className="bg-card rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl border border-border/50" onClick={e => e.stopPropagation()}>
+            <h3 className="text-[16px] font-display font-bold mb-2">Project verwijderen?</h3>
+            <p className="text-[13px] text-muted-foreground/50 mb-6">Dit kan niet ongedaan worden gemaakt. Alle metingen en bijlagen worden ook verwijderd.</p>
             <div className="flex gap-2">
-              <Button variant="destructive" className="flex-1 rounded-xl" onClick={() => { setShowDeleteConfirm(false); handleDelete(); }}>Verwijderen</Button>
-              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowDeleteConfirm(false)}>Annuleren</Button>
+              <Button variant="destructive" className="flex-1 rounded-lg" onClick={() => { setShowDeleteConfirm(false); handleDelete(); }}>Verwijderen</Button>
+              <Button variant="outline" className="flex-1 rounded-lg" onClick={() => setShowDeleteConfirm(false)}>Annuleren</Button>
             </div>
           </div>
         </div>
@@ -468,39 +669,50 @@ export default function ProjectDetail() {
   );
 }
 
-/* ── Shared components ── */
+/* ── Desktop shared components ── */
 
-function StatusIndicator({ status }: { status: string }) {
+function StatusBadge({ status }: { status: string }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <span className={cn(
+      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide shrink-0',
+      status === 'completed'
+        ? 'bg-[hsl(var(--status-completed))]/10 text-[hsl(var(--status-completed))]'
+        : 'bg-primary/6 text-primary/70',
+    )}>
       <span className={cn(
-        'w-[6px] h-[6px] rounded-full',
-        status === 'completed' ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--status-planned)/0.4)]'
+        'w-1.5 h-1.5 rounded-full',
+        status === 'completed' ? 'bg-[hsl(var(--status-completed))]/60' : 'bg-primary/40',
       )} />
-      <span className="text-[11px] text-muted-foreground/45 font-medium">
-        {status === 'completed' ? 'Afgerond' : 'Gepland'}
-      </span>
-    </div>
+      {status === 'completed' ? 'AFGEROND' : 'GEPLAND'}
+    </span>
   );
 }
 
-function DesktopSection({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
+function DSection({ title, icon, children, action }: { title: string; icon?: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-card p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[13px] font-semibold text-foreground">{title}</h3>
+    <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
+      <div className="px-5 py-3 border-b border-border/30 bg-muted/15 flex items-center justify-between">
+        <h3 className="text-[11px] font-bold text-muted-foreground/45 uppercase tracking-[0.08em] flex items-center gap-2">
+          {icon && <span className="text-[13px]">{icon}</span>}
+          {title}
+        </h3>
         {action}
       </div>
-      {children}
+      <div className="p-5">
+        {children}
+      </div>
     </div>
   );
 }
 
-function DesktopInfoRow({ label, value }: { label: string; value?: string | null }) {
+function DInfoRow({ label, value, highlight = false }: { label: string; value?: string | null; highlight?: boolean }) {
   return (
-    <div className="flex items-center py-2 border-b border-border/15 last:border-0">
-      <span className="text-sm text-muted-foreground/45 w-36 shrink-0">{label}</span>
-      <span className="text-sm text-foreground">{value || '—'}</span>
+    <div className="flex items-center py-2 border-b border-border/10 last:border-0">
+      <span className="text-[12px] text-muted-foreground/40 w-32 shrink-0">{label}</span>
+      <span className={cn(
+        'text-[12px]',
+        value ? (highlight ? 'text-foreground font-semibold' : 'text-foreground/80') : 'text-muted-foreground/20',
+      )}>{value || '—'}</span>
     </div>
   );
 }
