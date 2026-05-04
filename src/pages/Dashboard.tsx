@@ -303,7 +303,7 @@ export default function Dashboard() {
           sparkValues={plannedSpark}
           sparkColor="hsl(var(--primary))"
           action={() => navigate('/planning?view=kalender')}
-          actionLabel="Planning →"
+          actionLabel="Open planning →"
         />
         <DeskStatCard
           label="Afgerond"
@@ -316,7 +316,8 @@ export default function Dashboard() {
           tintClass="bg-gradient-to-br from-green-50 to-green-100/40"
           sparkValues={completedSpark}
           sparkColor="hsl(var(--field-green))"
-          footnote="Total algernond"
+          action={() => navigate('/reports')}
+          actionLabel="Bekijk rapporten →"
         />
         <DeskStatCard
           label="Actie Vereist"
@@ -329,7 +330,13 @@ export default function Dashboard() {
           tintClass="bg-gradient-to-br from-red-50 to-red-100/40"
           sparkValues={actionSpark}
           sparkColor="hsl(var(--field-red))"
-          footnote={actionRequired > 0 ? 'Directe actie nodig' : 'Alles op schema'}
+          action={actionRequired > 0 ? () => navigate('/planning?view=kalender&filter=overdue') : undefined}
+          actionLabel={
+            actionRequired > 0
+              ? `${actionRequired} achterstallig herplannen →`
+              : undefined
+          }
+          footnote={actionRequired > 0 ? undefined : 'Alles op schema'}
         />
       </div>
 
