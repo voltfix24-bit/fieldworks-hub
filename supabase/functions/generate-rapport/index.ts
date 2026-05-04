@@ -41,7 +41,7 @@ async function tryGenerateViaExternalApi(
   rapportData: Record<string, unknown>,
   projectName: string,
   meetdatum: string,
-) {
+): Promise<{ pdf_base64: string; bestandsnaam: string } | { error: string; status: number }> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort("timeout"), EXTERNAL_API_TIMEOUT_MS);
 
@@ -65,8 +65,15 @@ async function tryGenerateViaExternalApi(
         if (detailText) detailMsg = detailText.slice(0, 500);
       }
 
-      console.warn("generate-rapport external api mislukt, fallback naar browser-pdf:", detailMsg);
-      return null;
+      console.warn("generate-rapport external api mislukt:", apiResponse.status, detailMsg);
+
+      if (apiResponse.status === 404 && /application not found/i.test(detailText)) {
+        return {
+          error: `De rapport-service (Railway) is offline of verwijderd. Controleer je Railway deployment of update de RAPPORT_API_URL. (URL: ${rapportApiUrl})`,
+          status: 503,
+        };
+      }
+      return { error: detailMsg, status: apiResponse.status };
     }
 
     const result = await apiResponse.json();
@@ -79,8 +86,13 @@ async function tryGenerateViaExternalApi(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn("generate-rapport external api timeout/fout, fallback naar browser-pdf:", message);
-    return null;
+    console.warn("generate-rapport external api timeout/fout:", message);
+    return {
+      error: message === "timeout" || (error as any)?.name === "AbortError"
+        ? `De rapport-service reageerde niet binnen ${EXTERNAL_API_TIMEOUT_MS / 1000}s.`
+        : `Verbinding met rapport-service mislukt: ${message}`,
+      status: 504,
+    };
   } finally {
     clearTimeout(timeoutId);
   }
@@ -314,8 +326,8 @@ Deno.serve(async (req) => {
       meetdatum,
     );
 
-    if (!externalResult?.pdf_base64) {
-      return jsonResponse({ error: "PDF generatie mislukt — de rapport API reageerde niet of gaf een fout." }, 500);
+    if ("error" in externalResult) {
+      return jsonResponse({ error: externalResult.error }, externalResult.status);
     }
 
     return jsonResponse(externalResult);
