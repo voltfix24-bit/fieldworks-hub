@@ -457,34 +457,38 @@ export default function Dashboard() {
 }
 
 /* ── Desktop Stat Card ── */
-function DeskStatCard({ label, value, icon: Icon, accentClass, accentBg, valueClass, footnote, action, actionLabel, sparkValues, sparkColor }: {
+function DeskStatCard({ label, value, icon: Icon, accentClass, accentBg, valueClass, footnote, action, actionLabel, sparkValues, sparkColor, tintClass }: {
   label: string; value: number; icon: any;
   accentClass: string; accentBg: string; barClass: string;
   valueClass?: string; footnote?: string;
   action?: () => void; actionLabel?: string;
   sparkValues: number[]; sparkColor: string;
+  tintClass: string;
 }) {
   return (
-    <div className="bg-card rounded-xl border border-border/25 px-5 py-4 relative overflow-hidden shadow-[0_1px_4px_hsl(var(--foreground)/0.05)] hover:shadow-[0_3px_12px_hsl(var(--foreground)/0.07)] hover:border-border/35 transition-all duration-200 group">
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground/55">{label}</span>
-        <div className={`w-8 h-8 rounded-md ${accentBg} flex items-center justify-center shrink-0`}>
-          <Icon className={`h-[14px] w-[14px] ${accentClass}`} />
+    <div className={cn(
+      'rounded-3xl px-6 py-5 relative overflow-hidden border border-white/60 shadow-[0_4px_16px_hsl(var(--foreground)/0.04)] hover:shadow-[0_8px_24px_hsl(var(--foreground)/0.06)] transition-all duration-200',
+      tintClass
+    )}>
+      <div className="flex items-start justify-between mb-3">
+        <span className={cn('text-[10px] font-extrabold uppercase tracking-[0.18em]', accentClass, 'opacity-80')}>{label}</span>
+        <div className={`w-9 h-9 rounded-xl ${accentBg} flex items-center justify-center shrink-0 shadow-[0_2px_6px_hsl(var(--foreground)/0.06)]`}>
+          <Icon className={`h-4 w-4 ${accentClass}`} />
         </div>
       </div>
-      <div className="flex items-end justify-between gap-3">
-        <p className={`font-display text-[44px] font-black leading-none tracking-[-0.03em] ${valueClass || 'text-foreground'}`}>
-          {value}
-        </p>
-        <Sparkline values={sparkValues} color={sparkColor} className="mb-1" />
-      </div>
+      <p className={`font-display text-[44px] font-black leading-none tracking-[-0.03em] ${valueClass || 'text-foreground'}`}>
+        {value}
+      </p>
       {action ? (
-        <button onClick={(e) => { e.stopPropagation(); action(); }} className={`flex items-center gap-1 text-[10px] font-bold ${accentClass} hover:underline uppercase tracking-[0.08em] mt-3`}>
+        <button onClick={(e) => { e.stopPropagation(); action(); }} className={`flex items-center gap-1 text-[10px] font-bold ${accentClass} hover:underline uppercase tracking-[0.12em] mt-2.5`}>
           {actionLabel} <ArrowRight className="h-2.5 w-2.5" />
         </button>
       ) : (
-        <p className="text-[10px] text-muted-foreground/40 font-semibold tracking-wide mt-3">{footnote}</p>
+        <p className={cn('text-[11px] font-medium tracking-wide mt-2.5', accentClass, 'opacity-70')}>{footnote}</p>
       )}
+      <div className="mt-3 -mx-1">
+        <Sparkline values={sparkValues} color={sparkColor} className="w-full" />
+      </div>
     </div>
   );
 }
