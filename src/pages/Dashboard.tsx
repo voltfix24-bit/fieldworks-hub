@@ -277,6 +277,19 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fade-in space-y-5">
+      {/* ── Page header ── */}
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-[26px] font-black tracking-[-0.02em] text-foreground">
+          Dashboard
+        </h1>
+        <button
+          onClick={() => navigate('/projects/new')}
+          className="flex items-center gap-2 bg-primary text-primary-foreground text-[12px] font-bold px-4 py-2.5 rounded-lg hover:brightness-110 transition-all shadow-[0_2px_8px_hsl(var(--primary)/0.3)]"
+        >
+          <Plus className="h-4 w-4" /> New Project
+        </button>
+      </div>
+
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-3 gap-4">
         <DeskStatCard
