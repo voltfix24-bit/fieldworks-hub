@@ -329,6 +329,22 @@ export default function ProjectReport() {
               </button>
             </div>
 
+            {/* Alternatieve generator (browser-based, geen externe API) */}
+            <button
+              onClick={handleDownloadBrowser}
+              disabled={!actieveHandtekening || browserBezig}
+              className={cn(
+                'mt-2 w-full flex items-center justify-center gap-2 rounded-xl font-semibold text-[13px] py-2.5 px-4 transition-all active:scale-[0.98] border',
+                actieveHandtekening
+                  ? 'bg-background text-foreground border-border hover:bg-muted/40'
+                  : 'bg-muted/20 text-muted-foreground/40 border-transparent cursor-not-allowed'
+              )}
+              title="Genereert het rapport lokaal in de browser via de React-template (geen Railway nodig)."
+            >
+              {browserBezig ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+              {browserBezig ? 'Browser-PDF genereren…' : 'Browser-PDF (alternatief)'}
+            </button>
+
 
             {/* Email modal */}
             {emailOpen && (
