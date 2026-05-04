@@ -415,9 +415,13 @@ export default function Dashboard() {
           <DashboardMiniMap projects={projects ?? []} />
 
           <div className="bg-card rounded-3xl border border-border/20 overflow-hidden shadow-[0_4px_16px_hsl(var(--foreground)/0.04)]">
-            <div className="px-6 pt-5 pb-3">
+            <button
+              onClick={() => navigate('/planning')}
+              className="w-full flex items-center justify-between px-6 pt-5 pb-3 group"
+            >
               <h3 className="text-[16px] font-bold text-foreground tracking-tight">Vandaag: Afspraken</h3>
-            </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            </button>
             {todayAppointments.length > 0 ? (
               <div className="px-6 pb-5 max-h-[360px] overflow-y-auto">
                 <div className="relative">
@@ -454,16 +458,21 @@ export default function Dashboard() {
           {/* Overdue alert */}
           {overdueProjects.length > 0 && (
             <button
-              onClick={() => navigate('/planning?view=kalender')}
-              className="w-full flex items-center gap-3 bg-field-red/[0.06] border border-field-red/15 rounded-xl px-4 py-3 hover:bg-field-red/[0.1] transition-all group text-left"
+              onClick={() => navigate('/planning?view=kalender&filter=overdue')}
+              className="w-full flex items-start gap-3 bg-field-red/[0.06] border border-field-red/15 rounded-2xl px-4 py-3.5 hover:bg-field-red/[0.1] transition-all group text-left"
             >
-              <div className="w-8 h-8 rounded-lg bg-field-red/12 flex items-center justify-center shrink-0">
-                <AlertTriangle className="h-3.5 w-3.5 text-field-red" />
+              <div className="w-9 h-9 rounded-xl bg-field-red/12 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-4 w-4 text-field-red" />
               </div>
-              <p className="flex-1 text-[12px] font-bold text-field-red">
-                {overdueProjects.length} achterstallig
-              </p>
-              <ArrowRight className="h-3.5 w-3.5 text-field-red/30 group-hover:translate-x-0.5 transition-all" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[12.5px] font-bold text-field-red leading-tight">
+                  {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
+                </p>
+                <p className="text-[11px] text-field-red/70 mt-0.5 leading-snug">
+                  Herplan of werk de status bij
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-field-red/40 group-hover:translate-x-0.5 transition-all mt-1" />
             </button>
           )}
         </div>
