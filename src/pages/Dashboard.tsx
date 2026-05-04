@@ -297,8 +297,9 @@ export default function Dashboard() {
           value={planned.length}
           icon={Calendar}
           accentClass="text-primary"
-          accentBg="bg-primary/10"
+          accentBg="bg-white"
           barClass="bg-primary"
+          tintClass="bg-gradient-to-br from-blue-50 to-blue-100/40"
           sparkValues={plannedSpark}
           sparkColor="hsl(var(--primary))"
           action={() => navigate('/planning?view=kalender')}
@@ -309,21 +310,23 @@ export default function Dashboard() {
           value={completed.length}
           icon={CheckCircle2}
           accentClass="text-field-green"
-          accentBg="bg-field-green/10"
+          accentBg="bg-white"
           barClass="bg-field-green"
           valueClass="text-field-green"
+          tintClass="bg-gradient-to-br from-green-50 to-green-100/40"
           sparkValues={completedSpark}
           sparkColor="hsl(var(--field-green))"
-          footnote="Totaal afgerond"
+          footnote="Total algernond"
         />
         <DeskStatCard
           label="Actie Vereist"
           value={actionRequired}
           icon={AlertTriangle}
           accentClass="text-field-red"
-          accentBg="bg-field-red/10"
+          accentBg="bg-white"
           barClass="bg-field-red"
           valueClass="text-field-red"
+          tintClass="bg-gradient-to-br from-red-50 to-red-100/40"
           sparkValues={actionSpark}
           sparkColor="hsl(var(--field-red))"
           footnote={actionRequired > 0 ? 'Directe actie nodig' : 'Alles op schema'}
