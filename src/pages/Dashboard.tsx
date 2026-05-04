@@ -407,32 +407,38 @@ export default function Dashboard() {
         <div className="space-y-4">
           <DashboardMiniMap projects={projects ?? []} />
 
-          <div className="bg-card rounded-xl border border-border/25 overflow-hidden shadow-[0_1px_4px_hsl(var(--foreground)/0.05)]">
-            <div className="px-5 py-3.5 border-b border-border/15">
-              <h3 className="text-[14px] font-bold text-foreground">Vandaag: Afspraken</h3>
+          <div className="bg-card rounded-3xl border border-border/20 overflow-hidden shadow-[0_4px_16px_hsl(var(--foreground)/0.04)]">
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-[16px] font-bold text-foreground tracking-tight">Vandaag: Afspraken</h3>
             </div>
             {todayAppointments.length > 0 ? (
-              <div className="px-5 py-3 space-y-3.5 max-h-[260px] overflow-y-auto">
-                {todayAppointments.map(a => (
-                  <button
-                    key={a.id}
-                    onClick={() => navigate(`/projects/${a.id}`)}
-                    className="w-full flex items-start gap-3 text-left group"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
-                        {a.slot} - {a.project_name || 'Klantmoetting'}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/55 truncate mt-0.5">
-                        Inspectie {a.project_number}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+              <div className="px-6 pb-5 max-h-[360px] overflow-y-auto">
+                <div className="relative">
+                  <div className="absolute left-[5px] top-2 bottom-2 w-px bg-border/40" />
+                  {todayAppointments.map((a, i) => (
+                    <button
+                      key={a.id}
+                      onClick={() => navigate(`/projects/${a.id}`)}
+                      className="w-full flex items-start gap-4 text-left group relative pb-4 last:pb-0"
+                    >
+                      <span className={cn(
+                        'w-[11px] h-[11px] rounded-full mt-1 shrink-0 z-10 border-2 border-card',
+                        i === 1 ? 'bg-primary' : 'bg-muted-foreground/25'
+                      )} />
+                      <div className="flex-1 min-w-0 -mt-0.5">
+                        <p className="text-[13px] font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                          {a.slot} - {a.project_name || 'Klantontmoeting'}
+                        </p>
+                        <p className="text-[11.5px] text-muted-foreground/60 truncate mt-0.5">
+                          Inspectie {a.project_number}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
-              <div className="px-5 py-8 text-center">
+              <div className="px-6 py-8 text-center">
                 <p className="text-[11px] text-muted-foreground/40 font-medium">Geen afspraken vandaag</p>
               </div>
             )}
