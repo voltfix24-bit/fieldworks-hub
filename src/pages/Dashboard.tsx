@@ -8,12 +8,14 @@ import { formatNlDate, formatNlDateCompact } from '@/lib/nl-date';
 import {
   FolderKanban, CheckCircle2, Clock, MapPin,
   Calendar, ChevronRight, ArrowRight, AlertTriangle,
-  Plus, FileText, Building2, Zap,
+  Plus, FileText, Building2, Zap, ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO, isPast } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { DashboardMiniMap } from '@/components/dashboard/DashboardMiniMap';
+import { Sparkline } from '@/components/dashboard/Sparkline';
 
 export default function Dashboard() {
   const { tenant } = useTenant();
