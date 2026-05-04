@@ -326,8 +326,8 @@ Deno.serve(async (req) => {
       meetdatum,
     );
 
-    if (!externalResult?.pdf_base64) {
-      return jsonResponse({ error: "PDF generatie mislukt — de rapport API reageerde niet of gaf een fout." }, 500);
+    if ("error" in externalResult) {
+      return jsonResponse({ error: externalResult.error }, externalResult.status);
     }
 
     return jsonResponse(externalResult);
