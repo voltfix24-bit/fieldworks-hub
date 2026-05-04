@@ -16,7 +16,7 @@ const CITY_COORDS: Record<string, [number, number]> = {
   'den bosch': [51.6998, 5.3049], "'s-hertogenbosch": [51.6998, 5.3049], zwolle: [52.5168, 6.0830],
   zoetermeer: [52.0575, 4.4931], leiden: [52.1601, 4.4970], maastricht: [50.8514, 5.6910],
   dordrecht: [51.8133, 4.6901], delft: [52.0116, 4.3571], alkmaar: [52.6324, 4.7534],
-  kamerik: [52.1063, 4.8807], rotterdam: [51.9244, 4.4777],
+  kamerik: [52.1063, 4.8807],
 };
 
 const DEFAULT_CENTER: [number, number] = [52.1326, 5.2913];
