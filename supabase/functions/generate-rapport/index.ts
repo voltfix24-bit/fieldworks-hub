@@ -26,9 +26,14 @@ async function urlToBase64(url: string): Promise<string | null> {
     if (!resp.ok) return null;
     const buf = await resp.arrayBuffer();
     const bytes = new Uint8Array(buf);
+    // Chunked encode to avoid building one huge binary string (memory blowup)
+    const CHUNK = 0x8000;
     let binary = "";
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(
+        null,
+        bytes.subarray(i, i + CHUNK) as unknown as number[],
+      );
     }
     return btoa(binary);
   } catch {
@@ -242,17 +247,15 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Convert photo URLs to base64 for the Python API
-    await Promise.all(
-      elektrodes.map(async (el) => {
-        const [displayB64, overzichtB64] = await Promise.all([
-          el.foto_display_url ? urlToBase64(el.foto_display_url) : null,
-          el.foto_overzicht_url ? urlToBase64(el.foto_overzicht_url) : null,
-        ]);
-        el.foto_display_b64 = displayB64;
-        el.foto_overzicht_b64 = overzichtB64;
-      })
-    );
+    // Convert photo URLs to base64 sequentially to keep memory usage low
+    for (const el of elektrodes) {
+      if (el.foto_display_url) {
+        el.foto_display_b64 = await urlToBase64(el.foto_display_url);
+      }
+      if (el.foto_overzicht_url) {
+        el.foto_overzicht_b64 = await urlToBase64(el.foto_overzicht_url);
+      }
+    }
 
     const projectTargetValue = (project as any).target_value
       ? Number((project as any).target_value)
