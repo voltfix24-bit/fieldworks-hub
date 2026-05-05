@@ -247,17 +247,15 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Convert photo URLs to base64 for the Python API
-    await Promise.all(
-      elektrodes.map(async (el) => {
-        const [displayB64, overzichtB64] = await Promise.all([
-          el.foto_display_url ? urlToBase64(el.foto_display_url) : null,
-          el.foto_overzicht_url ? urlToBase64(el.foto_overzicht_url) : null,
-        ]);
-        el.foto_display_b64 = displayB64;
-        el.foto_overzicht_b64 = overzichtB64;
-      })
-    );
+    // Convert photo URLs to base64 sequentially to keep memory usage low
+    for (const el of elektrodes) {
+      if (el.foto_display_url) {
+        el.foto_display_b64 = await urlToBase64(el.foto_display_url);
+      }
+      if (el.foto_overzicht_url) {
+        el.foto_overzicht_b64 = await urlToBase64(el.foto_overzicht_url);
+      }
+    }
 
     const projectTargetValue = (project as any).target_value
       ? Number((project as any).target_value)
