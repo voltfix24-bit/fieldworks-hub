@@ -26,9 +26,14 @@ async function urlToBase64(url: string): Promise<string | null> {
     if (!resp.ok) return null;
     const buf = await resp.arrayBuffer();
     const bytes = new Uint8Array(buf);
+    // Chunked encode to avoid building one huge binary string (memory blowup)
+    const CHUNK = 0x8000;
     let binary = "";
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(
+        null,
+        bytes.subarray(i, i + CHUNK) as unknown as number[],
+      );
     }
     return btoa(binary);
   } catch {
