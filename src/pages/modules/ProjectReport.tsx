@@ -263,6 +263,11 @@ export default function ProjectReport() {
           <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
+          {isReady && (
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" /> Print / PDF
+            </Button>
+          )}
         </div>
       </div>
 
