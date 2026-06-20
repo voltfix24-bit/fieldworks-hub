@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Paperclip, Save, PenTool } from 'lucide-react';
+import { AlertTriangle, Paperclip, Save, PenTool } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import HandtekeningPad from '../../HandtekeningPad';
@@ -29,6 +29,10 @@ export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningCh
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
+  const elektrodesMetOntbrekendeVerplichteFotos = elektrodes.filter((e) => {
+    const voldoet = e.eindwaarde !== null && e.targetValue !== null && e.eindwaarde <= e.targetValue;
+    return voldoet && (!e.heeftDisplayFoto || !e.heeftOverzichtFoto);
+  });
 
   const handleHandtekeningChange = async (base64: string | null) => {
     onHandtekeningChange?.(base64);
@@ -88,31 +92,36 @@ export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningCh
               const voldoet = heeftWaarde && e.targetValue !== null && e.eindwaarde! <= e.targetValue;
               const fotosOk = e.heeftDisplayFoto && e.heeftOverzichtFoto;
               const fotosDeels = e.heeftDisplayFoto || e.heeftOverzichtFoto;
+              const fotosVerplichtOntbreken = voldoet && !fotosOk;
 
               return (
                 <div key={e.id} className="flex items-center gap-3 px-4 py-3">
                   <div className={cn(
                     'w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold',
                     voldoet
-                      ? 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
+                      ? fotosVerplichtOntbreken
+                        ? 'bg-amber-500/10 text-amber-600'
+                        : 'bg-[hsl(var(--status-completed)/0.1)] text-[hsl(var(--status-completed))]'
                       : heeftWaarde
                         ? 'bg-destructive/10 text-destructive'
                         : 'bg-muted/30 text-muted-foreground/40'
                   )}>
-                    {voldoet ? '✓' : heeftWaarde ? '✗' : i + 1}
+                    {voldoet ? fotosVerplichtOntbreken ? '!' : '✓' : heeftWaarde ? '✗' : i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-foreground">{e.code}</p>
                     <p className={cn(
                       'text-[11px] font-medium',
                       voldoet
-                        ? 'text-[hsl(var(--status-completed))]'
+                        ? fotosVerplichtOntbreken
+                          ? 'text-amber-600'
+                          : 'text-[hsl(var(--status-completed))]'
                         : heeftWaarde
                           ? 'text-destructive'
                           : 'text-muted-foreground/40'
                     )}>
                       {heeftWaarde
-                        ? `${e.eindtype} · ${String(e.eindwaarde).replace('.', ',')} Ω`
+                        ? `${e.eindtype} · ${String(e.eindwaarde).replace('.', ',')} Ω${fotosVerplichtOntbreken ? ' · foto’s verplicht' : ''}`
                         : 'Geen waarde'
                       }
                     </p>
@@ -121,9 +130,11 @@ export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningCh
                     'flex items-center gap-1 text-[10px] font-semibold shrink-0',
                     fotosOk
                       ? 'text-[hsl(var(--status-completed))]'
-                      : fotosDeels
-                        ? 'text-amber-500'
-                        : 'text-muted-foreground/25'
+                      : fotosVerplichtOntbreken
+                        ? 'text-amber-600'
+                        : fotosDeels
+                          ? 'text-amber-500'
+                          : 'text-muted-foreground/25'
                   )}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                       <rect x="3" y="5" width="18" height="15" rx="2" stroke="currentColor" strokeWidth="2"/>
@@ -134,6 +145,23 @@ export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningCh
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {elektrodesMetOntbrekendeVerplichteFotos.length > 0 && (
+        <div className={cn(
+          'mb-4 rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] text-amber-700 dark:text-amber-400',
+          compact ? 'p-3' : 'p-4'
+        )}>
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className={cn('font-bold', compact ? 'text-[12px]' : 'text-[13px]')}>Foto’s nog verplicht</p>
+              <p className={cn('mt-0.5 leading-snug', compact ? 'text-[11px]' : 'text-[12px]')}>
+                Voeg een meetdisplayfoto en overzichtsfoto toe voor: {elektrodesMetOntbrekendeVerplichteFotos.map((e) => e.code).join(', ')}.
+              </p>
+            </div>
           </div>
         </div>
       )}
