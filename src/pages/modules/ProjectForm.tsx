@@ -152,11 +152,38 @@ export default function ProjectForm() {
       let savedProject: any;
       if (isEdit) {
         savedProject = await updateMut.mutateAsync({ id, ...payload, status: existing?.status || 'planned' });
+
+        // Sync meetdatum: als de geplande datum wijzigt en er bestaat al een meetsessie,
+        // werk dan ook de meest recente project_measurement_sessions.measurement_date bij.
+        const oldDate = (existing as any)?.planned_date || null;
+        const newDate = payload.planned_date || null;
+        if (id && newDate && newDate !== oldDate) {
+          const { data: latestSession } = await supabase
+            .from('project_measurement_sessions')
+            .select('id, measurement_date')
+            .eq('project_id', id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (latestSession?.id) {
+            await supabase
+              .from('project_measurement_sessions')
+              .update({ measurement_date: newDate })
+              .eq('id', latestSession.id);
+            await Promise.all([
+              qc.invalidateQueries({ queryKey: ['measurement-session', id] }),
+              qc.invalidateQueries({ queryKey: ['report-data', id] }),
+              qc.invalidateQueries({ queryKey: ['projects', id] }),
+            ]);
+          }
+        }
+
         toast({ title: 'Project bijgewerkt' });
       } else {
         savedProject = await createMut.mutateAsync(payload);
         toast({ title: 'Project aangemaakt' });
       }
+
 
       // Upload project files
       const projectId = savedProject?.id || id;
