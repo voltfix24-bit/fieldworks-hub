@@ -33,19 +33,15 @@ export default function UserProfile() {
   }, []);
 
   const handleSave = async () => {
-    setSaving(true);
-    if (user) {
-      const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('id', user.id);
-      setSaving(false);
-      if (error) { toast({ title: 'Fout', description: error.message, variant: 'destructive' }); return; }
-    } else {
-      // Dev mode: update first profile in tenant
-      const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('tenant_id', '11111111-1111-1111-1111-111111111111');
-      setSaving(false);
-      if (error) { toast({ title: 'Fout', description: error.message, variant: 'destructive' }); return; }
+    if (!user) {
+      toast({ title: 'Niet ingelogd', description: 'Log opnieuw in om uw profiel bij te werken.', variant: 'destructive' });
+      return;
     }
+    setSaving(true);
+    const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('id', user.id);
+    setSaving(false);
+    if (error) { toast({ title: 'Fout', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Profiel bijgewerkt' });
-    // Reload to reflect changes in header
     window.location.reload();
   };
 
