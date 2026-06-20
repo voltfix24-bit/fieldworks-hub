@@ -14,6 +14,7 @@ import { ReportHeader } from '@/components/report/ReportHeader';
 import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
+import { ReportSummaryStats } from '@/components/report/ReportSummaryStats';
 
 import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
@@ -498,6 +499,14 @@ export default function ProjectReport() {
             projectNumber={project.project_number}
             measurementDate={session?.measurement_date}
             location={location}
+          />
+
+          <ReportSummaryStats
+            stats={stats}
+            electrodes={electrodes}
+            hasSketches={hasSketches}
+            calibrationLabel={formatNlDate(equip?.next_calibration_date)}
+            calibrationExpired={!!equipExpired}
           />
 
           {/* 2. Projectgegevens + Opdrachtgever */}
