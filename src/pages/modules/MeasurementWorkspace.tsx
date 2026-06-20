@@ -135,6 +135,27 @@ export default function MeasurementWorkspace() {
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
 
+  // Persist workspace position per project (sessionStorage)
+  useEffect(() => {
+    const key = workspaceStorageKey(id);
+    if (!key || typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.setItem(
+        key,
+        JSON.stringify({
+          step,
+          showSketch,
+          activeElectrodeId,
+          activePenId,
+          updatedAt: new Date().toISOString(),
+        }),
+      );
+    } catch {
+      /* sessionStorage unavailable — ignore */
+    }
+  }, [id, step, showSketch, activeElectrodeId, activePenId]);
+
+
   // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
   useEffect(() => {
     const blurActief = () => {
