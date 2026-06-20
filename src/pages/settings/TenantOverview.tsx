@@ -36,7 +36,7 @@ export default function TenantOverview() {
     setSaving(true);
     const { error } = await supabase
       .from('tenants')
-      .update(updates)
+      .update(updates as any)
       .eq('id', tenant.id);
     if (error) {
       toast({ title: 'Opslaan mislukt', description: error.message, variant: 'destructive' });
