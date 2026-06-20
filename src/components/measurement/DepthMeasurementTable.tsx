@@ -21,6 +21,7 @@ interface DepthMeasurementTableProps {
 }
 
 const PRESET_DEPTHS = new Set([3, 6, 9, 12, 15, 18, 21, 24, 27, 30]);
+const HIGH_RESISTANCE_WARNING_OHM = 100;
 
 /**
  * Check if a row's resistance is higher than the previous filled row.
@@ -66,6 +67,14 @@ function getGatenWarnings(measurements: DepthRow[]): Set<string> {
   return warnings;
 }
 
+function getHighResistanceWarnings(measurements: DepthRow[]): Set<string> {
+  const warnings = new Set<string>();
+  for (const m of measurements) {
+    if (m.id && m.resistance_value > HIGH_RESISTANCE_WARNING_OHM) warnings.add(m.id);
+  }
+  return warnings;
+}
+
 export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete, disabled, compact }: DepthMeasurementTableProps) {
   const lowestResistance = measurements.length > 0
     ? Math.min(...measurements.filter(m => m.resistance_value > 0).map(m => m.resistance_value))
@@ -84,6 +93,9 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
 
   // Gap validation
   const gatenWarningIds = getGatenWarnings(measurements);
+
+  // High resistance validation
+  const highWarningIds = getHighResistanceWarnings(measurements);
 
   // Sort measurements by depth
   const sortedMeasurements = [...measurements].sort((a, b) => a.depth_meters - b.depth_meters);
@@ -133,6 +145,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
             isNextEmpty={!!m.id && m.id === firstEmptyMeasurement?.id}
             hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
             heeftGatWaarschuwing={m.id ? gatenWarningIds.has(m.id) : false}
+            hasHighResistanceWarning={m.id ? highWarningIds.has(m.id) : false}
           />
         ))}
       </div>
@@ -187,6 +200,21 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
         </div>
       )}
 
+      {/* High value warnings summary */}
+      {highWarningIds.size > 0 && (
+        <div className={cn(
+          'flex items-start gap-2 rounded-md bg-amber-500/5 border border-amber-500/15',
+          compact ? 'px-2.5 py-1.5 mt-1' : 'px-3 py-2 mt-1.5'
+        )}>
+          <AlertTriangle className={cn('text-amber-500 shrink-0 mt-0.5', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+          <span className={cn('text-amber-700 dark:text-amber-400 font-medium leading-snug', compact ? 'text-[10px]' : 'text-[11px]')}>
+            {highWarningIds.size === 1
+              ? `Let op: 1 waarde is hoger dan ${HIGH_RESISTANCE_WARNING_OHM} Ω`
+              : `Let op: ${highWarningIds.size} waarden zijn hoger dan ${HIGH_RESISTANCE_WARNING_OHM} Ω`}
+          </span>
+        </div>
+      )}
+
       {/* Gap warnings summary */}
       {gatenWarningIds.size > 0 && (
         <div className={cn(
@@ -212,7 +240,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, isNextEmpty, hasProgressionWarning, heeftGatWaarschuwing }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, isNextEmpty, hasProgressionWarning, heeftGatWaarschuwing, hasHighResistanceWarning }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
@@ -224,6 +252,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   isNextEmpty?: boolean;
   hasProgressionWarning?: boolean;
   heeftGatWaarschuwing?: boolean;
+  hasHighResistanceWarning?: boolean;
 }) {
   const [resistance, setResistance] = useState(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
   const [isFocused, setIsFocused] = useState(false);
@@ -273,7 +302,8 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
       className={cn(
         'transition-colors duration-75 relative',
         hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
-        heeftGatWaarschuwing && !hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-300',
+        !hasProgressionWarning && hasHighResistanceWarning && !isFocused && 'border-l-2 border-l-amber-400',
+        heeftGatWaarschuwing && !hasProgressionWarning && !hasHighResistanceWarning && !isFocused && 'border-l-2 border-l-amber-300',
         isNextEmpty && !isFocused && 'border-l-2 border-l-[hsl(var(--tenant-primary,var(--primary)))]',
       )}
     >
@@ -292,7 +322,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             : 'grid-cols-[64px_1fr_40px] gap-2 px-2 min-h-[56px]',
           isEven ? 'bg-card' : 'bg-muted/20',
           isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
-          hasProgressionWarning && 'bg-amber-500/[0.04]',
+          (hasProgressionWarning || hasHighResistanceWarning) && 'bg-amber-500/[0.04]',
           isNextEmpty && !hasValue && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.045)]',
           isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
           saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
@@ -379,7 +409,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
               'w-full bg-transparent outline-none border-0 depth-measurement-input',
               compact ? 'h-12 text-[16px] pr-4 px-3' : 'h-12 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
-              hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
+              (hasProgressionWarning || hasHighResistanceWarning) && !isLowest && 'text-amber-700 dark:text-amber-400',
               isNextEmpty && !hasValue && 'font-bold text-[hsl(var(--tenant-primary,var(--primary)))]',
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
               'placeholder:text-muted-foreground/25'
@@ -394,7 +424,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
 
         {/* Delete / warning icon */}
         <div className="flex justify-center">
-          {hasProgressionWarning ? (
+          {hasProgressionWarning || hasHighResistanceWarning ? (
             <div className="min-h-[44px] min-w-[44px] flex items-center justify-center">
               <AlertTriangle className={cn('text-amber-500', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
             </div>
@@ -423,6 +453,17 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         )}>
           <span className="text-amber-600 dark:text-amber-400 font-medium">
             Let op: waarde is hoger dan vorige diepte
+          </span>
+        </div>
+      )}
+
+      {hasHighResistanceWarning && !hasProgressionWarning && (
+        <div className={cn(
+          'flex items-center gap-1.5 bg-amber-500/[0.04]',
+          compact ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-[10px]',
+        )}>
+          <span className="text-amber-600 dark:text-amber-400 font-medium">
+            Let op: ongebruikelijk hoge waarde
           </span>
         </div>
       )}
