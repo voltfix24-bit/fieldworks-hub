@@ -141,29 +141,67 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { project_id, handtekening_b64 } = await req.json();
-    if (!project_id) {
-      return jsonResponse({ error: "project_id is vereist" }, 400);
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const project_id = typeof body.project_id === "string" ? body.project_id : null;
+    const handtekening_b64 =
+      typeof body.handtekening_b64 === "string" ? body.handtekening_b64 : undefined;
+
+    if (!project_id || !/^[0-9a-f-]{32,40}$/i.test(project_id)) {
+      return jsonResponse({ error: "Geldig project_id is vereist" }, 400);
     }
 
+    // ─── Auth check ────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return jsonResponse({ error: "Niet geauthenticeerd" }, 401);
+    }
+    const token = authHeader.slice("Bearer ".length);
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: authHeader } } },
     );
 
-    // First fetch project to get tenant_id
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return jsonResponse({ error: "Ongeldige sessie" }, 401);
+    }
+    const userId = claimsData.claims.sub as string;
+
+    // Service-role client for storage downloads (private bucket)
+    const sbAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    // Look up the user's tenant
+    const { data: profile, error: profileError } = await sbAdmin
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (profileError || !profile?.tenant_id) {
+      return jsonResponse({ error: "Geen tenant gevonden voor gebruiker" }, 403);
+    }
+    const userTenantId = profile.tenant_id as string;
+
+    // Fetch project via user-scoped client → RLS enforces tenant access
     const projectRes = await supabase
       .from("projects")
       .select("*, clients(*), technicians(*), equipment(*)")
       .eq("id", project_id)
-      .single();
+      .maybeSingle();
 
     if (projectRes.error) throw projectRes.error;
-    if (!projectRes.data) throw new Error("Project niet gevonden");
+    if (!projectRes.data) {
+      return jsonResponse({ error: "Project niet gevonden of geen toegang" }, 404);
+    }
 
     const project = projectRes.data;
+    if (project.tenant_id !== userTenantId) {
+      return jsonResponse({ error: "Geen toegang tot dit project" }, 403);
+    }
     const tenantId = project.tenant_id;
 
     const [sessionRes, electrodesRes, pensRes, depthsRes, brandingRes] =
@@ -279,13 +317,13 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Convert photo URLs to base64 sequentially to keep memory usage low
+    // Download photos via service role from the private bucket and base64-encode sequentially
     for (const el of elektrodes) {
       if (el.foto_display_url) {
-        el.foto_display_b64 = await urlToBase64(el.foto_display_url);
+        el.foto_display_b64 = await photoToBase64(sbAdmin, el.foto_display_url, tenantId);
       }
       if (el.foto_overzicht_url) {
-        el.foto_overzicht_b64 = await urlToBase64(el.foto_overzicht_url);
+        el.foto_overzicht_b64 = await photoToBase64(sbAdmin, el.foto_overzicht_url, tenantId);
       }
     }
 
