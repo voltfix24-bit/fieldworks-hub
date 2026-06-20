@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/use-projects';
@@ -33,6 +33,20 @@ export default function ProjectDetail() {
   const { data: reportData } = useReportData(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRapportBlock, setShowRapportBlock] = useState(false);
+  const [hasDiagram, setHasDiagram] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from('project_diagrams')
+        .select('id')
+        .eq('project_id', id)
+        .limit(1)
+        .maybeSingle();
+      setHasDiagram(!!data?.id);
+    })();
+  }, [id]);
 
   if (isLoading) return <Loader />;
   if (!project) return <p className="text-muted-foreground/40 text-center py-16">Project niet gevonden</p>;
@@ -66,6 +80,7 @@ export default function ProjectDetail() {
     { label: 'Minimaal één geldige meetwaarde', met: hasMeasurements },
     { label: "Foto's toegevoegd", met: hasPhotos, optional: true },
     { label: 'Schets toegevoegd', met: hasSketches, optional: true },
+    { label: 'Situatieschets gemaakt', met: hasDiagram, optional: true },
   ];
 
   const handleStatusChange = async (newStatus: 'planned' | 'completed') => {
