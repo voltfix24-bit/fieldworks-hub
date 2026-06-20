@@ -2,6 +2,8 @@ import { ReportElectrode } from '@/hooks/use-report-data';
 import { ReportImageBlock } from './ReportImageBlock';
 import { formatNlNumber } from '@/lib/nl-number';
 
+const DEFAULT_TARGET_VALUE = 2;
+
 interface ReportElectrodeSectionProps {
   electrode: ReportElectrode;
   index: number;
@@ -28,8 +30,8 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
   const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
   const resultType = hasRv ? 'RV' : 'RA';
   const resultValue = hasRv ? Number(electrode.rv_value) : electrode.ra_value != null ? Number(electrode.ra_value) : null;
-  const targetValue = electrode.target_value != null ? Number(electrode.target_value) : null;
-  const isOk = resultValue != null && targetValue != null
+  const targetValue = electrode.target_value != null ? Number(electrode.target_value) : DEFAULT_TARGET_VALUE;
+  const isOk = resultValue != null
     ? resultValue <= targetValue
     : electrode.target_met === true;
   const hasResult = resultValue != null && resultValue > 0;
@@ -100,7 +102,7 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
         <div className="flex flex-col justify-center bg-slate-50 px-5 py-4">
           <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">Toetswaarde</p>
           <p className="mt-2 text-[22px] font-extrabold text-slate-900 tabular-nums">
-            {targetValue != null ? `≤ ${formatNlNumber(targetValue)} Ω` : emptyCellChar}
+            ≤ {formatNlNumber(targetValue)} Ω
           </p>
           <p className={isOk ? 'mt-1 text-[11px] font-semibold text-emerald-700' : 'mt-1 text-[11px] font-semibold text-red-700'}>
             {isOk ? 'Binnen grenswaarde' : 'Buiten grenswaarde of niet compleet'}
@@ -141,7 +143,7 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
                     <td className="border-t border-slate-200 px-3 py-2 font-semibold tabular-nums text-slate-700">{formatNlNumber(depth, 1)}</td>
                     {activePens.map(pen => {
                       const val = valueLookup.get(pen.id)?.get(depth);
-                      const valueOk = targetValue != null && val != null && val <= targetValue;
+                      const valueOk = val != null && val <= targetValue;
                       return (
                         <td key={pen.id} className={valueOk ? 'border-t border-slate-200 px-3 py-2 text-right font-extrabold tabular-nums text-emerald-700 bg-emerald-50/60' : 'border-t border-slate-200 px-3 py-2 text-right font-semibold tabular-nums text-slate-800'}>
                           {val != null ? formatNlNumber(val) : emptyCellChar}
@@ -154,7 +156,7 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
             </table>
           </div>
           <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[9.5px] leading-relaxed text-slate-400">
-            Meetmethode: 3-punts aardingsweerstandsmeting. Maatgevende waarde: {resultType}. Toetswaarde: {targetValue != null ? `≤ ${formatNlNumber(targetValue)} Ω` : emptyCellChar}.
+            Meetmethode: 3-punts aardingsweerstandsmeting. Maatgevende waarde: {resultType}. Toetswaarde: ≤ {formatNlNumber(targetValue)} Ω.
           </p>
         </div>
       )}
