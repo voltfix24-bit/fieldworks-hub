@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Camera, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
+import { toast } from '@/hooks/use-toast';
 
 interface PhotoUploaderProps {
   label: string;
@@ -13,6 +14,23 @@ interface PhotoUploaderProps {
   compact?: boolean;
 }
 
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_EXT = /\.(jpe?g|png|webp)$/i;
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function validateImage(file: File): string | null {
+  if (!ALLOWED_MIME.includes(file.type.toLowerCase()) || !ALLOWED_EXT.test(file.name)) {
+    return 'Alleen JPEG, PNG of WebP toegestaan.';
+  }
+  if (file.size > MAX_BYTES) {
+    return `Bestand is te groot (max ${Math.round(MAX_BYTES / 1024 / 1024)} MB).`;
+  }
+  if (file.size === 0) {
+    return 'Bestand is leeg.';
+  }
+  return null;
+}
+
 export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(function PhotoUploader({ label, currentUrl, onUpload, onRemove, uploading, compact }, ref) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -21,10 +39,17 @@ export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(func
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    const err = validateImage(file);
+    if (err) {
+      toast({ title: 'Foto niet geaccepteerd', description: err, variant: 'destructive' });
+      return;
+    }
     setPreview(URL.createObjectURL(file));
     await onUpload(file);
   };
+
 
   const displayUrl = preview || currentUrl;
 
