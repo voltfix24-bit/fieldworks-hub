@@ -226,17 +226,17 @@ export default function MeasurementWorkspace() {
   // Exit confirmation
   const [toonAfsluitBevestiging, setToonAfsluitBevestiging] = useState(false);
 
-  // Track active electrode
+  // Track active electrode — fallback to FIRST available when stored/current id is gone
   useEffect(() => {
     if (electrodes.length > 0 && !electrodes.find((e: any) => e.id === activeElectrodeId)) {
-      setActiveElectrodeId(electrodes[electrodes.length - 1].id);
+      setActiveElectrodeId(electrodes[0].id);
     }
   }, [electrodes]);
 
-  // Track active pen
+  // Track active pen — fallback to FIRST available when stored/current id is gone
   useEffect(() => {
     if (pens.length > 0 && !pens.find((p: any) => p.id === activePenId)) {
-      setActivePenId(pens[pens.length - 1].id);
+      setActivePenId(pens[0].id);
     }
   }, [pens]);
 
