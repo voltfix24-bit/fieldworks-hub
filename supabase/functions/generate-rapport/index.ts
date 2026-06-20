@@ -171,14 +171,14 @@ async function renderPdf(data: any): Promise<Uint8Array> {
   const block = (title: string, rows: [string, string | null | undefined][], col: 0 | 1) => {
     const x = M + col * (colW + 20);
     let by = y;
-    page.drawText(title.toUpperCase(), { x, y: by, size: 8, font: bold, color: rgb(brand.r, brand.g, brand.b) });
+    page.drawText(sanitize(title.toUpperCase()), { x, y: by, size: 8, font: bold, color: rgb(brand.r, brand.g, brand.b) });
     by -= 11;
     for (const [k, v] of rows) {
       if (!v) continue;
-      page.drawText(k, { x, y: by, size: 8.5, font, color: mute });
+      page.drawText(sanitize(k), { x, y: by, size: 8.5, font, color: mute });
       const lines = wrap(String(v), 38);
       for (let i = 0; i < lines.length; i++) {
-        page.drawText(lines[i], { x: x + 78, y: by - i * 11, size: 9, font: bold, color: ink });
+        page.drawText(sanitize(lines[i]), { x: x + 78, y: by - i * 11, size: 9, font: bold, color: ink });
       }
       by -= 11 * Math.max(1, lines.length) + 2;
     }
