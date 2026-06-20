@@ -108,7 +108,7 @@ export default function MeerPage() {
         </div>
 
         {/* Menu sections */}
-        {MENU_SECTIONS.map(section => (
+        {visibleSections.map(section => (
           <div key={section.title} className="ios-meer-section">
             <p className="ios-meer-section-title">{section.title}</p>
             <div className="ios-meer-card">
@@ -227,7 +227,7 @@ export default function MeerPage() {
         </button>
       </div>
 
-      {MENU_SECTIONS.map(section => (
+      {visibleSections.map(section => (
         <div key={section.title} className="mb-4">
           <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/40 px-1 mb-1.5">
             {section.title}
