@@ -24,11 +24,15 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes, show
   );
   if (activePens.length === 0) return null;
 
-  const showElectrodeHeader = totalElectrodes > 1;
-
   // RA/RV logic: never show both — RV takes precedence when filled
   const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
-  const hasRa = !hasRv && electrode.ra_value != null && electrode.ra_value > 0;
+  const resultType = hasRv ? 'RV' : 'RA';
+  const resultValue = hasRv ? Number(electrode.rv_value) : electrode.ra_value != null ? Number(electrode.ra_value) : null;
+  const targetValue = electrode.target_value != null ? Number(electrode.target_value) : null;
+  const isOk = resultValue != null && targetValue != null
+    ? resultValue <= targetValue
+    : electrode.target_met === true;
+  const hasResult = resultValue != null && resultValue > 0;
 
   const electrodeDisplay = electrode.electrode_code
     ? cleanCode(electrode.electrode_code, 'Elektrode')
@@ -56,80 +60,106 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes, show
   // Collect electrode-level photos (from all pens, but labelled at electrode level)
   const photos: { url: string; label: string }[] = [];
   activePens.forEach(pen => {
-    if (pen.display_photo_url) photos.push({ url: pen.display_photo_url, label: 'Detailfoto' });
+    if (pen.display_photo_url) photos.push({ url: pen.display_photo_url, label: 'Meetdisplay' });
     if (pen.overview_photo_url) photos.push({ url: pen.overview_photo_url, label: 'Overzichtsfoto' });
   });
 
   return (
-    <div className="report-electrode mb-8">
-      {/* Elektrode header */}
-      {showElectrodeHeader && (
-        <div className="mb-3 pb-1.5 border-b border-foreground/12">
-          <h3 className="text-[13px] font-bold text-foreground tracking-tight">
-            Elektrode {electrodeDisplay}
+    <section className="report-electrode mb-10 page-break-inside-avoid rounded-[18px] border border-slate-200 bg-white p-5 shadow-sm print:shadow-none print:p-4">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--tenant-primary))] text-[14px] font-extrabold text-white">
+            {index + 1}
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-[16px] font-extrabold tracking-tight text-slate-950 leading-tight">
+              Elektrode {electrodeDisplay}
+            </h3>
             {electrode.label && (
-              <span className="font-normal text-muted-foreground ml-2 text-[12px]">— {electrode.label}</span>
+              <p className="mt-0.5 text-[11px] text-slate-500 truncate">{electrode.label}</p>
             )}
-          </h3>
+          </div>
         </div>
-      )}
+        <div className={isOk ? 'report-status-pass' : 'report-status-fail'}>
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.08em]">
+            {isOk ? 'Voldoet' : 'Voldoet niet'}
+          </span>
+        </div>
+      </div>
 
-      {/* RA or RV (never both) */}
-      <div className="flex flex-wrap gap-x-8 gap-y-1.5 mb-4">
-        {hasRa && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">RA:</span>
-            <span className="text-[13px] font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.ra_value))} Ω</span>
-          </div>
-        )}
-        {hasRv && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">RV:</span>
-            <span className="text-[13px] font-bold text-foreground tabular-nums">{formatNlNumber(Number(electrode.rv_value))} Ω</span>
-          </div>
-        )}
+      <div className="mb-5 grid overflow-hidden rounded-2xl border border-slate-200 sm:grid-cols-2 print:grid-cols-2">
+        <div className={isOk ? 'bg-emerald-50 px-5 py-4' : 'bg-red-50 px-5 py-4'}>
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+            {resultType === 'RV' ? 'Aardverspreidingsweerstand (RV)' : 'Aardingsweerstand (RA)'}
+          </p>
+          <p className={isOk ? 'mt-2 text-[32px] font-extrabold leading-none tracking-tight text-emerald-700 tabular-nums' : 'mt-2 text-[32px] font-extrabold leading-none tracking-tight text-red-700 tabular-nums'}>
+            {hasResult ? formatNlNumber(resultValue) : emptyCellChar}
+            <span className="ml-1 text-[16px] font-bold">Ω</span>
+          </p>
+        </div>
+        <div className="flex flex-col justify-center bg-slate-50 px-5 py-4">
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">Toetswaarde</p>
+          <p className="mt-2 text-[22px] font-extrabold text-slate-900 tabular-nums">
+            {targetValue != null ? `≤ ${formatNlNumber(targetValue)} Ω` : emptyCellChar}
+          </p>
+          <p className={isOk ? 'mt-1 text-[11px] font-semibold text-emerald-700' : 'mt-1 text-[11px] font-semibold text-red-700'}>
+            {isOk ? 'Binnen grenswaarde' : 'Buiten grenswaarde of niet compleet'}
+          </p>
+        </div>
       </div>
 
       {electrode.notes && (
-        <p className="text-[11px] text-muted-foreground mb-3 italic leading-relaxed">{electrode.notes}</p>
+        <p className="mb-4 rounded-xl border-l-4 border-[hsl(var(--tenant-primary)/0.45)] bg-[hsl(var(--tenant-primary)/0.06)] px-4 py-3 text-[11px] italic leading-relaxed text-slate-600">
+          {electrode.notes}
+        </p>
       )}
 
-      {/* Combined measurement table */}
       {depths.length > 0 && (
-        <table className="w-full text-[11px] border-collapse mb-3">
-          <thead>
-            <tr className="border-b-2 border-foreground/15">
-              <th className="text-left py-1.5 pr-3 font-semibold text-foreground">Diepte (m)</th>
-              {activePens.map(pen => {
-                const penDisplay = cleanCode(pen.pen_code, 'Pen');
-                return (
-                  <th key={pen.id} className="text-right py-1.5 px-2 font-semibold text-foreground whitespace-nowrap">
-                    {activePens.length > 1 ? `Pen ${penDisplay} (Ω)` : 'Weerstand (Ω)'}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {depths.map(depth => (
-              <tr key={depth} className="border-b border-foreground/6">
-                <td className="py-1 pr-3 tabular-nums text-foreground">{formatNlNumber(depth, 1)}</td>
-                {activePens.map(pen => {
-                  const val = valueLookup.get(pen.id)?.get(depth);
-                  return (
-                    <td key={pen.id} className="py-1 px-2 text-right tabular-nums font-semibold text-foreground">
-                      {val != null ? formatNlNumber(val) : emptyCellChar}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mb-4">
+          <h4 className="mb-2 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-700">
+            <span className="h-0.5 w-4 rounded-full bg-[hsl(var(--tenant-primary))]" />
+            Meetwaarden per diepte
+          </h4>
+          <div className="overflow-hidden rounded-xl border border-slate-200">
+            <table className="w-full border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-[hsl(var(--tenant-primary))] text-white">
+                  <th className="px-3 py-2.5 text-left text-[9px] font-extrabold uppercase tracking-[0.1em]">Diepte (m)</th>
+                  {activePens.map(pen => {
+                    const penDisplay = cleanCode(pen.pen_code, 'Pen');
+                    return (
+                      <th key={pen.id} className="px-3 py-2.5 text-right text-[9px] font-extrabold uppercase tracking-[0.1em] whitespace-nowrap">
+                        {activePens.length > 1 ? `Pen ${penDisplay} (Ω)` : 'Weerstand (Ω)'}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {depths.map((depth, rowIndex) => (
+                  <tr key={depth} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                    <td className="border-t border-slate-200 px-3 py-2 font-semibold tabular-nums text-slate-700">{formatNlNumber(depth, 1)}</td>
+                    {activePens.map(pen => {
+                      const val = valueLookup.get(pen.id)?.get(depth);
+                      const valueOk = targetValue != null && val != null && val <= targetValue;
+                      return (
+                        <td key={pen.id} className={valueOk ? 'border-t border-slate-200 px-3 py-2 text-right font-extrabold tabular-nums text-emerald-700 bg-emerald-50/60' : 'border-t border-slate-200 px-3 py-2 text-right font-semibold tabular-nums text-slate-800'}>
+                          {val != null ? formatNlNumber(val) : emptyCellChar}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[9.5px] leading-relaxed text-slate-400">
+            Meetmethode: 3-punts aardingsweerstandsmeting. Maatgevende waarde: {resultType}. Toetswaarde: {targetValue != null ? `≤ ${formatNlNumber(targetValue)} Ω` : emptyCellChar}.
+          </p>
+        </div>
       )}
 
-      {/* Electrode-level photos */}
       {showPhotos && photos.length > 0 && <ReportImageBlock images={photos} />}
-    </div>
+    </section>
   );
 }
