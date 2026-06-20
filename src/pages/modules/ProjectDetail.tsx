@@ -42,35 +42,48 @@ export default function ProjectDetail() {
   const equip = project.equipment as any;
 
   const hasSession = !!session;
+  const hasMeasurementDate = !!session?.measurement_date;
   const hasElectrodes = electrodes.length > 0;
   const hasClient = !!client;
   const hasTechnician = !!tech;
   const hasEquipment = !!equip;
   const hasMeasurements = (reportData?.stats.measurementCount || 0) > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
-  const isReportReady = hasSession && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
+  const hasPhotos = (reportData?.stats.photosCount || 0) > 0;
+  // Hard-blocking fields only — photos/sketches are warnings, not blockers.
+  const isReportReady =
+    hasMeasurementDate && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
 
   const metingGestart = hasSession && hasElectrodes;
   const metingKlaar = isReportReady;
 
   const readinessItems = [
-    { label: 'Meetopstelling voltooid', met: hasSession },
     { label: 'Klant toegewezen', met: hasClient },
     { label: 'Monteur toegewezen', met: hasTechnician },
     { label: 'Apparatuur toegewezen', met: hasEquipment },
+    { label: 'Meetdatum ingevuld', met: hasMeasurementDate },
     { label: 'Minimaal één elektrode', met: hasElectrodes },
-    { label: 'Minimaal één meting', met: hasMeasurements },
-    { label: 'Schets / foto toegevoegd', met: hasSketches, optional: true },
+    { label: 'Minimaal één geldige meetwaarde', met: hasMeasurements },
+    { label: "Foto's toegevoegd", met: hasPhotos, optional: true },
+    { label: 'Schets toegevoegd', met: hasSketches, optional: true },
   ];
 
   const handleStatusChange = async (newStatus: 'planned' | 'completed') => {
-    if (newStatus === 'completed' && !isReportReady) {
-      toast({ title: 'Kan niet afronden', description: 'Voltooi eerst alle vereiste onderdelen.', variant: 'destructive' });
-      return;
-    }
     try {
-      await updateMut.mutateAsync({ id: project.id, status: newStatus, completed_date: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : null });
-      toast({ title: newStatus === 'completed' ? 'Project afgerond' : 'Project heropend' });
+      if (newStatus === 'completed') {
+        // Server-side validatie + status update via RPC
+        const { data, error } = await supabase.rpc('complete_project', { _project_id: project.id });
+        if (error) throw error;
+        const res = data as { ok: boolean; error?: string } | null;
+        if (!res?.ok) {
+          toast({ title: 'Kan niet afronden', description: res?.error || 'Verplichte gegevens ontbreken.', variant: 'destructive' });
+          return;
+        }
+        toast({ title: 'Project afgerond' });
+      } else {
+        await updateMut.mutateAsync({ id: project.id, status: 'planned', completed_date: null });
+        toast({ title: 'Project heropend' });
+      }
       refetch();
     } catch (err: any) { toast({ title: 'Fout', description: err.message, variant: 'destructive' }); }
   };
