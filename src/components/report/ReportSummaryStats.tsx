@@ -1,6 +1,8 @@
 import type { ReportElectrode } from '@/hooks/use-report-data';
 import { formatNlNumber } from '@/lib/nl-number';
 
+const DEFAULT_TARGET_VALUE = 2;
+
 interface ReportSummaryStatsProps {
   stats: { electrodeCount: number; penCount: number; measurementCount: number; photosCount?: number };
   electrodes?: ReportElectrode[];
@@ -27,8 +29,8 @@ export function ReportSummaryStats({
     const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
     const resultType = hasRv ? 'RV' : 'RA';
     const resultValue = hasRv ? Number(electrode.rv_value) : electrode.ra_value != null ? Number(electrode.ra_value) : null;
-    const targetValue = electrode.target_value != null ? Number(electrode.target_value) : null;
-    const ok = resultValue != null && targetValue != null
+    const targetValue = electrode.target_value != null ? Number(electrode.target_value) : DEFAULT_TARGET_VALUE;
+    const ok = resultValue != null
       ? resultValue <= targetValue
       : electrode.target_met === true;
 
@@ -95,7 +97,7 @@ export function ReportSummaryStats({
                     {row.resultValue != null ? `${formatNlNumber(row.resultValue)} Ω` : '—'}
                   </td>
                   <td className="border-t border-slate-200 px-3 py-2 text-right font-semibold tabular-nums text-slate-600">
-                    {row.targetValue != null ? `≤ ${formatNlNumber(row.targetValue)} Ω` : '—'}
+                    ≤ {formatNlNumber(row.targetValue)} Ω
                   </td>
                   <td className={row.ok ? 'border-t border-slate-200 px-3 py-2 text-right font-extrabold text-emerald-700' : 'border-t border-slate-200 px-3 py-2 text-right font-extrabold text-red-700'}>
                     {row.ok ? 'Voldoet' : 'Voldoet niet'}
