@@ -32,6 +32,7 @@ export default function ProjectDetail() {
   const { data: attachments = [] } = useAttachments(id);
   const { data: reportData } = useReportData(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRapportBlock, setShowRapportBlock] = useState(false);
 
   if (isLoading) return <Loader />;
   if (!project) return <p className="text-muted-foreground/40 text-center py-16">Project niet gevonden</p>;
