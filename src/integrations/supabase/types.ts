@@ -477,6 +477,54 @@ export type Database = {
           },
         ]
       }
+      project_diagrams: {
+        Row: {
+          created_at: string
+          diagram_json: Json
+          id: string
+          image_path: string | null
+          measurement_session_id: string | null
+          project_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          diagram_json: Json
+          id?: string
+          image_path?: string | null
+          measurement_session_id?: string | null
+          project_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          diagram_json?: Json
+          id?: string
+          image_path?: string | null
+          measurement_session_id?: string | null
+          project_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_diagrams_measurement_session_id_fkey"
+            columns: ["measurement_session_id"]
+            isOneToOne: false
+            referencedRelation: "project_measurement_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_diagrams_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_measurement_sessions: {
         Row: {
           client_id: string | null

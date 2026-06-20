@@ -294,6 +294,21 @@ async function renderPdf(data: any): Promise<Uint8Array> {
     y -= 8;
   }
 
+  // ── SITUATIESCHETS (MSR-diagram) ──────────────────────
+  if (data.situatieschets_b64) {
+    ensure(260);
+    text("SITUATIESCHETS", M, { size: 8, b: true, color: rgb(brand.r, brand.g, brand.b) });
+    y -= 12;
+    const img = await tryEmbedImage(pdf, data.situatieschets_b64);
+    if (img) {
+      const maxW = A4.w - M * 2;
+      const maxH = 240;
+      const d = img.scaleToFit(maxW, maxH);
+      page.drawImage(img, { x: M, y: y - d.height, width: d.width, height: d.height });
+      y -= d.height + 14;
+    }
+  }
+
   // ── SIGNATURE ───────────────────────────────────────────
   if (data.handtekening_b64) {
     ensure(90);
@@ -405,7 +420,7 @@ Deno.serve(async (req) => {
     }
     const tenantId = project.tenant_id;
 
-    const [sessionRes, electrodesRes, pensRes, depthsRes, brandingRes] =
+    const [sessionRes, electrodesRes, pensRes, depthsRes, brandingRes, diagramRes] =
       await Promise.all([
         supabase
           .from("project_measurement_sessions")
@@ -418,6 +433,13 @@ Deno.serve(async (req) => {
         supabase.from("pens").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("depth_measurements").select("*").eq("project_id", project_id).order("sort_order"),
         supabase.from("tenant_branding").select("*").eq("tenant_id", tenantId).maybeSingle(),
+        supabase
+          .from("project_diagrams")
+          .select("image_path")
+          .eq("project_id", project_id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
     const session = sessionRes.data;
@@ -425,6 +447,22 @@ Deno.serve(async (req) => {
     const pens = pensRes.data || [];
     const depths = depthsRes.data || [];
     const branding = brandingRes.data;
+    const diagramRow = diagramRes.data as { image_path: string | null } | null;
+
+    // Download situatieschets PNG (private bucket project-files), tenant-scoped
+    let situatieschetsB64: string | null = null;
+    if (diagramRow?.image_path) {
+      const path = diagramRow.image_path;
+      if (path.split("/")[0] === tenantId) {
+        try {
+          const { data: file } = await sbAdmin.storage.from("project-files").download(path);
+          if (file) {
+            const buf = await file.arrayBuffer();
+            situatieschetsB64 = bytesToBase64(new Uint8Array(buf));
+          }
+        } catch { /* ignore */ }
+      }
+    }
 
     const client = project.clients as Record<string, unknown> | null;
     const tech = project.technicians as Record<string, unknown> | null;
@@ -578,6 +616,7 @@ Deno.serve(async (req) => {
         : null,
 
       handtekening_b64: handtekening_b64 || undefined,
+      situatieschets_b64: situatieschetsB64 || undefined,
 
       elektrodes,
     };
