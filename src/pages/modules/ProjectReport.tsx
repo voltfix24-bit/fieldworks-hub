@@ -258,7 +258,7 @@ export default function ProjectReport() {
       </div>
 
       {/* Readiness gate — blokkeer rapport bij blocking errors */}
-      {!isReady && (
+      {!readiness.isLoading && !isReady && (
         <div className="print:hidden max-w-lg mx-auto mb-8">
           <div className="flex items-start gap-3 mb-4 p-4 rounded-2xl border border-destructive/20 bg-destructive/[0.04]">
             <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
