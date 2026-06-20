@@ -96,9 +96,9 @@ export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(func
         </div>
       )}
 
-      <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
-      <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-      <input ref={filesRef} type="file" accept="image/*,.pdf,.heic,.webp" onChange={handleFile} className="hidden" />
+      <input ref={cameraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={handleFile} className="hidden" />
+      <input ref={galleryRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFile} className="hidden" />
+      <input ref={filesRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFile} className="hidden" />
     </div>
   );
 });
