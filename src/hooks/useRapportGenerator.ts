@@ -9,7 +9,7 @@
 
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { generateRapportPdf } from "@/lib/rapport-pdf-generator";
+
 
 // ══════════════════════════════════════════
 // TYPES
