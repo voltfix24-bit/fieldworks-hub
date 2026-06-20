@@ -943,6 +943,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      complete_project: { Args: { _project_id: string }; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
