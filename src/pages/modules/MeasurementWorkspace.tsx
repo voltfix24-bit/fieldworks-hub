@@ -695,20 +695,30 @@ export default function MeasurementWorkspace() {
           <div className="wizard-step-enter">
 
             {step === 0 && !showSketch && activeElectrode && (
-              <MeasurementStep
-                electrode={activeElectrode}
-                pens={pens}
-                tenantId={tenantId}
-                onUpdateElectrode={(updates) => updateElectrode.mutate({ id: activeElectrode.id, ...updates })}
-                onAddPen={handlePenToevoegenMetCheck}
-                onDeletePen={handleDeletePen}
-                recalcRa={recalcRa}
-                depthsInitRef={depthsInitRef}
-                initializeDepthRows={initializeDepthRows}
-                onWarningCountChange={setWarningCount}
-                onRvMissingChange={setRvMissing}
-                compact
-              />
+              <>
+                <MeasurementStep
+                  electrode={activeElectrode}
+                  pens={pens}
+                  tenantId={tenantId}
+                  onUpdateElectrode={(updates) => updateElectrode.mutate({ id: activeElectrode.id, ...updates })}
+                  onAddPen={handlePenToevoegenMetCheck}
+                  onDeletePen={handleDeletePen}
+                  recalcRa={recalcRa}
+                  depthsInitRef={depthsInitRef}
+                  initializeDepthRows={initializeDepthRows}
+                  onWarningCountChange={setWarningCount}
+                  onRvMissingChange={setRvMissing}
+                  compact
+                />
+                {session && id && (
+                  <RapportgegevensCard
+                    projectId={id}
+                    session={session}
+                    equipmentId={project.equipment_id}
+                    compact
+                  />
+                )}
+              </>
             )}
 
             {step === 1 && !showSketch && (
