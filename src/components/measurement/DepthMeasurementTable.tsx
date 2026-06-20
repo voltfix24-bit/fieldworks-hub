@@ -87,9 +87,36 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
 
   // Sort measurements by depth
   const sortedMeasurements = [...measurements].sort((a, b) => a.depth_meters - b.depth_meters);
+  const firstEmptyMeasurement = sortedMeasurements.find(m => !(m.resistance_value > 0));
+
+  const focusFirstEmptyMeasurement = () => {
+    if (!firstEmptyMeasurement?.id) return;
+    const input = document.querySelector<HTMLInputElement>(`[data-depth-measurement-id="${firstEmptyMeasurement.id}"]`);
+    if (!input) return;
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      input.focus();
+      input.select();
+    }, 180);
+  };
 
   return (
     <div className="space-y-0 overflow-x-hidden max-w-full">
+      {firstEmptyMeasurement?.id && (
+        <button
+          type="button"
+          onClick={focusFirstEmptyMeasurement}
+          disabled={disabled}
+          className={cn(
+            'mb-1.5 w-full flex items-center justify-between gap-2 rounded-lg border border-[hsl(var(--tenant-primary,var(--primary))/0.18)] bg-[hsl(var(--tenant-primary,var(--primary))/0.06)] text-[hsl(var(--tenant-primary,var(--primary)))] font-semibold active:scale-[0.997] transition-all disabled:opacity-40',
+            compact ? 'px-2.5 py-2 text-[11px]' : 'px-3 py-2.5 text-[12px]'
+          )}
+        >
+          <span>Volgende lege meting</span>
+          <span className="tabular-nums">{firstEmptyMeasurement.depth_meters}m</span>
+        </button>
+      )}
+
       {/* Measurement rows */}
       <div className="rounded-lg overflow-hidden border border-border/30">
         {sortedMeasurements.map((m, idx) => (
@@ -103,6 +130,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
             isEven={idx % 2 === 0}
             compact={compact}
             isPreset={PRESET_DEPTHS.has(m.depth_meters)}
+            isNextEmpty={!!m.id && m.id === firstEmptyMeasurement?.id}
             hasProgressionWarning={m.id ? warningIds.has(m.id) : false}
             heeftGatWaarschuwing={m.id ? gatenWarningIds.has(m.id) : false}
           />
@@ -184,7 +212,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
   );
 }
 
-function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, hasProgressionWarning, heeftGatWaarschuwing }: {
+function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven, compact, isPreset, isNextEmpty, hasProgressionWarning, heeftGatWaarschuwing }: {
   row: DepthRow;
   onUpdate: (id: string, depth: number, resistance: number) => void;
   onDelete: (id: string) => void;
@@ -193,6 +221,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
   isEven?: boolean;
   compact?: boolean;
   isPreset?: boolean;
+  isNextEmpty?: boolean;
   hasProgressionWarning?: boolean;
   heeftGatWaarschuwing?: boolean;
 }) {
@@ -245,6 +274,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         'transition-colors duration-75 relative',
         hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-400',
         heeftGatWaarschuwing && !hasProgressionWarning && !isFocused && 'border-l-2 border-l-amber-300',
+        isNextEmpty && !isFocused && 'border-l-2 border-l-[hsl(var(--tenant-primary,var(--primary)))]',
       )}
     >
       {/* Swipe delete background */}
@@ -263,6 +293,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
           isEven ? 'bg-card' : 'bg-muted/20',
           isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
           hasProgressionWarning && 'bg-amber-500/[0.04]',
+          isNextEmpty && !hasValue && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.045)]',
           isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
           saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
         )}
@@ -301,12 +332,18 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none',
             compact ? 'text-[10px] font-semibold' : 'text-[10px] font-semibold'
           )}>m</span>
+          {isNextEmpty && !hasValue && (
+            <span className="absolute left-1/2 -translate-x-1/2 bottom-0 text-[8px] font-bold uppercase tracking-wide text-[hsl(var(--tenant-primary,var(--primary)))]">
+              nu
+            </span>
+          )}
         </div>
 
         {/* Resistance — the main input, accepts comma */}
         <div className="relative">
           <input
             ref={resistanceRef}
+            data-depth-measurement-id={row.id}
             type="text"
             inputMode="decimal"
             pattern="[0-9]*[.,]?[0-9]*"
@@ -343,6 +380,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
               compact ? 'h-12 text-[16px] pr-4 px-3' : 'h-12 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               hasProgressionWarning && !isLowest && 'text-amber-700 dark:text-amber-400',
+              isNextEmpty && !hasValue && 'font-bold text-[hsl(var(--tenant-primary,var(--primary)))]',
               hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
               'placeholder:text-muted-foreground/25'
             )}
