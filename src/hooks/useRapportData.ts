@@ -98,7 +98,7 @@ export function useRapportData(projectId: string | undefined) {
     return {
       project_naam: project.project_name,
       project_nummer: project.project_number || '',
-      project_adres: [project.address_line_1, project.city].filter(Boolean).join(', '),
+      project_adres: [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', '),
       meetdatum: session.measurement_date || new Date().toISOString().split('T')[0],
       logo_url: (branding as any)?.logo_url || null,
       merk_kleur: (branding as any)?.primary_color || '#F4896B',

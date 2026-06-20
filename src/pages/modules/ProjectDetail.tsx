@@ -460,6 +460,9 @@ export default function ProjectDetail() {
         <div className="col-span-8 grid grid-cols-2 gap-3">
           <DSection title="Projectoverzicht">
             <DInfoRow label="Geplande datum" value={formatNlDate(project.planned_date)} />
+            {session?.measurement_date && (
+              <DInfoRow label="Meetdatum (rapport)" value={formatNlDate(session.measurement_date)} highlight />
+            )}
             {project.completed_date && <DInfoRow label="Afgerond" value={formatNlDate(project.completed_date)} />}
             <DInfoRow label="Locatie" value={[project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ') || null} />
             {project.cable_material && <DInfoRow label="Kabelmateriaal" value={project.cable_material} />}
