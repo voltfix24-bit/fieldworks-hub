@@ -6,6 +6,7 @@ import { useMeasurementSession } from '@/hooks/use-measurement-sessions';
 import { useElectrodes } from '@/hooks/use-electrodes';
 import { useAttachments } from '@/hooks/use-attachments';
 import { useReportData } from '@/hooks/use-report-data';
+import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useToast } from '@/hooks/use-toast';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useIsMobile } from '@/hooks/use-mobile';
