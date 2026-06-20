@@ -315,9 +315,9 @@ async function renderPdf(data: any): Promise<Uint8Array> {
   for (let i = 0; i < pageCount; i++) {
     const p = pdf.getPage(i);
     p.drawLine({ start: { x: M, y: 30 }, end: { x: A4.w - M, y: 30 }, thickness: 0.4, color: line });
-    p.drawText(`${data.company_name || ""}  ·  ${data.company_email || ""}  ·  ${data.company_website || ""}`,
+    p.drawText(sanitize(`${data.company_name || ""}  ·  ${data.company_email || ""}  ·  ${data.company_website || ""}`),
       { x: M, y: 18, size: 7.5, font, color: mute });
-    p.drawText(`Pagina ${i + 1} / ${pageCount}`, { x: A4.w - M - 60, y: 18, size: 7.5, font, color: mute });
+    p.drawText(sanitize(`Pagina ${i + 1} / ${pageCount}`), { x: A4.w - M - 60, y: 18, size: 7.5, font, color: mute });
   }
 
   return await pdf.save();
