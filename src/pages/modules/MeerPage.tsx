@@ -51,8 +51,14 @@ export default function MeerPage() {
   const { profile } = useAuth();
   const { tenant, branding } = useTenant();
   const isMobile = useIsMobile();
+  const { isFieldOnly } = useRole();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
   const { toegestaan, vraagToestemming } = usePushNotifications();
+  // Monteurs zien alleen hun eigen account. Stamdata/Beheer blijven bestaan,
+  // maar zijn niet zichtbaar in de mobiele veld-UI.
+  const visibleSections = isFieldOnly
+    ? MENU_SECTIONS.filter(s => s.title === 'Account')
+    : MENU_SECTIONS;
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
   });
