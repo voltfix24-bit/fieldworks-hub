@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProject, useCreateProject, useUpdateProject, useProjects } from '@/hooks/use-projects';
 import { useClients } from '@/hooks/use-clients';
@@ -24,6 +26,7 @@ export default function ProjectForm() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { data: existing } = useProject(id);
+  const qc = useQueryClient();
   const { data: defaultEquipment } = useDefaultEquipment();
   const { data: clients } = useClients();
   const { data: technicians } = useTechnicians();
@@ -149,11 +152,38 @@ export default function ProjectForm() {
       let savedProject: any;
       if (isEdit) {
         savedProject = await updateMut.mutateAsync({ id, ...payload, status: existing?.status || 'planned' });
+
+        // Sync meetdatum: als de geplande datum wijzigt en er bestaat al een meetsessie,
+        // werk dan ook de meest recente project_measurement_sessions.measurement_date bij.
+        const oldDate = (existing as any)?.planned_date || null;
+        const newDate = payload.planned_date || null;
+        if (id && newDate && newDate !== oldDate) {
+          const { data: latestSession } = await supabase
+            .from('project_measurement_sessions')
+            .select('id, measurement_date')
+            .eq('project_id', id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (latestSession?.id) {
+            await supabase
+              .from('project_measurement_sessions')
+              .update({ measurement_date: newDate })
+              .eq('id', latestSession.id);
+            await Promise.all([
+              qc.invalidateQueries({ queryKey: ['measurement-session', id] }),
+              qc.invalidateQueries({ queryKey: ['report-data', id] }),
+              qc.invalidateQueries({ queryKey: ['projects', id] }),
+            ]);
+          }
+        }
+
         toast({ title: 'Project bijgewerkt' });
       } else {
         savedProject = await createMut.mutateAsync(payload);
         toast({ title: 'Project aangemaakt' });
       }
+
 
       // Upload project files
       const projectId = savedProject?.id || id;
@@ -305,9 +335,9 @@ export default function ProjectForm() {
         {/* ── SECTION C: Uitvoering ── */}
         <IosLabel>Uitvoering</IosLabel>
         <div className="ios-form-card">
-          {/* Datum */}
+          {/* Geplande datum */}
           <div className="ios-form-list-row">
-            <span className="ios-form-list-label">Datum</span>
+            <span className="ios-form-list-label">Geplande datum</span>
             <div className="ios-form-list-value has-value">
               <span>{displayDate}</span>
               <input

@@ -177,7 +177,10 @@ export default function ProjectDetail() {
                 { label: 'Klant', value: client?.company_name },
                 { label: 'Monteur', value: tech?.full_name },
                 { label: 'Apparaat', value: equip?.device_name },
-                { label: 'Datum', value: formatNlDate(project.planned_date) },
+                { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
+                ...(session?.measurement_date
+                  ? [{ label: 'Meetdatum (rapport)', value: formatNlDate(session.measurement_date) }]
+                  : []),
               ].map((row, i, arr) => (
                 <div key={row.label}>
                   <div className="ios-detail-info-row">
