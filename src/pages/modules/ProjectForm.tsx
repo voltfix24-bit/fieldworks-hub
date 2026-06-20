@@ -335,9 +335,9 @@ export default function ProjectForm() {
         {/* ── SECTION C: Uitvoering ── */}
         <IosLabel>Uitvoering</IosLabel>
         <div className="ios-form-card">
-          {/* Datum */}
+          {/* Geplande datum */}
           <div className="ios-form-list-row">
-            <span className="ios-form-list-label">Datum</span>
+            <span className="ios-form-list-label">Geplande datum</span>
             <div className="ios-form-list-value has-value">
               <span>{displayDate}</span>
               <input
