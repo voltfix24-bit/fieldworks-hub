@@ -1,4 +1,5 @@
 export type DoorSide = 'left' | 'right' | 'top' | 'bottom';
+export type MSRAnchor = 'tl' | 'tr' | 'bl' | 'br';
 
 export interface DiagramElectrode {
   id: string;
@@ -6,6 +7,11 @@ export interface DiagramElectrode {
   /** Position in diagram units (0..canvasSize.w / h) */
   x: number;
   y: number;
+  /** MSR corner used as reference for horizontal/vertical distance labels. */
+  anchor?: MSRAnchor;
+  /** Manual distance overrides in meters, useful when the sketch is not exactly to scale. */
+  overrideDistanceX?: number | null;
+  overrideDistanceY?: number | null;
 }
 
 export interface DiagramCabinet {
