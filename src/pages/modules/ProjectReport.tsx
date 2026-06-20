@@ -129,19 +129,51 @@ export default function ProjectReport() {
 
   // actieveHandtekening is already set at top level
 
+  // ── Vriendelijke foutvertaler voor monteurs ──────────────
+  const friendlyError = (err: unknown): string => {
+    const msg = err instanceof Error ? err.message : String(err || '');
+    const low = msg.toLowerCase();
+    if (!navigator.onLine || low.includes('failed to fetch') || low.includes('networkerror'))
+      return 'Geen internetverbinding. Probeer het opnieuw zodra je online bent.';
+    if (low.includes('te veel verzoeken')) return 'Even wachten — probeer over een minuut opnieuw.';
+    if (low.includes('niet geauthenticeerd') || low.includes('sessie')) return 'Sessie verlopen. Log opnieuw in.';
+    return 'Rapport kon niet worden gemaakt. Probeer het opnieuw.';
+  };
+
+  // ── Pre-flight: ontbrekende verplichte data ──────────────
+  const preflight = (): string | null => {
+    if (!session?.measurement_date) return 'Meetdatum ontbreekt. Vul de meetdatum in voordat je het rapport maakt.';
+    if (!equip) return 'Apparaat ontbreekt. Koppel meetapparatuur aan dit project.';
+    if (!electrodes.length || stats.measurementCount === 0) return 'Er zijn nog geen metingen ingevuld.';
+    return null;
+  };
+
+  const equipExpired = equip?.next_calibration_date && new Date(equip.next_calibration_date) < new Date();
+
+  const confirmExpired = (): boolean => {
+    if (!equipExpired) return true;
+    return window.confirm(
+      'Het meetapparaat is verlopen volgens de kalibratiedatum. Toch doorgaan met rapport maken?'
+    );
+  };
+
   const handleDownload = async () => {
+    const err = preflight();
+    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
+    if (!confirmExpired()) return;
     try {
       await genereerViaEdge(id!, actieveHandtekening ?? undefined);
-      toast({ title: 'Rapport gedownload', description: 'Het PDF rapport is succesvol gegenereerd.' });
-    } catch (err) {
-      toast({ title: 'Rapport generatie mislukt', description: err instanceof Error ? err.message : 'Onbekende fout', variant: 'destructive' });
+      toast({ title: 'Rapport klaar', description: 'PDF is gedownload.' });
+    } catch (e) {
+      toast({ title: 'Rapport kon niet worden gemaakt', description: friendlyError(e), variant: 'destructive' });
     }
   };
 
-
-
   const handleSendEmail = async () => {
     if (!emailTo) return;
+    const err = preflight();
+    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
+    if (!confirmExpired()) return;
     setEmailSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-rapport', {
@@ -155,17 +187,19 @@ export default function ProjectReport() {
       if (error) throw error;
       toast({ title: 'Rapport verstuurd', description: `Verzonden naar ${emailTo}` });
       setEmailOpen(false);
-    } catch (err) {
-      toast({ title: 'Versturen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } catch (e) {
+      toast({ title: 'Versturen mislukt', description: friendlyError(e), variant: 'destructive' });
     } finally {
       setEmailSending(false);
     }
   };
 
   const handleWhatsApp = async () => {
+    const err = preflight();
+    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
+    if (!confirmExpired()) return;
     setWhatsAppLoading(true);
     try {
-      // Generate PDF and get signed URL
       const { data, error: fnError } = await supabase.functions.invoke('generate-rapport', {
         body: { project_id: id, handtekening_b64: actieveHandtekening ?? undefined },
       });
@@ -173,17 +207,16 @@ export default function ProjectReport() {
 
       let rapportUrl = '';
       if (data?.pdf_base64) {
-        // Upload to storage and get signed URL
         const binaryStr = atob(data.pdf_base64);
         const bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-        
+
         const pad = `shared/${id}/${Date.now()}_${data.bestandsnaam || 'rapport.pdf'}`;
         const { data: upload, error: uploadErr } = await supabase.storage
           .from('generated-reports')
           .upload(pad, bytes, { contentType: 'application/pdf', upsert: false });
         if (uploadErr) throw uploadErr;
-        
+
         const { data: signedData } = await supabase.storage
           .from('generated-reports')
           .createSignedUrl(upload.path, 86400);
@@ -193,7 +226,7 @@ export default function ProjectReport() {
       const klantNaam = client?.company_name || 'opdrachtgever';
       const projectNaam = project.project_name;
       const datum = formatNlDate(session?.measurement_date);
-      
+
       const bericht = `Geachte ${klantNaam},\n\nHierbij het aardingsrapport voor project "${projectNaam}" (${datum}).\n\n📄 Rapport downloaden:\n${rapportUrl}\n\nMet vriendelijke groet,\n${tech?.full_name || 'Het team'}`;
       const encoded = encodeURIComponent(bericht);
 
@@ -205,8 +238,8 @@ export default function ProjectReport() {
       }
 
       toast({ title: 'WhatsApp geopend', description: 'Controleer het bericht en verstuur naar de opdrachtgever.' });
-    } catch (err) {
-      toast({ title: 'Delen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } catch (e) {
+      toast({ title: 'Delen mislukt', description: friendlyError(e), variant: 'destructive' });
     } finally {
       setWhatsAppLoading(false);
     }
