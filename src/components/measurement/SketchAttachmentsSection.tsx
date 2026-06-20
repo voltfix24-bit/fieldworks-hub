@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Paperclip, Trash2, Camera, ImageIcon, FileUp, ChevronDown, Loader2 } from 'lucide-react';
+import { Paperclip, Trash2, Camera, ImageIcon, FileUp, ChevronDown, Loader2, PencilRuler } from 'lucide-react';
 import { useAttachments, useCreateAttachment, useDeleteAttachment, uploadMeasurementPhoto } from '@/hooks/use-attachments';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,7 @@ interface SketchAttachmentsSectionProps {
 }
 
 export function SketchAttachmentsSection({ projectId, tenantId, sessionId }: SketchAttachmentsSectionProps) {
+  const navigate = useNavigate();
   const { data: attachments = [] } = useAttachments(projectId);
   const createAttachment = useCreateAttachment();
   const deleteAttachment = useDeleteAttachment();
@@ -79,7 +81,15 @@ export function SketchAttachmentsSection({ projectId, tenantId, sessionId }: Ske
                 placeholder="Omschrijf deze bijlage…"
               />
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
+              <button
+                onClick={() => navigate(`/projects/${projectId}/diagram`)}
+                disabled={uploading}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary))/0.08)] text-[hsl(var(--tenant-primary,var(--primary)))] text-[12px] font-medium active:scale-[0.97] transition-all disabled:opacity-40"
+              >
+                <PencilRuler className="h-5 w-5" />
+                Teken
+              </button>
               <button
                 onClick={() => cameraRef.current?.click()}
                 disabled={uploading}
