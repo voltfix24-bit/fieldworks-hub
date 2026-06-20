@@ -16,26 +16,58 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+const MEASUREMENT_BUCKET = "measurement-photos";
+
+function bytesToBase64(bytes: Uint8Array): string {
+  const CHUNK = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(
+      null,
+      bytes.subarray(i, i + CHUNK) as unknown as number[],
+    );
+  }
+  return btoa(binary);
+}
+
 /**
- * Fetch an image URL and return as pure base64 string (no data-URL prefix).
- * Returns null on any failure.
+ * Extract the storage path inside `measurement-photos` from either a
+ * legacy public URL or a storage path stored in the DB.
  */
-async function urlToBase64(url: string): Promise<string | null> {
+function extractPhotoPath(stored: string | null | undefined): string | null {
+  if (!stored) return null;
+  if (!stored.startsWith("http")) return stored.replace(/^\/+/, "");
+  const m1 = `/storage/v1/object/public/${MEASUREMENT_BUCKET}/`;
+  const m2 = `/storage/v1/object/sign/${MEASUREMENT_BUCKET}/`;
+  let idx = stored.indexOf(m1);
+  if (idx !== -1) return stored.slice(idx + m1.length);
+  idx = stored.indexOf(m2);
+  if (idx !== -1) return stored.slice(idx + m2.length).split("?")[0];
+  return null;
+}
+
+/**
+ * Download a measurement photo via the service-role client and return
+ * pure base64. Returns null on failure.
+ */
+async function photoToBase64(
+  // deno-lint-ignore no-explicit-any
+  sbAdmin: any,
+  stored: string | null | undefined,
+  expectedTenantId: string,
+): Promise<string | null> {
+  const path = extractPhotoPath(stored);
+  if (!path) return null;
+  // Defence in depth: only allow paths inside the project's tenant folder.
+  const firstSegment = path.split("/")[0];
+  if (firstSegment !== expectedTenantId) return null;
   try {
-    const resp = await fetch(url);
-    if (!resp.ok) return null;
-    const buf = await resp.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    // Chunked encode to avoid building one huge binary string (memory blowup)
-    const CHUNK = 0x8000;
-    let binary = "";
-    for (let i = 0; i < bytes.length; i += CHUNK) {
-      binary += String.fromCharCode.apply(
-        null,
-        bytes.subarray(i, i + CHUNK) as unknown as number[],
-      );
-    }
-    return btoa(binary);
+    const { data, error } = await sbAdmin.storage
+      .from(MEASUREMENT_BUCKET)
+      .download(path);
+    if (error || !data) return null;
+    const buf = await data.arrayBuffer();
+    return bytesToBase64(new Uint8Array(buf));
   } catch {
     return null;
   }
