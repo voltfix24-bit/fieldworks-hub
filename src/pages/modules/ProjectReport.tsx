@@ -29,7 +29,6 @@ export default function ProjectReport() {
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
   const { opgeslagenHandtekening } = useHandtekening(user?.id);
-  const { opgeslagenHandtekening } = useHandtekening(user?.id);
   const { toast } = useToast();
 
   // Handtekening uit wizard wordt automatisch gebruikt
