@@ -26,6 +26,7 @@ export default function ProjectForm() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { data: existing } = useProject(id);
+  const qc = useQueryClient();
   const { data: defaultEquipment } = useDefaultEquipment();
   const { data: clients } = useClients();
   const { data: technicians } = useTechnicians();
