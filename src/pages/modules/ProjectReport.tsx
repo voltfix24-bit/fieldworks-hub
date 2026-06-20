@@ -72,17 +72,10 @@ export default function ProjectReport() {
   const hasElectrodes = electrodes.length > 0;
   const hasMeasurements = stats.measurementCount > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
-  const isReady = hasSession && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
 
-  const readinessItems = [
-    { label: 'Meetsessie aanwezig', met: hasSession },
-    { label: 'Klant toegewezen', met: hasClient },
-    { label: 'Monteur toegewezen', met: hasTechnician },
-    { label: 'Apparatuur toegewezen', met: hasEquipment },
-    { label: 'Minimaal één elektrode', met: hasElectrodes },
-    { label: 'Minimaal één meting', met: hasMeasurements },
-    { label: 'Schets bijgevoegd', met: hasSketches, optional: true },
-  ];
+  const isReady = readiness.isReady;
+  const isAdmin = ['admin', 'tenant_admin', 'office_user'].includes(((useAuth().profile as any)?.role) || '');
+  const showDocument = isReady || adminPreview;
 
   const location = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
