@@ -354,9 +354,52 @@ export default function ProjectDetail() {
             </div>
           </div>
         )}
+
+        {/* Rapport-blokkade sheet */}
+        {showRapportBlock && (
+          <div className="ios-detail-confirm-backdrop" onClick={() => setShowRapportBlock(false)}>
+            <div className="ios-detail-confirm-sheet" onClick={e => e.stopPropagation()}>
+              <div className="ios-detail-confirm-handle" />
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+                <h3 className="ios-detail-confirm-title" style={{ margin: 0 }}>Rapport nog niet compleet</h3>
+              </div>
+              <p className="ios-detail-confirm-sub">
+                Vul eerst de ontbrekende gegevens aan. Zonder deze gegevens wordt het rapport onvolledig.
+              </p>
+              <div className="mt-3 mb-4 rounded-2xl bg-foreground/[0.03] divide-y divide-border/30">
+                {readinessItems.filter(r => !r.optional && !r.met).map(r => (
+                  <div key={r.label} className="flex items-center gap-2.5 px-4 py-3">
+                    <XCircle className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span className="text-[13px] text-foreground/80">{r.label}</span>
+                  </div>
+                ))}
+                {readinessItems.filter(r => !r.optional && !r.met).length === 0 && (
+                  <div className="px-4 py-3 text-[13px] text-muted-foreground">Alles compleet.</div>
+                )}
+              </div>
+              <div className="ios-detail-confirm-actions">
+                <button
+                  className="ios-detail-confirm-delete"
+                  style={{ background: 'hsl(var(--tenant-primary))' }}
+                  onClick={() => { setShowRapportBlock(false); navigate(`/projects/${id}/measurements`); }}
+                >
+                  Naar metingen
+                </button>
+                <button
+                  className="ios-detail-confirm-cancel"
+                  onClick={() => setShowRapportBlock(false)}
+                >
+                  Sluiten
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }
+
 
   // ═══════════════════════════════════════════════════════
   // DESKTOP
