@@ -18,7 +18,7 @@ function cleanCode(code: string, prefix: string): string {
   return code.trim();
 }
 
-export function ReportElectrodeSection({ electrode, index, totalElectrodes, showPhotos = true, emptyCellChar = '—' }: ReportElectrodeSectionProps) {
+export function ReportElectrodeSection({ electrode, index, showPhotos = true, emptyCellChar = '—' }: ReportElectrodeSectionProps) {
   const activePens = electrode.pens.filter(
     pen => pen.measurements.some(m => m.resistance_value > 0)
   );
@@ -80,7 +80,7 @@ export function ReportElectrodeSection({ electrode, index, totalElectrodes, show
             )}
           </div>
         </div>
-        <div className={isOk ? 'report-status-pass' : 'report-status-fail'}>
+        <div className={isOk ? 'rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700' : 'rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-red-700'}>
           <span className="text-[10px] font-extrabold uppercase tracking-[0.08em]">
             {isOk ? 'Voldoet' : 'Voldoet niet'}
           </span>
