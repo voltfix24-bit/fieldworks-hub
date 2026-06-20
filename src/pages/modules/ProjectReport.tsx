@@ -138,17 +138,7 @@ export default function ProjectReport() {
     }
   };
 
-  const handleDownloadBrowser = async () => {
-    try {
-      const data = await buildRapportData(actieveHandtekening ?? null);
-      if (!data) throw new Error('Kan rapportdata niet samenstellen.');
-      const projectClean = (data.project_naam || 'rapport').replace(/\s+/g, '_').slice(0, 30);
-      const datumClean = (data.meetdatum || '').replace(/-/g, '').slice(0, 8);
-      await genereerBrowser(data, `Aardingsrapport_${projectClean}_${datumClean}.pdf`);
-    } catch (err) {
-      toast({ title: 'Browser-PDF mislukt', description: err instanceof Error ? err.message : 'Onbekende fout', variant: 'destructive' });
-    }
-  };
+
 
   const handleSendEmail = async () => {
     if (!emailTo) return;
