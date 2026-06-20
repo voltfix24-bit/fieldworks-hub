@@ -121,11 +121,11 @@ export default function BrandingSettings() {
     }
 
     if (branding) {
-      const { error } = await supabase.from('tenant_branding').update(payload).eq('tenant_id', tenant.id);
+      const { error } = await supabase.from('tenant_branding').update(payload as any).eq('tenant_id', tenant.id);
       if (error) toast({ title: 'Fout', description: error.message, variant: 'destructive' });
       else { toast({ title: 'Instellingen opgeslagen' }); await refetchBranding(); }
     } else {
-      const { error } = await supabase.from('tenant_branding').insert({ ...payload, tenant_id: tenant.id });
+      const { error } = await supabase.from('tenant_branding').insert({ ...payload, tenant_id: tenant.id } as any);
       if (error) toast({ title: 'Fout', description: error.message, variant: 'destructive' });
       else { toast({ title: 'Instellingen aangemaakt' }); await refetchBranding(); }
     }
