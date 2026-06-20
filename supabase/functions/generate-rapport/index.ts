@@ -616,6 +616,7 @@ Deno.serve(async (req) => {
         : null,
 
       handtekening_b64: handtekening_b64 || undefined,
+      situatieschets_b64: situatieschetsB64 || undefined,
 
       elektrodes,
     };
