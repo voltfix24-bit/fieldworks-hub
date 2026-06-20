@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, FileText, AlertCircle, PenTool, Loader2, Download, Mail, X, MessageCircle } from 'lucide-react';
+import { ArrowLeft, FileText, AlertCircle, PenTool, Loader2, Download, Mail, X, MessageCircle, Printer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNlDate } from '@/lib/nl-date';
 import { useProject } from '@/hooks/use-projects';
@@ -155,13 +155,22 @@ export default function ProjectReport() {
     );
   };
 
-  const handleDownload = async () => {
+  const handlePrint = () => {
+    const err = preflight();
+    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
+    if (!confirmExpired()) return;
+    // Native browser print — gratis, geen Railway/edge-call
+    window.print();
+  };
+
+  // Legacy server-side PDF (Railway / generate-rapport). Alleen admin/kantoor.
+  const handleLegacyPdf = async () => {
     const err = preflight();
     if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
     if (!confirmExpired()) return;
     try {
       await genereerViaEdge(id!, actieveHandtekening ?? undefined);
-      toast({ title: 'Rapport klaar', description: 'PDF is gedownload.' });
+      toast({ title: 'Rapport klaar', description: 'PDF is gedownload (legacy).' });
     } catch (e) {
       toast({ title: 'Rapport kon niet worden gemaakt', description: friendlyError(e), variant: 'destructive' });
     }
@@ -254,6 +263,11 @@ export default function ProjectReport() {
           <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
+          {isReady && (
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" /> Print / PDF
+            </Button>
+          )}
         </div>
       </div>
 
@@ -328,9 +342,12 @@ export default function ProjectReport() {
         <div className="print:hidden max-w-lg mx-auto mb-8">
           <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
             <div className="flex items-center gap-2.5 mb-1">
-              <Download className="h-4 w-4 text-muted-foreground/50" />
-              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Rapport downloaden</h2>
+              <Printer className="h-4 w-4 text-muted-foreground/50" />
+              <h2 className="text-[16px] font-bold text-foreground tracking-tight">Download of print rapport</h2>
             </div>
+            <p className="text-[12px] text-muted-foreground/70 mt-1">
+              Gebruik de printknop van je browser om op te slaan als PDF of direct te printen.
+            </p>
 
             {/* Handtekening preview */}
             {actieveHandtekening ? (
@@ -353,50 +370,65 @@ export default function ProjectReport() {
               </p>
             )}
 
-            {/* Generate + Email buttons */}
-            <div className="flex gap-2 mt-5">
+            {/* Primary CTA: browser print/download — gratis, altijd actuele data */}
+            <div className="mt-5">
               <button
-                onClick={handleDownload}
-                disabled={!actieveHandtekening || rapportLoading}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 transition-all active:scale-[0.98]',
-                  actieveHandtekening
-                    ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
-                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
-                )}
+                onClick={handlePrint}
+                className="w-full flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 transition-all active:scale-[0.98] bg-[hsl(var(--tenant-primary))] text-white shadow-sm"
               >
-                {rapportLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-                {rapportLoading ? 'Genereren…' : 'Download'}
-              </button>
-              <button
-                onClick={handleWhatsApp}
-                disabled={!actieveHandtekening || whatsAppLoading}
-                className={cn(
-                  'flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 px-4 transition-all active:scale-[0.98]',
-                  actieveHandtekening
-                    ? 'bg-[#25D366]/10 text-[#25D366]'
-                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
-                )}
-              >
-                {whatsAppLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-              </button>
-              <button
-                onClick={() => setEmailOpen(true)}
-                disabled={!actieveHandtekening || rapportLoading}
-                className={cn(
-                  'flex items-center justify-center gap-2 rounded-xl font-semibold text-[14px] py-3 px-4 transition-all active:scale-[0.98]',
-                  actieveHandtekening
-                    ? 'bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))]'
-                    : 'bg-muted/30 text-muted-foreground/40 cursor-not-allowed'
-                )}
-              >
-                <Mail className="h-4 w-4" />
+                <Printer className="h-4 w-4" />
+                Download / print rapport
               </button>
             </div>
+
+            {/* Admin-only legacy server PDF + sharing actions */}
+            {isAdmin && (
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-2">Legacy / kantoor</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleLegacyPdf}
+                    disabled={!actieveHandtekening || rapportLoading}
+                    title="Legacy PDF via server (Railway)"
+                    className={cn(
+                      'flex-1 flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 transition-all',
+                      actieveHandtekening
+                        ? 'bg-muted/40 text-foreground hover:bg-muted/60'
+                        : 'bg-muted/20 text-muted-foreground/40 cursor-not-allowed'
+                    )}
+                  >
+                    {rapportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                    Legacy PDF
+                  </button>
+                  <button
+                    onClick={handleWhatsApp}
+                    disabled={!actieveHandtekening || whatsAppLoading}
+                    title="Legacy WhatsApp delen (server PDF)"
+                    className={cn(
+                      'flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 px-3 transition-all',
+                      actieveHandtekening
+                        ? 'bg-[#25D366]/10 text-[#25D366]'
+                        : 'bg-muted/20 text-muted-foreground/40 cursor-not-allowed'
+                    )}
+                  >
+                    {whatsAppLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                  </button>
+                  <button
+                    onClick={() => setEmailOpen(true)}
+                    disabled={!actieveHandtekening || rapportLoading}
+                    title="Legacy e-mail versturen (server PDF)"
+                    className={cn(
+                      'flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 px-3 transition-all',
+                      actieveHandtekening
+                        ? 'bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))]'
+                        : 'bg-muted/20 text-muted-foreground/40 cursor-not-allowed'
+                    )}
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
 
 
 
