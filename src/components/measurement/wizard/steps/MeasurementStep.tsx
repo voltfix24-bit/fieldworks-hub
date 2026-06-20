@@ -5,7 +5,7 @@ import { GroundingIcon } from '../../GroundingIcon';
 import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
-import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
+import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
 import { Textarea } from '@/components/ui/textarea';
 
 interface MeasurementStepProps {
@@ -78,14 +78,14 @@ export function MeasurementStep({
   }, [electrode.target_value]);
 
   const handleRvBlur = () => {
-    const parsed = parseNlNumberOrNull(rvInput);
+    const parsed = parsePositiveNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
       onUpdateElectrode({ rv_value: parsed, ra_value: null, is_coupled: true });
     }
   };
 
   const handleTargetBlur = () => {
-    const parsed = parseNlNumberOrNull(targetInput);
+    const parsed = parsePositiveNlNumberOrNull(targetInput);
     if (parsed !== electrode.target_value) {
       onUpdateElectrode({ target_value: parsed });
     }
@@ -102,7 +102,7 @@ export function MeasurementStep({
             type="text"
             inputMode="decimal"
             value={targetInput}
-            onChange={e => setTargetInput(e.target.value)}
+            onChange={e => setTargetInput(normaliseNlInput(e.target.value).replace('-', ''))}
             onBlur={handleTargetBlur}
             placeholder="3,00"
             className={cn(
@@ -218,7 +218,7 @@ export function MeasurementStep({
                     type="text"
                     inputMode="decimal"
                     value={rvInput}
-                    onChange={e => setRvInput(e.target.value)}
+                    onChange={e => setRvInput(normaliseNlInput(e.target.value).replace('-', ''))}
                     onBlur={handleRvBlur}
                     placeholder="Bijv. 1,82"
                     className={cn(
