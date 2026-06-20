@@ -2,6 +2,7 @@ import { useState, useRef, forwardRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
 
 interface PhotoUploaderProps {
   label: string;
@@ -36,7 +37,7 @@ export const PhotoUploader = forwardRef<HTMLDivElement, PhotoUploaderProps>(func
 
       {displayUrl ? (
         <div className="relative group rounded-2xl overflow-hidden bg-muted/10">
-          <img src={displayUrl} alt={label} className={cn('w-full object-cover', compact ? 'h-28' : 'h-36')} />
+          <MeasurementPhoto src={displayUrl} alt={label} className={cn('w-full object-cover', compact ? 'h-28' : 'h-36')} />
           <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 active:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
             <button onClick={() => cameraRef.current?.click()} disabled={uploading}
               className="h-8 px-3 rounded-lg bg-white/90 text-foreground text-[11px] font-medium flex items-center gap-1.5 active:scale-95 transition-transform">

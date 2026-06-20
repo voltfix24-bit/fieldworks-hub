@@ -5,9 +5,6 @@ import type { Database } from '@/integrations/supabase/types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
-// Dev mode tenant ID — used when not logged in
-const DEV_TENANT_ID = '11111111-1111-1111-1111-111111111111';
-
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -24,6 +21,15 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+async function loadProfile(userId: string): Promise<Profile | null> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+  return data;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -32,78 +38,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          setTimeout(async () => {
-            const { data } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            setProfile(data);
-            setLoading(false);
-          }, 0);
-        } else {
-          // Dev mode: create a mock profile so the app works without auth
-          // Dev mode: load profile from database
-          const { data: devProfile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('tenant_id', DEV_TENANT_ID)
-            .limit(1)
-            .single();
-          setProfile(devProfile ?? {
-            id: 'dev-user',
-            tenant_id: DEV_TENANT_ID,
-            full_name: 'Enes Turhan',
-            role: 'tenant_admin' as const,
-            status: 'active' as const,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+      (_event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        if (!newSession?.user) {
+          setProfile(null);
           setLoading(false);
+          return;
         }
+        // Defer the DB call to avoid deadlocks inside the auth callback
+        setTimeout(() => {
+          loadProfile(newSession.user.id).then((p) => {
+            setProfile(p);
+            setLoading(false);
+          });
+        }, 0);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            setProfile(data);
-            setLoading(false);
-          });
-      } else {
-        // Dev mode mock
-        // Dev mode: load profile from database
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('tenant_id', DEV_TENANT_ID)
-          .limit(1)
-          .single()
-          .then(({ data: devProfile }) => {
-            setProfile(devProfile ?? {
-              id: 'dev-user',
-              tenant_id: DEV_TENANT_ID,
-              full_name: 'Enes Turhan',
-              role: 'tenant_admin' as const,
-              status: 'active' as const,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
-            setLoading(false);
-          });
+    supabase.auth.getSession().then(({ data: { session: existing } }) => {
+      setSession(existing);
+      setUser(existing?.user ?? null);
+      if (!existing?.user) {
+        setLoading(false);
+        return;
       }
+      loadProfile(existing.user.id).then((p) => {
+        setProfile(p);
+        setLoading(false);
+      });
     });
 
     return () => subscription.unsubscribe();
