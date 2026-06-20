@@ -16,8 +16,6 @@ import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSecti
 import { ReportFooter } from '@/components/report/ReportFooter';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
-import { useRapportGeneratorBrowser } from '@/hooks/useRapportGeneratorBrowser';
-import { useRapportData } from '@/hooks/useRapportData';
 import { useHandtekening } from '@/hooks/useHandtekening';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -30,8 +28,6 @@ export default function ProjectReport() {
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
-  const { genereer: genereerBrowser, bezig: browserBezig } = useRapportGeneratorBrowser();
-  const { buildRapportData } = useRapportData(id);
   const { opgeslagenHandtekening } = useHandtekening(user?.id);
   const { toast } = useToast();
 
@@ -142,17 +138,7 @@ export default function ProjectReport() {
     }
   };
 
-  const handleDownloadBrowser = async () => {
-    try {
-      const data = await buildRapportData(actieveHandtekening ?? null);
-      if (!data) throw new Error('Kan rapportdata niet samenstellen.');
-      const projectClean = (data.project_naam || 'rapport').replace(/\s+/g, '_').slice(0, 30);
-      const datumClean = (data.meetdatum || '').replace(/-/g, '').slice(0, 8);
-      await genereerBrowser(data, `Aardingsrapport_${projectClean}_${datumClean}.pdf`);
-    } catch (err) {
-      toast({ title: 'Browser-PDF mislukt', description: err instanceof Error ? err.message : 'Onbekende fout', variant: 'destructive' });
-    }
-  };
+
 
   const handleSendEmail = async () => {
     if (!emailTo) return;
@@ -329,21 +315,8 @@ export default function ProjectReport() {
               </button>
             </div>
 
-            {/* Alternatieve generator (browser-based, geen externe API) */}
-            <button
-              onClick={handleDownloadBrowser}
-              disabled={!actieveHandtekening || browserBezig}
-              className={cn(
-                'mt-2 w-full flex items-center justify-center gap-2 rounded-xl font-semibold text-[13px] py-2.5 px-4 transition-all active:scale-[0.98] border',
-                actieveHandtekening
-                  ? 'bg-background text-foreground border-border hover:bg-muted/40'
-                  : 'bg-muted/20 text-muted-foreground/40 border-transparent cursor-not-allowed'
-              )}
-              title="Genereert het rapport lokaal in de browser via de React-template (geen Railway nodig)."
-            >
-              {browserBezig ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-              {browserBezig ? 'Browser-PDF genereren…' : 'Browser-PDF (alternatief)'}
-            </button>
+
+
 
 
             {/* Email modal */}
