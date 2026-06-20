@@ -19,17 +19,20 @@ export function ReportFooter() {
   if (!company && !addressParts && contactParts.length === 0) return null;
 
   return (
-    <footer className="report-footer pt-4 border-t border-foreground/8">
-      <div className="flex items-end justify-between text-[9px] text-muted-foreground leading-relaxed">
-        <div className="space-y-0.5">
-          <p className="font-semibold text-foreground text-[10px]">{company}</p>
+    <footer className="report-footer mt-10 border-t border-slate-200 pt-5">
+      <div className="flex items-end justify-between gap-6 text-[9px] leading-relaxed text-slate-400">
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-[10px] font-extrabold text-slate-700">{company}</p>
           {addressParts && <p>{addressParts}</p>}
           {contactParts.length > 0 && <p>{contactParts.join('  ·  ')}</p>}
           {regParts.length > 0 && <p>{regParts.join('  ·  ')}</p>}
         </div>
-        {branding?.logo_url && (
-          <img src={branding.logo_url} alt="" className="h-4 w-auto opacity-15" />
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="rounded-md bg-[hsl(var(--tenant-primary)/0.08)] px-2.5 py-1 text-[9px] font-bold text-slate-500">Definitief</span>
+          {branding?.logo_url && (
+            <img src={branding.logo_url} alt="" className="h-5 w-auto opacity-20" />
+          )}
+        </div>
       </div>
     </footer>
   );
