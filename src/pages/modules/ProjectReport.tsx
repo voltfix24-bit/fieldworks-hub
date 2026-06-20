@@ -41,6 +41,10 @@ export default function ProjectReport() {
   const [emailNaam, setEmailNaam] = useState('');
   const [emailSending, setEmailSending] = useState(false);
   const [whatsAppLoading, setWhatsAppLoading] = useState(false);
+  const [adminPreview, setAdminPreview] = useState(false);
+
+  // Centrale readiness (zelfde hook als ProjectDetail)
+  const readiness = useReportReadiness(id);
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
