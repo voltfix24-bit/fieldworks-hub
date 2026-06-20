@@ -6,6 +6,7 @@ import { useMeasurementSession } from '@/hooks/use-measurement-sessions';
 import { useElectrodes } from '@/hooks/use-electrodes';
 import { useAttachments } from '@/hooks/use-attachments';
 import { useReportData } from '@/hooks/use-report-data';
+import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useToast } from '@/hooks/use-toast';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -64,13 +65,13 @@ export default function ProjectDetail() {
   const hasMeasurements = (reportData?.stats.measurementCount || 0) > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
   const hasPhotos = (reportData?.stats.photosCount || 0) > 0;
-  // Hard-blocking fields only — photos/sketches are warnings, not blockers.
-  const isReportReady =
-    hasMeasurementDate && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
 
-  const metingGestart = hasSession && hasElectrodes;
-  const metingKlaar = isReportReady;
+  // Centrale rapport-readiness: blocking errors + warnings
+  const readiness = useReportReadiness(id);
+  const isReportReady = readiness.isReady;
+  const hasReportWarnings = readiness.hasWarnings;
 
+  // Readiness items voor de bestaande "Gereedheid"-checklist (alleen visualisatie)
   const readinessItems = [
     { label: 'Klant toegewezen', met: hasClient },
     { label: 'Monteur toegewezen', met: hasTechnician },
@@ -82,6 +83,24 @@ export default function ProjectDetail() {
     { label: 'Schets toegevoegd', met: hasSketches, optional: true },
     { label: 'Situatieschets gemaakt', met: hasDiagram, optional: true },
   ];
+
+  // Bepaal "primaire fix"-route op basis van de eerste blocker (voor de sheet-knop)
+  const primaryFix: 'measurements' | 'project' | 'equipment' =
+    readiness.blockers.find(b => b.fix === 'measurements')?.fix
+      ?? readiness.blockers.find(b => b.fix === 'equipment')?.fix
+      ?? readiness.blockers[0]?.fix
+      ?? 'project';
+  const fixTarget = (fix: 'measurements' | 'project' | 'equipment'): { label: string; href: string } => {
+    if (fix === 'measurements') return { label: 'Naar metingen', href: `/projects/${id}/measurements` };
+    if (fix === 'equipment') return {
+      label: 'Apparatuur beheren',
+      href: equip?.id ? `/equipment/${equip.id}` : '/equipment',
+    };
+    return { label: 'Project bewerken', href: `/projects/${id}/edit` };
+  };
+
+  const metingGestart = hasSession && hasElectrodes;
+  const metingKlaar = isReportReady;
 
   const handleStatusChange = async (newStatus: 'planned' | 'completed') => {
     try {
@@ -192,13 +211,24 @@ export default function ProjectDetail() {
                 className="ios-detail-action-btn relative"
                 onClick={() => {
                   if (!isReportReady) { setShowRapportBlock(true); return; }
+                  if (hasReportWarnings) { setShowRapportBlock(true); return; }
                   navigate(`/projects/${id}/report`);
                 }}
               >
-                <FileText className={cn('h-[18px] w-[18px]', isReportReady ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/50')} />
+                <FileText className={cn(
+                  'h-[18px] w-[18px]',
+                  !isReportReady
+                    ? 'text-muted-foreground/50'
+                    : hasReportWarnings
+                      ? 'text-amber-500'
+                      : 'text-[hsl(var(--status-completed))]',
+                )} />
                 Rapport
-                {!isReportReady && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
+                {(!isReportReady || hasReportWarnings) && (
+                  <span className={cn(
+                    'absolute top-1.5 right-1.5 w-2 h-2 rounded-full',
+                    !isReportReady ? 'bg-destructive' : 'bg-amber-500',
+                  )} />
                 )}
               </button>
               <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/measurements?tab=fotos`)}>
@@ -383,37 +413,68 @@ export default function ProjectDetail() {
           </div>
         )}
 
-        {/* Rapport-blokkade sheet */}
+        {/* Rapport-blokkade / waarschuwing sheet */}
         {showRapportBlock && (
           <div className="ios-detail-confirm-backdrop" onClick={() => setShowRapportBlock(false)}>
             <div className="ios-detail-confirm-sheet" onClick={e => e.stopPropagation()}>
               <div className="ios-detail-confirm-handle" />
               <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className="h-5 w-5 text-amber-500" />
-                <h3 className="ios-detail-confirm-title" style={{ margin: 0 }}>Rapport nog niet compleet</h3>
+                <AlertCircle className={cn('h-5 w-5', isReportReady ? 'text-amber-500' : 'text-destructive')} />
+                <h3 className="ios-detail-confirm-title" style={{ margin: 0 }}>
+                  {isReportReady ? 'Rapport heeft waarschuwingen' : 'Rapport nog niet compleet'}
+                </h3>
               </div>
               <p className="ios-detail-confirm-sub">
-                Vul eerst de ontbrekende gegevens aan. Zonder deze gegevens wordt het rapport onvolledig.
+                {isReportReady
+                  ? 'Je kunt het rapport openen, maar controleer onderstaande punten.'
+                  : 'Vul eerst onderstaande gegevens aan voordat je het rapport opent.'}
               </p>
-              <div className="mt-3 mb-4 rounded-2xl bg-foreground/[0.03] divide-y divide-border/30">
-                {readinessItems.filter(r => !r.optional && !r.met).map(r => (
-                  <div key={r.label} className="flex items-center gap-2.5 px-4 py-3">
-                    <XCircle className="h-4 w-4 text-amber-500 shrink-0" />
-                    <span className="text-[13px] text-foreground/80">{r.label}</span>
-                  </div>
-                ))}
-                {readinessItems.filter(r => !r.optional && !r.met).length === 0 && (
-                  <div className="px-4 py-3 text-[13px] text-muted-foreground">Alles compleet.</div>
+
+              {readiness.blockers.length > 0 && (
+                <div className="mt-3 rounded-2xl bg-destructive/[0.04] divide-y divide-border/30 border border-destructive/15">
+                  {readiness.blockers.map(b => (
+                    <div key={b.code} className="flex items-center gap-2.5 px-4 py-3">
+                      <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                      <span className="text-[13px] text-foreground/85">{b.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {readiness.warnings.length > 0 && (
+                <div className="mt-3 rounded-2xl bg-amber-500/[0.06] divide-y divide-border/30 border border-amber-500/20">
+                  {readiness.warnings.map(w => (
+                    <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
+                      <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+                      <span className="text-[13px] text-foreground/85">{w.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="ios-detail-confirm-actions mt-4">
+                {!isReportReady ? (
+                  (() => {
+                    const target = fixTarget(primaryFix);
+                    return (
+                      <button
+                        className="ios-detail-confirm-delete"
+                        style={{ background: 'hsl(var(--tenant-primary))' }}
+                        onClick={() => { setShowRapportBlock(false); navigate(target.href); }}
+                      >
+                        {target.label}
+                      </button>
+                    );
+                  })()
+                ) : (
+                  <button
+                    className="ios-detail-confirm-delete"
+                    style={{ background: 'hsl(var(--tenant-primary))' }}
+                    onClick={() => { setShowRapportBlock(false); navigate(`/projects/${id}/report`); }}
+                  >
+                    Toch openen
+                  </button>
                 )}
-              </div>
-              <div className="ios-detail-confirm-actions">
-                <button
-                  className="ios-detail-confirm-delete"
-                  style={{ background: 'hsl(var(--tenant-primary))' }}
-                  onClick={() => { setShowRapportBlock(false); navigate(`/projects/${id}/measurements`); }}
-                >
-                  Naar metingen
-                </button>
                 <button
                   className="ios-detail-confirm-cancel"
                   onClick={() => setShowRapportBlock(false)}

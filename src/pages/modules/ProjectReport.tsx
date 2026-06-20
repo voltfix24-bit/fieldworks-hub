@@ -14,14 +14,15 @@ import { ReportHeader } from '@/components/report/ReportHeader';
 import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
-import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
+
+import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
 import { useHandtekening } from '@/hooks/useHandtekening';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: project, isLoading: projectLoading } = useProject(id);
@@ -40,6 +41,10 @@ export default function ProjectReport() {
   const [emailNaam, setEmailNaam] = useState('');
   const [emailSending, setEmailSending] = useState(false);
   const [whatsAppLoading, setWhatsAppLoading] = useState(false);
+  const [adminPreview, setAdminPreview] = useState(false);
+
+  // Centrale readiness (zelfde hook als ProjectDetail)
+  const readiness = useReportReadiness(id);
 
   if (projectLoading || reportLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!project) return <p className="text-muted-foreground text-center py-12">Project niet gevonden</p>;
@@ -67,17 +72,10 @@ export default function ProjectReport() {
   const hasElectrodes = electrodes.length > 0;
   const hasMeasurements = stats.measurementCount > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
-  const isReady = hasSession && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
 
-  const readinessItems = [
-    { label: 'Meetsessie aanwezig', met: hasSession },
-    { label: 'Klant toegewezen', met: hasClient },
-    { label: 'Monteur toegewezen', met: hasTechnician },
-    { label: 'Apparatuur toegewezen', met: hasEquipment },
-    { label: 'Minimaal één elektrode', met: hasElectrodes },
-    { label: 'Minimaal één meting', met: hasMeasurements },
-    { label: 'Schets bijgevoegd', met: hasSketches, optional: true },
-  ];
+  const isReady = readiness.isReady;
+  const isAdmin = ['admin', 'tenant_admin', 'office_user'].includes((profile as any)?.role || '');
+  const showDocument = isReady || adminPreview;
 
   const location = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
@@ -259,19 +257,71 @@ export default function ProjectReport() {
         </div>
       </div>
 
-      {/* Readiness gate */}
-      {!isReady && (
+      {/* Readiness gate — blokkeer rapport bij blocking errors */}
+      {!readiness.isLoading && !isReady && (
         <div className="print:hidden max-w-lg mx-auto mb-8">
-          <div className="flex items-center gap-3 mb-4 p-4 rounded-lg border border-orange-200 bg-orange-50">
-            <AlertCircle className="h-5 w-5 text-orange-500 shrink-0" />
+          <div className="flex items-start gap-3 mb-4 p-4 rounded-2xl border border-destructive/20 bg-destructive/[0.04]">
+            <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-foreground">Rapport niet gereed</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Voltooi de volgende onderdelen om het rapport te genereren.</p>
+              <p className="text-sm font-semibold text-foreground">Rapport nog niet beschikbaar</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Vul eerst onderstaande verplichte gegevens aan.
+              </p>
             </div>
           </div>
-          <ReadinessChecklist items={readinessItems} />
+
+          <div className="rounded-2xl bg-card border border-border/40 divide-y divide-border/30">
+            {readiness.blockers.map(b => (
+              <div key={b.code} className="flex items-center gap-2.5 px-4 py-3">
+                <X className="h-4 w-4 text-destructive shrink-0" />
+                <span className="text-[13px] text-foreground/85 flex-1">{b.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {readiness.warnings.length > 0 && (
+            <div className="mt-3 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 divide-y divide-border/30">
+              {readiness.warnings.map(w => (
+                <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
+                  <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+                  <span className="text-[13px] text-foreground/85 flex-1">{w.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
+              Naar metingen
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/edit`)}>
+              Project bewerken
+            </Button>
+            {isAdmin && !adminPreview && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground/60"
+                onClick={() => setAdminPreview(true)}
+              >
+                Toch bekijken (preview)
+              </Button>
+            )}
+          </div>
         </div>
       )}
+
+      {isReady && readiness.warnings.length > 0 && (
+        <div className="print:hidden max-w-lg mx-auto mb-6 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 divide-y divide-border/30">
+          {readiness.warnings.map(w => (
+            <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+              <span className="text-[13px] text-foreground/85 flex-1">{w.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
 
       {/* ─── DOWNLOAD SECTIE ─── */}
       {isReady && (
@@ -400,7 +450,13 @@ export default function ProjectReport() {
       )}
 
       {/* ─── REPORT DOCUMENT ─── */}
-      <div className={`${!isReady ? 'print:hidden opacity-30 pointer-events-none' : ''}`}>
+      {showDocument && (
+      <div className={`${!isReady ? 'print:hidden opacity-60' : ''}`}>
+        {!isReady && (
+          <div className="print:hidden max-w-[210mm] mx-auto mb-3 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[12px] text-amber-700 font-semibold">
+            Adminpreview — geen definitief rapport
+          </div>
+        )}
         <div className="report-document max-w-[210mm] mx-auto bg-white px-10 py-10 sm:px-14 sm:py-12 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
              style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
@@ -533,6 +589,7 @@ export default function ProjectReport() {
           <ReportFooter />
         </div>
       </div>
+      )}
     </div>
   );
 }
