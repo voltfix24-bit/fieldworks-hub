@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Trash2, ArrowDown, Gauge, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GroundingIcon } from './GroundingIcon';
-import { parseNlNumber, parseNlNumberOrZero, formatNlNumber } from '@/lib/nl-number';
+import { parseNlNumber, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
 
 interface DepthRow {
   id?: string;
@@ -215,7 +215,15 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
-    const r = parseNlNumberOrZero(resistance);
+    const trimmed = resistance.trim();
+    const parsed = trimmed === '' ? 0 : parseNlNumber(trimmed);
+
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setResistance(row.resistance_value > 0 ? String(row.resistance_value).replace('.', ',') : '');
+      return;
+    }
+
+    const r = parsed;
     if (row.id && r !== row.resistance_value) {
       onUpdate(row.id, row.depth_meters, r);
       // Haptic feedback
@@ -226,7 +234,8 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
     }
   }, [resistance, row.id, row.depth_meters, row.resistance_value, onUpdate]);
 
-  const hasValue = resistance !== '' && parseNlNumber(resistance) > 0;
+  const parsedResistance = parseNlNumber(resistance);
+  const hasValue = resistance !== '' && Number.isFinite(parsedResistance) && parsedResistance > 0;
   const canSwipe = !isPreset && !disabled;
 
   return (
@@ -302,7 +311,7 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             inputMode="decimal"
             pattern="[0-9]*[.,]?[0-9]*"
             value={resistance}
-            onChange={e => setResistance(e.target.value)}
+            onChange={e => setResistance(normaliseNlInput(e.target.value).replace('-', ''))}
             onFocus={(e) => {
               setIsFocused(true);
               e.target.select();
