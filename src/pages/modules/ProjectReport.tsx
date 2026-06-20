@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function ProjectReport() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: project, isLoading: projectLoading } = useProject(id);
