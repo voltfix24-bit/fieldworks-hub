@@ -450,7 +450,13 @@ export default function ProjectReport() {
       )}
 
       {/* ─── REPORT DOCUMENT ─── */}
-      <div className={`${!isReady ? 'print:hidden opacity-30 pointer-events-none' : ''}`}>
+      {showDocument && (
+      <div className={`${!isReady ? 'print:hidden opacity-60' : ''}`}>
+        {!isReady && (
+          <div className="print:hidden max-w-[210mm] mx-auto mb-3 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[12px] text-amber-700 font-semibold">
+            Adminpreview — geen definitief rapport
+          </div>
+        )}
         <div className="report-document max-w-[210mm] mx-auto bg-white px-10 py-10 sm:px-14 sm:py-12 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
              style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
