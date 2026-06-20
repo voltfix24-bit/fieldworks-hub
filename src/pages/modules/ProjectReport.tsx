@@ -155,13 +155,22 @@ export default function ProjectReport() {
     );
   };
 
-  const handleDownload = async () => {
+  const handlePrint = () => {
+    const err = preflight();
+    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
+    if (!confirmExpired()) return;
+    // Native browser print — gratis, geen Railway/edge-call
+    window.print();
+  };
+
+  // Legacy server-side PDF (Railway / generate-rapport). Alleen admin/kantoor.
+  const handleLegacyPdf = async () => {
     const err = preflight();
     if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
     if (!confirmExpired()) return;
     try {
       await genereerViaEdge(id!, actieveHandtekening ?? undefined);
-      toast({ title: 'Rapport klaar', description: 'PDF is gedownload.' });
+      toast({ title: 'Rapport klaar', description: 'PDF is gedownload (legacy).' });
     } catch (e) {
       toast({ title: 'Rapport kon niet worden gemaakt', description: friendlyError(e), variant: 'destructive' });
     }
