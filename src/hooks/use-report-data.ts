@@ -43,7 +43,23 @@ interface ProjectDiagramRow {
   created_at: string | null;
 }
 
-async function getDiagramAttachments(projectId: string) {
+interface DiagramAttachment {
+  id: string;
+  project_id: string;
+  measurement_session_id: string | null;
+  attachment_type: 'sketch_file';
+  file_url: string;
+  file_name: string;
+  caption: string;
+  created_at: string;
+  source: 'project_diagram';
+}
+
+function isDiagramAttachment(value: DiagramAttachment | null): value is DiagramAttachment {
+  return value !== null;
+}
+
+async function getDiagramAttachments(projectId: string): Promise<DiagramAttachment[]> {
   const { data, error } = await (supabase as any)
     .from('project_diagrams')
     .select('id, project_id, measurement_session_id, image_path, updated_at, created_at')
@@ -58,7 +74,7 @@ async function getDiagramAttachments(projectId: string) {
   }
 
   const diagrams = (data || []) as ProjectDiagramRow[];
-  const withUrls = await Promise.all(diagrams.map(async (diagram) => {
+  const withUrls = await Promise.all(diagrams.map(async (diagram): Promise<DiagramAttachment | null> => {
     if (!diagram.image_path) return null;
     const { data: signed } = await supabase.storage
       .from('project-files')
@@ -79,7 +95,7 @@ async function getDiagramAttachments(projectId: string) {
     };
   }));
 
-  return withUrls.filter(Boolean);
+  return withUrls.filter(isDiagramAttachment);
 }
 
 export function useReportData(projectId: string | undefined) {
