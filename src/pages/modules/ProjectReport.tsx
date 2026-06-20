@@ -195,9 +195,11 @@ export default function ProjectReport() {
   };
 
   const handleWhatsApp = async () => {
+    const err = preflight();
+    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
+    if (!confirmExpired()) return;
     setWhatsAppLoading(true);
     try {
-      // Generate PDF and get signed URL
       const { data, error: fnError } = await supabase.functions.invoke('generate-rapport', {
         body: { project_id: id, handtekening_b64: actieveHandtekening ?? undefined },
       });
@@ -205,17 +207,16 @@ export default function ProjectReport() {
 
       let rapportUrl = '';
       if (data?.pdf_base64) {
-        // Upload to storage and get signed URL
         const binaryStr = atob(data.pdf_base64);
         const bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-        
+
         const pad = `shared/${id}/${Date.now()}_${data.bestandsnaam || 'rapport.pdf'}`;
         const { data: upload, error: uploadErr } = await supabase.storage
           .from('generated-reports')
           .upload(pad, bytes, { contentType: 'application/pdf', upsert: false });
         if (uploadErr) throw uploadErr;
-        
+
         const { data: signedData } = await supabase.storage
           .from('generated-reports')
           .createSignedUrl(upload.path, 86400);
@@ -225,7 +226,7 @@ export default function ProjectReport() {
       const klantNaam = client?.company_name || 'opdrachtgever';
       const projectNaam = project.project_name;
       const datum = formatNlDate(session?.measurement_date);
-      
+
       const bericht = `Geachte ${klantNaam},\n\nHierbij het aardingsrapport voor project "${projectNaam}" (${datum}).\n\n📄 Rapport downloaden:\n${rapportUrl}\n\nMet vriendelijke groet,\n${tech?.full_name || 'Het team'}`;
       const encoded = encodeURIComponent(bericht);
 
@@ -237,8 +238,8 @@ export default function ProjectReport() {
       }
 
       toast({ title: 'WhatsApp geopend', description: 'Controleer het bericht en verstuur naar de opdrachtgever.' });
-    } catch (err) {
-      toast({ title: 'Delen mislukt', description: err instanceof Error ? err.message : 'Probeer opnieuw', variant: 'destructive' });
+    } catch (e) {
+      toast({ title: 'Delen mislukt', description: friendlyError(e), variant: 'destructive' });
     } finally {
       setWhatsAppLoading(false);
     }
