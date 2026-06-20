@@ -65,13 +65,13 @@ export default function ProjectDetail() {
   const hasMeasurements = (reportData?.stats.measurementCount || 0) > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
   const hasPhotos = (reportData?.stats.photosCount || 0) > 0;
-  // Hard-blocking fields only — photos/sketches are warnings, not blockers.
-  const isReportReady =
-    hasMeasurementDate && hasClient && hasTechnician && hasEquipment && hasElectrodes && hasMeasurements;
 
-  const metingGestart = hasSession && hasElectrodes;
-  const metingKlaar = isReportReady;
+  // Centrale rapport-readiness: blocking errors + warnings
+  const readiness = useReportReadiness(id);
+  const isReportReady = readiness.isReady;
+  const hasReportWarnings = readiness.hasWarnings;
 
+  // Readiness items voor de bestaande "Gereedheid"-checklist (alleen visualisatie)
   const readinessItems = [
     { label: 'Klant toegewezen', met: hasClient },
     { label: 'Monteur toegewezen', met: hasTechnician },
@@ -83,6 +83,24 @@ export default function ProjectDetail() {
     { label: 'Schets toegevoegd', met: hasSketches, optional: true },
     { label: 'Situatieschets gemaakt', met: hasDiagram, optional: true },
   ];
+
+  // Bepaal "primaire fix"-route op basis van de eerste blocker (voor de sheet-knop)
+  const primaryFix: 'measurements' | 'project' | 'equipment' =
+    readiness.blockers.find(b => b.fix === 'measurements')?.fix
+      ?? readiness.blockers.find(b => b.fix === 'equipment')?.fix
+      ?? readiness.blockers[0]?.fix
+      ?? 'project';
+  const fixTarget = (fix: 'measurements' | 'project' | 'equipment'): { label: string; href: string } => {
+    if (fix === 'measurements') return { label: 'Naar metingen', href: `/projects/${id}/measurements` };
+    if (fix === 'equipment') return {
+      label: 'Apparatuur beheren',
+      href: equip?.id ? `/equipment/${equip.id}` : '/equipment',
+    };
+    return { label: 'Project bewerken', href: `/projects/${id}/edit` };
+  };
+
+  const metingGestart = hasSession && hasElectrodes;
+  const metingKlaar = isReportReady;
 
   const handleStatusChange = async (newStatus: 'planned' | 'completed') => {
     try {
