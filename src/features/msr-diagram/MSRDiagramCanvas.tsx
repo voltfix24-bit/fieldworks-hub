@@ -7,7 +7,7 @@ import { DiagramCanvas } from './Canvas';
 import { DiagramToolbar } from './Toolbar';
 import { ZoomControls } from './ZoomControls';
 import { renderDiagramToPng } from './export-png';
-import { DEFAULT_DIAGRAM, type MSRDiagram, type DoorSide } from './types';
+import { DEFAULT_DIAGRAM, type DiagramElectrode, type DoorSide, type MSRDiagram } from './types';
 
 interface Props {
   projectId: string;
@@ -80,8 +80,15 @@ export function MSRDiagramCanvas({
     const r = 180;
     const x = Math.max(20, Math.min(diagram.canvasSize.w - 20, c.x + c.w / 2 + Math.cos(angle) * r));
     const y = Math.max(20, Math.min(diagram.canvasSize.h - 20, c.y + c.h / 2 + Math.sin(angle) * r));
-    update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `E${n}`, x, y }] }));
+    update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `E${n}`, x, y, anchor: 'br' }] }));
     setSelectedId(id);
+  };
+
+  const updateElectrode = (id: string, patch: Partial<DiagramElectrode>) => {
+    update((d) => ({
+      ...d,
+      electrodes: d.electrodes.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    }));
   };
 
   const handleSave = async () => {
@@ -171,9 +178,7 @@ export function MSRDiagramCanvas({
           diagram={diagram}
           zoom={zoom}
           onMoveCabinet={(x, y) => update((d) => ({ ...d, cabinet: { ...d.cabinet, x, y } }))}
-          onMoveElectrode={(id, x, y) =>
-            update((d) => ({ ...d, electrodes: d.electrodes.map((e) => (e.id === id ? { ...e, x, y } : e)) }))
-          }
+          onMoveElectrode={(id, x, y) => updateElectrode(id, { x, y })}
           selectedElectrodeId={selectedId}
           onSelectElectrode={setSelectedId}
         />
@@ -193,9 +198,8 @@ export function MSRDiagramCanvas({
           update((d) => ({ ...d, cabinet: { ...d.cabinet, doorSide: v } }))
         }
         onAddElectrode={addElectrode}
-        onRenameElectrode={(id, label) =>
-          update((d) => ({ ...d, electrodes: d.electrodes.map((e) => (e.id === id ? { ...e, label } : e)) }))
-        }
+        onRenameElectrode={(id, label) => updateElectrode(id, { label })}
+        onUpdateElectrode={updateElectrode}
         onRemoveElectrode={(id) => {
           update((d) => ({ ...d, electrodes: d.electrodes.filter((e) => e.id !== id) }));
           if (selectedId === id) setSelectedId(null);
