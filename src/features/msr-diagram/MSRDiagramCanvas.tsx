@@ -90,18 +90,18 @@ export function MSRDiagramCanvas({
       // 1. Upsert row to get id
       let rowId = existing?.id;
       if (!rowId) {
-        const { data: inserted, error: insErr } = await supabase
-          .from('project_diagrams' as any)
+        const ins = await (supabase as any)
+          .from('project_diagrams')
           .insert({
             tenant_id: tenantId,
             project_id: projectId,
             measurement_session_id: measurementSessionId || null,
-            diagram_json: diagram as any,
+            diagram_json: diagram,
           })
           .select('id')
           .single();
-        if (insErr || !inserted) throw insErr || new Error('Opslaan mislukt');
-        rowId = (inserted as { id: string }).id;
+        if (ins.error || !ins.data) throw ins.error || new Error('Opslaan mislukt');
+        rowId = (ins.data as { id: string }).id;
       }
 
       // 2. Render PNG
