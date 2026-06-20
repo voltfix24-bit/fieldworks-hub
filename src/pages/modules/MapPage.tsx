@@ -20,6 +20,7 @@ import { useCreateProject, useProjects as useAllProjects } from '@/hooks/use-pro
 import { ClientCombobox } from '@/components/ui/ClientCombobox';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { normaliseNlInput, parsePositiveNlNumberOrNull } from '@/lib/nl-number';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -409,7 +410,7 @@ function NewProjectSheet({
         technician_id: form.technician_id || null,
         equipment_id: form.equipment_id || null,
         notes: form.notes || null,
-        target_value: parseFloat(form.target_value) || null,
+        target_value: parsePositiveNlNumberOrNull(form.target_value),
         housing_number: form.housing_number || null,
         cable_material: form.cable_material || null,
       });
@@ -547,7 +548,7 @@ function NewProjectSheet({
                 </div>
                 <div>
                   <label className={labelCls}>TOETSWAARDE (Ω)</label>
-                  <input className={inputCls} inputMode="decimal" value={form.target_value} onChange={e => set('target_value', e.target.value)} placeholder="Bijv. 3.00" />
+                  <input className={inputCls} inputMode="decimal" value={form.target_value} onChange={e => set('target_value', normaliseNlInput(e.target.value).replace('-', ''))} placeholder="Bijv. 3.00" />
                 </div>
                 <div>
                   <label className={labelCls}>BEHUIZINGSNUMMER</label>
