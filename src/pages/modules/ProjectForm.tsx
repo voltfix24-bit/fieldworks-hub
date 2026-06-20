@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, ChevronRight, ChevronDown, Loader2, AlertTriangle, Upload, X, FileIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { normaliseNlInput, parsePositiveNlNumberOrNull } from '@/lib/nl-number';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -140,7 +141,7 @@ export default function ProjectForm() {
       planned_date: form.planned_date || null, status: 'planned' as const,
       client_id: form.client_id || null, technician_id: form.technician_id || null,
       equipment_id: form.equipment_id || null, notes: form.notes || null,
-      target_value: parseFloat(form.target_value) || null,
+      target_value: parsePositiveNlNumberOrNull(form.target_value),
       housing_number: form.housing_number || null,
       cable_material: form.cable_material || null,
     };
@@ -403,7 +404,7 @@ export default function ProjectForm() {
                   className="ios-form-input"
                   inputMode="decimal"
                   value={form.target_value}
-                  onChange={e => set('target_value', e.target.value)}
+                  onChange={e => set('target_value', normaliseNlInput(e.target.value).replace('-', ''))}
                   placeholder="Bijv. 3.00"
                 />
                 <span className="ios-form-field-hint">Maximaal toegestane aardingsweerstand</span>
