@@ -294,6 +294,21 @@ async function renderPdf(data: any): Promise<Uint8Array> {
     y -= 8;
   }
 
+  // ── SITUATIESCHETS (MSR-diagram) ──────────────────────
+  if (data.situatieschets_b64) {
+    ensure(260);
+    text("SITUATIESCHETS", M, { size: 8, b: true, color: rgb(brand.r, brand.g, brand.b) });
+    y -= 12;
+    const img = await tryEmbedImage(pdf, data.situatieschets_b64);
+    if (img) {
+      const maxW = A4.w - M * 2;
+      const maxH = 240;
+      const d = img.scaleToFit(maxW, maxH);
+      page.drawImage(img, { x: M, y: y - d.height, width: d.width, height: d.height });
+      y -= d.height + 14;
+    }
+  }
+
   // ── SIGNATURE ───────────────────────────────────────────
   if (data.handtekening_b64) {
     ensure(90);
