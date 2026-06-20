@@ -472,6 +472,85 @@ export default function MeasurementWorkspace() {
     enabled: electrodes.length > 0 && !!session,
   });
 
+  // All depth measurements for this session — used to compute "next empty measurement"
+  const { data: alleMetingen = [] } = useQuery({
+    queryKey: ['all-depth-measurements', session?.id],
+    queryFn: async () => {
+      if (!session?.id) return [];
+      const { data, error } = await supabase
+        .from('depth_measurements')
+        .select('id, pen_id, electrode_id, depth_meters, resistance_value, sort_order')
+        .eq('measurement_session_id', session.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!session?.id,
+  });
+
+  // Find next empty measurement (within current pen → next pen → next electrode → wrap)
+  const findNextEmpty = useCallback(():
+    | { electrodeId: string; penId: string; measurementId: string }
+    | null => {
+    if (electrodes.length === 0 || allePens.length === 0 || alleMetingen.length === 0) return null;
+
+    const isEmpty = (m: any) => !(typeof m.resistance_value === 'number' && m.resistance_value > 0);
+    const electrodeOrder = [...electrodes].sort(
+      (a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+    );
+    const startE = Math.max(0, electrodeOrder.findIndex((e: any) => e.id === activeElectrodeId));
+
+    for (let i = 0; i < electrodeOrder.length; i++) {
+      const e: any = electrodeOrder[(startE + i) % electrodeOrder.length];
+      const ePens = allePens
+        .filter((p: any) => p.electrode_id === e.id)
+        .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      if (ePens.length === 0) continue;
+
+      const startP = i === 0
+        ? Math.max(0, ePens.findIndex((p: any) => p.id === activePenId))
+        : 0;
+
+      for (let j = 0; j < ePens.length; j++) {
+        const p: any = ePens[(startP + j) % ePens.length];
+        const pMetingen = alleMetingen
+          .filter((m: any) => m.pen_id === p.id)
+          .sort(
+            (a: any, b: any) =>
+              (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.depth_meters - b.depth_meters,
+          );
+        const empty = pMetingen.find(isEmpty);
+        if (empty) return { electrodeId: e.id, penId: p.id, measurementId: empty.id };
+      }
+    }
+    return null;
+  }, [electrodes, allePens, alleMetingen, activeElectrodeId, activePenId]);
+
+  const nextEmpty = findNextEmpty();
+
+  const goToNextEmpty = useCallback(() => {
+    const target = findNextEmpty();
+    if (!target) return;
+    setShowSketch(false);
+    if (step !== 0) handleStapWissel(0);
+    if (target.electrodeId !== activeElectrodeId) setActiveElectrodeId(target.electrodeId);
+    if (target.penId !== activePenId) setActivePenId(target.penId);
+    // Focus after state propagates + rows mount
+    const tryFocus = (attempt = 0) => {
+      const el = document.querySelector<HTMLInputElement>(
+        `[data-depth-measurement-id="${target.measurementId}"]`,
+      );
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { el.focus(); el.select?.(); }, 180);
+        return;
+      }
+      if (attempt < 8) setTimeout(() => tryFocus(attempt + 1), 120);
+    };
+    setTimeout(() => tryFocus(0), 200);
+    if (navigator.vibrate) navigator.vibrate(6);
+  }, [findNextEmpty, step, activeElectrodeId, activePenId]);
+
+
   const elektrodesMetFotos = electrodes.map((e: any) => {
     const eerstePen = allePens.find((p: any) => p.electrode_id === e.id);
     return {
