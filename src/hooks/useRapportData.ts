@@ -24,18 +24,23 @@ export function useRapportData(projectId: string | undefined) {
 
     if (!session) return null;
 
-    // Fetch electrodes, all pens, and related data in parallel
+    const clientId = project.client_id || session.client_id;
+    const technicianId = project.technician_id || session.technician_id;
+    const equipmentId = project.equipment_id || session.equipment_id;
+
+    // Fetch measurements plus the current project relations. Session fields are
+    // fallback only, so project edits made after measuring are reflected in the report.
     const [electrodesRes, allPensRes, clientRes, techRes, equipRes] = await Promise.all([
       supabase.from('electrodes').select('*').eq('project_id', projectId).order('sort_order'),
       supabase.from('pens').select('*').eq('project_id', projectId).order('sort_order'),
-      session.client_id
-        ? supabase.from('clients').select('*').eq('id', session.client_id).single()
+      clientId
+        ? supabase.from('clients').select('*').eq('id', clientId).single()
         : Promise.resolve({ data: null }),
-      session.technician_id
-        ? supabase.from('technicians').select('*').eq('id', session.technician_id).single()
+      technicianId
+        ? supabase.from('technicians').select('*').eq('id', technicianId).single()
         : Promise.resolve({ data: null }),
-      session.equipment_id
-        ? supabase.from('equipment').select('*').eq('id', session.equipment_id).single()
+      equipmentId
+        ? supabase.from('equipment').select('*').eq('id', equipmentId).single()
         : Promise.resolve({ data: null }),
     ]);
 
