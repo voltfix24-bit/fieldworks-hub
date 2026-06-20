@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { MSRDiagram } from './types';
+import type { DiagramCabinet, DiagramElectrode, MSRAnchor, MSRDiagram } from './types';
 
 interface Props {
   diagram: MSRDiagram;
@@ -27,8 +27,6 @@ export function DiagramCanvas({
   const [drag, setDrag] = useState<Drag>(null);
   const { w, h } = diagram.canvasSize;
   const c = diagram.cabinet;
-  const cx = c.x + c.w / 2;
-  const cy = c.y + c.h / 2;
   const mpu = diagram.metersPerUnit ?? 0.05;
 
   // Convert a pointer event to diagram-unit coordinates.
@@ -100,16 +98,20 @@ export function DiagramCanvas({
 
           {/* Distance lines + labels */}
           {diagram.electrodes.map((e) => {
-            const dxU = e.x - cx;
-            const dyU = e.y - cy;
-            const distM = Math.sqrt(dxU * dxU + dyU * dyU) * mpu;
-            const midX = (cx + e.x) / 2;
-            const midY = (cy + e.y) / 2;
+            const anchor = getAnchorPoint(c, e.anchor ?? 'br');
+            const distances = getDistances(e, anchor, mpu);
+            const selected = selectedElectrodeId === e.id;
             return (
               <g key={`d-${e.id}`} pointerEvents="none">
-                <line x1={cx} y1={cy} x2={e.x} y2={e.y} stroke="#94a3b8" strokeWidth={1} strokeDasharray="4 4" />
-                <text x={midX} y={midY - 6} textAnchor="middle" fontSize="11" fill="#475569">
-                  {distM.toFixed(2).replace('.', ',')} m
+                <line x1={anchor.x} y1={anchor.y} x2={e.x} y2={anchor.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
+                <line x1={e.x} y1={anchor.y} x2={e.x} y2={e.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
+                <circle cx={anchor.x} cy={anchor.y} r={selected ? 6 : 4} fill="#ef4444" />
+                <circle cx={anchor.x} cy={anchor.y} r={2} fill="#ffffff" />
+                <text x={(anchor.x + e.x) / 2} y={anchor.y - 7} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
+                  H {formatMeters(distances.x)}
+                </text>
+                <text x={e.x + 8} y={(anchor.y + e.y) / 2} fontSize="11" fontWeight="700" fill="#475569">
+                  V {formatMeters(distances.y)}
                 </text>
               </g>
             );
@@ -147,8 +149,13 @@ export function DiagramCanvas({
                 }}
                 style={{ cursor: 'grab', touchAction: 'none' }}
               >
-                <circle cx={e.x} cy={e.y} r={sel ? 18 : 14} fill="#E8541A" stroke="#fff" strokeWidth={3} />
-                <text x={e.x} y={e.y + 4} textAnchor="middle" fontSize="12" fontWeight="700" fill="#fff">
+                <circle cx={e.x} cy={e.y} r="26" fill="transparent" />
+                <circle cx={e.x} cy={e.y} r={sel ? 18 : 16} fill={sel ? '#fff7ed' : '#ffffff'} stroke="#E8541A" strokeWidth={sel ? 3 : 2} />
+                <line x1={e.x} y1={e.y - 11} x2={e.x} y2={e.y + 3} stroke="#0f172a" strokeWidth="2" strokeLinecap="round" />
+                <line x1={e.x - 11} y1={e.y + 3} x2={e.x + 11} y2={e.y + 3} stroke="#0f172a" strokeWidth="2" strokeLinecap="round" />
+                <line x1={e.x - 8} y1={e.y + 8} x2={e.x + 8} y2={e.y + 8} stroke="#0f172a" strokeWidth="2" strokeLinecap="round" />
+                <line x1={e.x - 5} y1={e.y + 13} x2={e.x + 5} y2={e.y + 13} stroke="#0f172a" strokeWidth="2" strokeLinecap="round" />
+                <text x={e.x} y={e.y + 34} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">
                   {e.label || 'E'}
                 </text>
               </g>
@@ -158,4 +165,26 @@ export function DiagramCanvas({
       </div>
     </div>
   );
+}
+
+function getAnchorPoint(cabinet: DiagramCabinet, anchor: MSRAnchor) {
+  if (anchor === 'tl') return { x: cabinet.x, y: cabinet.y };
+  if (anchor === 'tr') return { x: cabinet.x + cabinet.w, y: cabinet.y };
+  if (anchor === 'bl') return { x: cabinet.x, y: cabinet.y + cabinet.h };
+  return { x: cabinet.x + cabinet.w, y: cabinet.y + cabinet.h };
+}
+
+function getDistances(electrode: DiagramElectrode, anchor: { x: number; y: number }, metersPerUnit: number) {
+  return {
+    x: electrode.overrideDistanceX ?? roundMeters(Math.abs(electrode.x - anchor.x) * metersPerUnit),
+    y: electrode.overrideDistanceY ?? roundMeters(Math.abs(electrode.y - anchor.y) * metersPerUnit),
+  };
+}
+
+function roundMeters(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+function formatMeters(value: number) {
+  return `${value.toFixed(2).replace('.', ',')} m`;
 }
