@@ -10,6 +10,7 @@ import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useToast } from '@/hooks/use-toast';
 import { ReadinessChecklist } from '@/components/measurement/ReadinessChecklist';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRole } from '@/hooks/use-role';
 import { formatNlDate } from '@/lib/nl-date';
 import { GroundingIcon } from '@/components/measurement/GroundingIcon';
 import { Loader } from '@/components/ui/loader';
@@ -25,6 +26,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isFieldOnly } = useRole();
   const { data: project, isLoading, refetch } = useProject(id);
   const updateMut = useUpdateProject();
   const deleteMut = useDeleteProject();
@@ -235,9 +237,12 @@ export default function ProjectDetail() {
                 <Camera className="h-[18px] w-[18px] text-muted-foreground" />
                 Foto's
               </button>
-              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/edit`)}>
+              <button
+                className="ios-detail-action-btn"
+                onClick={() => navigate(isFieldOnly ? `/projects/${id}/measurements?step=afronden` : `/projects/${id}/edit`)}
+              >
                 <Pencil className="h-[18px] w-[18px] text-muted-foreground" />
-                Bewerken
+                {isFieldOnly ? 'Afronden' : 'Bewerken'}
               </button>
             </div>
 

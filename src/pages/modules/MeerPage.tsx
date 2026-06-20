@@ -7,6 +7,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { User, Settings, Building2, Palette, LogOut, ChevronRight, Sun, Moon, Monitor, Users, HardHat, Wrench, FileText, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useRole } from '@/hooks/use-role';
 
 const MENU_SECTIONS = [
   {
@@ -50,8 +51,14 @@ export default function MeerPage() {
   const { profile } = useAuth();
   const { tenant, branding } = useTenant();
   const isMobile = useIsMobile();
+  const { isFieldOnly } = useRole();
   const logoUrl = branding?.compact_logo_url || branding?.logo_url;
   const { toegestaan, vraagToestemming } = usePushNotifications();
+  // Monteurs zien alleen hun eigen account. Stamdata/Beheer blijven bestaan,
+  // maar zijn niet zichtbaar in de mobiele veld-UI.
+  const visibleSections = isFieldOnly
+    ? MENU_SECTIONS.filter(s => s.title === 'Account')
+    : MENU_SECTIONS;
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
   });
@@ -101,7 +108,7 @@ export default function MeerPage() {
         </div>
 
         {/* Menu sections */}
-        {MENU_SECTIONS.map(section => (
+        {visibleSections.map(section => (
           <div key={section.title} className="ios-meer-section">
             <p className="ios-meer-section-title">{section.title}</p>
             <div className="ios-meer-card">
@@ -220,7 +227,7 @@ export default function MeerPage() {
         </button>
       </div>
 
-      {MENU_SECTIONS.map(section => (
+      {visibleSections.map(section => (
         <div key={section.title} className="mb-4">
           <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/40 px-1 mb-1.5">
             {section.title}
