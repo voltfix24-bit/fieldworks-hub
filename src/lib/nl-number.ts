@@ -8,9 +8,12 @@
 /** Parse a Dutch-style numeric string: accepts both comma and dot as decimal separator. */
 export function parseNlNumber(value: string): number {
   if (!value || value.trim() === '') return NaN;
-  // Replace comma with dot, then parse
-  const normalised = value.replace(',', '.');
-  return parseFloat(normalised);
+  const trimmed = value.trim();
+  if (!/^-?(?:\d+(?:[,.]\d+)?|[,.]\d+)$/.test(trimmed)) return NaN;
+
+  const normalised = trimmed.replace(',', '.');
+  const parsed = Number(normalised);
+  return Number.isFinite(parsed) ? parsed : NaN;
 }
 
 /** Like parseNlNumber but returns 0 instead of NaN for empty/invalid input. */
@@ -24,6 +27,12 @@ export function parseNlNumberOrNull(value: string): number | null {
   if (!value || value.trim() === '' || value.trim() === '-') return null;
   const n = parseNlNumber(value);
   return isNaN(n) ? null : n;
+}
+
+/** Parse a Dutch-style number, but only accept zero or positive finite values. */
+export function parsePositiveNlNumberOrNull(value: string): number | null {
+  const n = parseNlNumberOrNull(value);
+  return n != null && n >= 0 ? n : null;
 }
 
 /**
@@ -51,5 +60,15 @@ export function formatNlNumberInput(value: number | null | undefined, decimals?:
  */
 export function normaliseNlInput(raw: string): string {
   // Allow: digits, one comma or dot, optional leading minus
-  return raw.replace(/[^0-9.,-]/g, '');
+  const cleaned = raw.replace(/[^0-9.,-]/g, '');
+  const sign = cleaned.startsWith('-') ? '-' : '';
+  const unsigned = cleaned.replace(/-/g, '');
+  const firstSeparator = unsigned.search(/[,.]/);
+
+  if (firstSeparator === -1) return `${sign}${unsigned}`;
+
+  const integerPart = unsigned.slice(0, firstSeparator);
+  const decimalPart = unsigned.slice(firstSeparator + 1).replace(/[,.]/g, '');
+  const separator = unsigned[firstSeparator];
+  return `${sign}${integerPart}${separator}${decimalPart}`;
 }
