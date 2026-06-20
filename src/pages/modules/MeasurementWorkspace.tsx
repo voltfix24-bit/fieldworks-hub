@@ -911,19 +911,33 @@ export default function MeasurementWorkspace() {
                   Vorige
                 </button>
               ) : <div />}
-              <button
-                className="ios-wizard-btn-next"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  (document.activeElement as HTMLElement)?.blur();
-                  if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
-                  if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
-                  setTimeout(() => { setProgressionWarningDismissed(false); handleStapWissel(step + 1); }, 50);
-                }}
-              >
-                Volgende
-                <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1L7 7L1 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
+              {step === 0 && nextEmpty ? (
+                <button
+                  className="ios-wizard-btn-next"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    (document.activeElement as HTMLElement)?.blur();
+                    setTimeout(() => goToNextEmpty(), 30);
+                  }}
+                >
+                  Volgende lege meting
+                  <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1L7 7L1 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              ) : (
+                <button
+                  className="ios-wizard-btn-next"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    (document.activeElement as HTMLElement)?.blur();
+                    if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
+                    if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
+                    setTimeout(() => { setProgressionWarningDismissed(false); handleStapWissel(step + 1); }, 50);
+                  }}
+                >
+                  Volgende
+                  <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1L7 7L1 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              )}
             </div>
           </div>
         )}
