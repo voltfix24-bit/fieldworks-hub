@@ -194,11 +194,35 @@ export function MobileTabBar() {
         </div>
 
         <div className="px-5 pb-1">
-          <h3 className="text-xl font-extrabold text-foreground tracking-tight">Start meting</h3>
-          <p className="text-sm text-muted-foreground mt-1 pb-5">Kies hoe je verder wilt gaan</p>
+          <h3 className="text-xl font-extrabold text-foreground tracking-tight">Meten</h3>
+          <p className="text-sm text-muted-foreground mt-1 pb-5">
+            {lastProjectId ? 'Ga direct verder of kies een ander project' : 'Kies hoe je wilt starten'}
+          </p>
         </div>
 
         <div className="mx-4 rounded-2xl bg-card overflow-hidden shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+          {/* Hervatten */}
+          {lastProjectId && (
+            <>
+              <button
+                onClick={() => { setSheetOpen(false); navigate(`/projects/${lastProjectId}/measurements`); }}
+                className="w-full flex items-center gap-3.5 px-4 py-4 min-h-[76px] active:bg-[hsl(var(--tenant-primary)/0.08)] transition-colors text-left bg-[hsl(var(--tenant-primary)/0.06)]"
+              >
+                <div className="h-11 w-11 rounded-[13px] flex items-center justify-center shrink-0 bg-[hsl(var(--tenant-primary)/0.14)]">
+                  <ResumeIcon />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[16px] font-bold text-[hsl(var(--tenant-primary))]">Verder met laatste meting</p>
+                  <p className="text-[13px] text-muted-foreground mt-0.5 truncate">
+                    {[lastProjectName, timeAgo].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/25 shrink-0" />
+              </button>
+              <div className="h-px bg-background mx-4" />
+            </>
+          )}
+
           {/* Nieuw project */}
           <button
             onClick={() => { setSheetOpen(false); navigate('/projects/new'); }}
@@ -209,7 +233,7 @@ export function MobileTabBar() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[15px] font-semibold text-foreground">Nieuw project</p>
-              <p className="text-[13px] text-muted-foreground mt-0.5">Start een nieuw meetproject</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Maak een nieuw meetproject aan</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
           </button>
@@ -225,8 +249,8 @@ export function MobileTabBar() {
               <SearchIcon />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[15px] font-semibold text-foreground">Lopend project</p>
-              <p className="text-[13px] text-muted-foreground mt-0.5">Open en hervat een project</p>
+              <p className="text-[15px] font-semibold text-foreground">Ander project openen</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Zoek in de projectlijst</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
           </button>
@@ -247,28 +271,6 @@ export function MobileTabBar() {
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
           </button>
-
-          {/* Hervatten */}
-          {lastProjectId && (
-            <>
-              <div className="h-px bg-background mx-4" />
-              <button
-                onClick={() => { setSheetOpen(false); navigate(`/projects/${lastProjectId}/measurements`); }}
-                className="w-full flex items-center gap-3.5 px-4 py-3.5 min-h-[68px] active:bg-foreground/[0.04] transition-colors text-left"
-              >
-                <div className="h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0 bg-[hsl(var(--tenant-primary)/0.12)]">
-                  <ResumeIcon />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-semibold text-[hsl(var(--tenant-primary))]">Hervatten</p>
-                  <p className="text-[13px] text-muted-foreground mt-0.5 truncate">
-                    {[lastProjectName, timeAgo].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
-              </button>
-            </>
-          )}
         </div>
       </div>
 
