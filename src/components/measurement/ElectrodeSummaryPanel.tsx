@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Zap, Settings2, Trash2, ChevronDown, ChevronUp, Target, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { parseNlNumberOrNull, formatNlNumber } from '@/lib/nl-number';
+import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
 
 interface ElectrodeSummaryPanelProps {
   electrode: any;
@@ -31,14 +31,14 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
       electrode_code: editCode,
       label: editLabel || null,
       is_coupled: editCoupled,
-      target_value: parseNlNumberOrNull(editTarget),
+      target_value: parsePositiveNlNumberOrNull(editTarget),
       notes: editNotes || null,
     });
     setShowSettings(false);
   };
 
   const handleRvBlur = () => {
-    const parsed = parseNlNumberOrNull(rvInput);
+    const parsed = parsePositiveNlNumberOrNull(rvInput);
     if (parsed !== electrode.rv_value) {
       onUpdate({ rv_value: parsed, ra_value: null });
     }
@@ -85,7 +85,7 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
               type="text"
               inputMode="decimal"
               value={rvInput}
-              onChange={e => setRvInput(e.target.value)}
+              onChange={e => setRvInput(normaliseNlInput(e.target.value).replace('-', ''))}
               onBlur={handleRvBlur}
               placeholder="0,00 Ω"
               className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -121,7 +121,7 @@ export function ElectrodeSummaryPanel({ electrode, penCount, onUpdate, onDelete 
                 type="text"
                 inputMode="decimal"
                 value={editTarget}
-                onChange={e => setEditTarget(e.target.value)}
+                onChange={e => setEditTarget(normaliseNlInput(e.target.value).replace('-', ''))}
                 className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 placeholder="Bijv. 2,00"
               />
