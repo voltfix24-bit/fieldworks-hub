@@ -1,4 +1,4 @@
-import type { MSRDiagram } from './types';
+import type { DiagramCabinet, DiagramElectrode, MSRAnchor, MSRDiagram } from './types';
 
 /**
  * Render the diagram to an off-screen 2D canvas and return a PNG blob.
@@ -72,51 +72,96 @@ export async function renderDiagramToPng(
   ctx.textBaseline = 'middle';
   ctx.fillText(c.housingNumber || 'MSR', c.x + c.w / 2, c.y + c.h / 2);
 
-  // Electrodes + distance lines from cabinet center
-  const cx = c.x + c.w / 2;
-  const cy = c.y + c.h / 2;
   const mpu = diagram.metersPerUnit ?? 0.05;
 
   for (const e of diagram.electrodes) {
-    // Line cabinet → electrode
+    const anchor = getAnchorPoint(c, e.anchor ?? 'br');
+    const distances = getDistances(e, anchor, mpu);
+
+    // Orthogonal distance lines from selected MSR corner.
     ctx.strokeStyle = '#94a3b8';
     ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
+    ctx.moveTo(anchor.x, anchor.y);
+    ctx.lineTo(e.x, anchor.y);
     ctx.lineTo(e.x, e.y);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Distance label
-    const dxU = e.x - cx;
-    const dyU = e.y - cy;
-    const distM = Math.sqrt(dxU * dxU + dyU * dyU) * mpu;
-    const midX = (cx + e.x) / 2;
-    const midY = (cy + e.y) / 2;
-    ctx.fillStyle = '#475569';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${distM.toFixed(2).replace('.', ',')} m`, midX, midY - 6);
-
-    // Electrode dot
-    ctx.fillStyle = '#E8541A';
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
+    // Anchor marker.
+    ctx.fillStyle = '#ef4444';
     ctx.beginPath();
-    ctx.arc(e.x, e.y, 14, 0, Math.PI * 2);
+    ctx.arc(anchor.x, anchor.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(anchor.x, anchor.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Distance labels.
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(`H ${formatMeters(distances.x)}`, (anchor.x + e.x) / 2, anchor.y - 7);
+    ctx.textAlign = 'left';
+    ctx.fillText(`V ${formatMeters(distances.y)}`, e.x + 8, (anchor.y + e.y) / 2);
+
+    // Electrode earth symbol.
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#E8541A';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, 16, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    // Electrode label
-    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(e.x, e.y - 11);
+    ctx.lineTo(e.x, e.y + 3);
+    ctx.moveTo(e.x - 11, e.y + 3);
+    ctx.lineTo(e.x + 11, e.y + 3);
+    ctx.moveTo(e.x - 8, e.y + 8);
+    ctx.lineTo(e.x + 8, e.y + 8);
+    ctx.moveTo(e.x - 5, e.y + 13);
+    ctx.lineTo(e.x + 5, e.y + 13);
+    ctx.stroke();
+
+    // Electrode label.
+    ctx.fillStyle = '#0f172a';
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(e.label || 'E', e.x, e.y);
+    ctx.fillText(e.label || 'E', e.x, e.y + 34);
   }
 
   return await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('PNG-export mislukt'))), 'image/png');
   });
+}
+
+function getAnchorPoint(cabinet: DiagramCabinet, anchor: MSRAnchor) {
+  if (anchor === 'tl') return { x: cabinet.x, y: cabinet.y };
+  if (anchor === 'tr') return { x: cabinet.x + cabinet.w, y: cabinet.y };
+  if (anchor === 'bl') return { x: cabinet.x, y: cabinet.y + cabinet.h };
+  return { x: cabinet.x + cabinet.w, y: cabinet.y + cabinet.h };
+}
+
+function getDistances(electrode: DiagramElectrode, anchor: { x: number; y: number }, metersPerUnit: number) {
+  return {
+    x: electrode.overrideDistanceX ?? roundMeters(Math.abs(electrode.x - anchor.x) * metersPerUnit),
+    y: electrode.overrideDistanceY ?? roundMeters(Math.abs(electrode.y - anchor.y) * metersPerUnit),
+  };
+}
+
+function roundMeters(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+function formatMeters(value: number) {
+  return `${value.toFixed(2).replace('.', ',')} m`;
 }
