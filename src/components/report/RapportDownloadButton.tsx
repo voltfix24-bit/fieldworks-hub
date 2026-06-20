@@ -61,7 +61,7 @@ export function RapportDownloadButton({
       ) : (
         <Download className="mr-2 h-4 w-4" />
       )}
-      {isLoading ? 'Genereren...' : 'PDF Downloaden'}
+      {isLoading ? 'Genereren...' : 'Legacy PDF'}
     </Button>
   );
 }
