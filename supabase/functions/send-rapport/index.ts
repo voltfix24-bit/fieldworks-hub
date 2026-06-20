@@ -58,6 +58,16 @@ Deno.serve(async (req) => {
 
     // ─── Tenant check: caller must own this project ──────
     const sbAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // Rate limit: max 5 emails per minute per user
+    const { data: rlOk } = await sbAdmin.rpc("check_rate_limit", {
+      _user_id: userId,
+      _function_name: "send-rapport",
+      _max_per_minute: 5,
+    });
+    if (rlOk === false) {
+      return jsonResponse({ error: "Te veel verzoeken. Probeer over een minuut opnieuw." }, 429);
+    }
     const [{ data: profile }, { data: project }] = await Promise.all([
       sbAdmin.from("profiles").select("tenant_id").eq("id", userId).maybeSingle(),
       sbAdmin.from("projects").select("tenant_id").eq("id", project_id).maybeSingle(),

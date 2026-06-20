@@ -175,6 +175,18 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Rate limit: max 10 per minute per user
+    const { data: rlOk } = await sbAdmin.rpc("check_rate_limit", {
+      _user_id: userId,
+      _function_name: "generate-rapport",
+      _max_per_minute: 10,
+    });
+    if (rlOk === false) {
+      return jsonResponse({ error: "Te veel verzoeken. Probeer over een minuut opnieuw." }, 429);
+    }
+
+
+
     // Look up the user's tenant
     const { data: profile, error: profileError } = await sbAdmin
       .from("profiles")

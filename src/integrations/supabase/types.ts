@@ -280,6 +280,27 @@ export type Database = {
           },
         ]
       }
+      function_call_log: {
+        Row: {
+          created_at: string
+          function_name: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          function_name: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          function_name?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       pens: {
         Row: {
           created_at: string
@@ -914,6 +935,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          _function_name: string
+          _max_per_minute?: number
+          _user_id: string
+        }
+        Returns: boolean
+      }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
