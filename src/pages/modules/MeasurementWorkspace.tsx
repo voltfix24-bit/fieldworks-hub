@@ -22,6 +22,7 @@ import { MeasurementStep } from '@/components/measurement/wizard/steps/Measureme
 import { PhotoStep } from '@/components/measurement/wizard/steps/PhotoStep';
 import { NextActionStep } from '@/components/measurement/wizard/steps/NextActionStep';
 import { SketchStep } from '@/components/measurement/wizard/steps/SketchStep';
+import { RapportgegevensCard } from '@/components/measurement/RapportgegevensCard';
 
 const PREDEFINED_DEPTHS = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
 
