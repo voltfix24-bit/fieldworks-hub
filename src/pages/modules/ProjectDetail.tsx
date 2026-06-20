@@ -15,7 +15,7 @@ import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
-  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download
+  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download, Camera, XCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -32,6 +32,7 @@ export default function ProjectDetail() {
   const { data: attachments = [] } = useAttachments(id);
   const { data: reportData } = useReportData(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRapportBlock, setShowRapportBlock] = useState(false);
 
   if (isLoading) return <Loader />;
   if (!project) return <p className="text-muted-foreground/40 text-center py-16">Project niet gevonden</p>;
@@ -158,10 +159,23 @@ export default function ProjectDetail() {
             </button>
 
             {/* Action buttons */}
-            <div className="ios-detail-actions">
-              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/report`)}>
-                <FileText className="h-[18px] w-[18px] text-muted-foreground" />
+            <div className="ios-detail-actions grid grid-cols-3 gap-2">
+              <button
+                className="ios-detail-action-btn relative"
+                onClick={() => {
+                  if (!isReportReady) { setShowRapportBlock(true); return; }
+                  navigate(`/projects/${id}/report`);
+                }}
+              >
+                <FileText className={cn('h-[18px] w-[18px]', isReportReady ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/50')} />
                 Rapport
+                {!isReportReady && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
+                )}
+              </button>
+              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/measurements?tab=fotos`)}>
+                <Camera className="h-[18px] w-[18px] text-muted-foreground" />
+                Foto's
               </button>
               <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/edit`)}>
                 <Pencil className="h-[18px] w-[18px] text-muted-foreground" />
@@ -177,6 +191,9 @@ export default function ProjectDetail() {
                 { label: 'Klant', value: client?.company_name },
                 { label: 'Monteur', value: tech?.full_name },
                 { label: 'Apparaat', value: equip?.device_name },
+                ...(equip?.next_calibration_date
+                  ? [{ label: 'Kalibratie geldig t/m', value: formatNlDate(equip.next_calibration_date) }]
+                  : []),
                 { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
                 ...(session?.measurement_date
                   ? [{ label: 'Meetdatum (rapport)', value: formatNlDate(session.measurement_date) }]
@@ -337,9 +354,52 @@ export default function ProjectDetail() {
             </div>
           </div>
         )}
+
+        {/* Rapport-blokkade sheet */}
+        {showRapportBlock && (
+          <div className="ios-detail-confirm-backdrop" onClick={() => setShowRapportBlock(false)}>
+            <div className="ios-detail-confirm-sheet" onClick={e => e.stopPropagation()}>
+              <div className="ios-detail-confirm-handle" />
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+                <h3 className="ios-detail-confirm-title" style={{ margin: 0 }}>Rapport nog niet compleet</h3>
+              </div>
+              <p className="ios-detail-confirm-sub">
+                Vul eerst de ontbrekende gegevens aan. Zonder deze gegevens wordt het rapport onvolledig.
+              </p>
+              <div className="mt-3 mb-4 rounded-2xl bg-foreground/[0.03] divide-y divide-border/30">
+                {readinessItems.filter(r => !r.optional && !r.met).map(r => (
+                  <div key={r.label} className="flex items-center gap-2.5 px-4 py-3">
+                    <XCircle className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span className="text-[13px] text-foreground/80">{r.label}</span>
+                  </div>
+                ))}
+                {readinessItems.filter(r => !r.optional && !r.met).length === 0 && (
+                  <div className="px-4 py-3 text-[13px] text-muted-foreground">Alles compleet.</div>
+                )}
+              </div>
+              <div className="ios-detail-confirm-actions">
+                <button
+                  className="ios-detail-confirm-delete"
+                  style={{ background: 'hsl(var(--tenant-primary))' }}
+                  onClick={() => { setShowRapportBlock(false); navigate(`/projects/${id}/measurements`); }}
+                >
+                  Naar metingen
+                </button>
+                <button
+                  className="ios-detail-confirm-cancel"
+                  onClick={() => setShowRapportBlock(false)}
+                >
+                  Sluiten
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }
+
 
   // ═══════════════════════════════════════════════════════
   // DESKTOP
