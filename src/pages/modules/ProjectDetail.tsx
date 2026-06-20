@@ -237,9 +237,12 @@ export default function ProjectDetail() {
                 <Camera className="h-[18px] w-[18px] text-muted-foreground" />
                 Foto's
               </button>
-              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/edit`)}>
+              <button
+                className="ios-detail-action-btn"
+                onClick={() => navigate(isFieldOnly ? `/projects/${id}/measurements?step=afronden` : `/projects/${id}/edit`)}
+              >
                 <Pencil className="h-[18px] w-[18px] text-muted-foreground" />
-                Bewerken
+                {isFieldOnly ? 'Afronden' : 'Bewerken'}
               </button>
             </div>
 
