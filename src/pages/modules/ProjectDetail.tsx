@@ -211,13 +211,24 @@ export default function ProjectDetail() {
                 className="ios-detail-action-btn relative"
                 onClick={() => {
                   if (!isReportReady) { setShowRapportBlock(true); return; }
+                  if (hasReportWarnings) { setShowRapportBlock(true); return; }
                   navigate(`/projects/${id}/report`);
                 }}
               >
-                <FileText className={cn('h-[18px] w-[18px]', isReportReady ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/50')} />
+                <FileText className={cn(
+                  'h-[18px] w-[18px]',
+                  !isReportReady
+                    ? 'text-muted-foreground/50'
+                    : hasReportWarnings
+                      ? 'text-amber-500'
+                      : 'text-[hsl(var(--status-completed))]',
+                )} />
                 Rapport
-                {!isReportReady && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
+                {(!isReportReady || hasReportWarnings) && (
+                  <span className={cn(
+                    'absolute top-1.5 right-1.5 w-2 h-2 rounded-full',
+                    !isReportReady ? 'bg-destructive' : 'bg-amber-500',
+                  )} />
                 )}
               </button>
               <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/measurements?tab=fotos`)}>
