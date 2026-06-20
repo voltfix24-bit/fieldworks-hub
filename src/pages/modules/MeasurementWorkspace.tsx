@@ -600,6 +600,9 @@ export default function MeasurementWorkspace() {
   };
 
   const recalcRa = useCallback((electrodeId: string, updatedMeasurements: any[]) => {
+    // Refresh session-wide measurements cache so "Volgende lege meting" knop blijft kloppen
+    qc.invalidateQueries({ queryKey: ['all-depth-measurements', session?.id] });
+
     // Bij 2+ pennen is RV leidend — recalcRa NIET uitvoeren
     const aantalPennen = pens.filter((p: any) => p.electrode_id === electrodeId).length;
     if (aantalPennen >= 2) return;
