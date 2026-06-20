@@ -1,3 +1,9 @@
+/**
+ * LEGACY — Railway/Edge function "generate-rapport" download knop.
+ * NIET gebruiken als primaire CTA voor monteurs. De primaire rapport-flow is
+ * `/projects/:id/report` met `window.print()` (gratis, browser-native).
+ * Deze knop blijft alleen beschikbaar voor admin/kantoor fallback.
+ */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2, AlertCircle } from 'lucide-react';
