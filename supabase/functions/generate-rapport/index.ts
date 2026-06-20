@@ -572,29 +572,15 @@ Deno.serve(async (req) => {
       elektrodes,
     };
 
-    let rapportApiUrl = Deno.env.get("RAPPORT_API_URL");
-
-    if (!rapportApiUrl) {
-      return jsonResponse({ error: "RAPPORT_API_URL is niet geconfigureerd" }, 500);
-    }
-
-    if (!rapportApiUrl.startsWith("http://") && !rapportApiUrl.startsWith("https://")) {
-      rapportApiUrl = `https://${rapportApiUrl}`;
-    }
-    rapportApiUrl = rapportApiUrl.replace(/\/+$/, "");
-
-    const externalResult = await tryGenerateViaExternalApi(
-      rapportApiUrl,
-      rapportData as Record<string, unknown>,
-      project.project_name,
-      meetdatum,
-    );
-
-    if ("error" in externalResult) {
-      return jsonResponse({ error: externalResult.error }, externalResult.status);
-    }
-
-    return jsonResponse(externalResult);
+    // Render PDF in-edge using pdf-lib (geen externe service nodig)
+    const pdfBytes = await renderPdf(rapportData);
+    const pdfBase64 = bytesToBase64(pdfBytes);
+    const projectClean = (project.project_name || "rapport").replace(/\s+/g, "_").slice(0, 30);
+    const datumClean = (meetdatum || "").replace(/[^0-9]/g, "").slice(0, 8);
+    return jsonResponse({
+      pdf_base64: pdfBase64,
+      bestandsnaam: `Aardingsrapport_${projectClean}_${datumClean}.pdf`,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Onbekende fout";
     console.error("generate-rapport error:", message);
