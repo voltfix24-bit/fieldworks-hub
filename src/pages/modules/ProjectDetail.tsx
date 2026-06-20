@@ -26,6 +26,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isFieldOnly } = useRole();
   const { data: project, isLoading, refetch } = useProject(id);
   const updateMut = useUpdateProject();
   const deleteMut = useDeleteProject();
