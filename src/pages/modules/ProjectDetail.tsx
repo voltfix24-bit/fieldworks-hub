@@ -51,6 +51,9 @@ export default function ProjectDetail() {
     })();
   }, [id]);
 
+  // Centrale rapport-readiness: blocking errors + warnings (hook MUST run before any early return)
+  const readiness = useReportReadiness(id);
+
   if (isLoading) return <Loader />;
   if (!project) return <p className="text-muted-foreground/40 text-center py-16">Project niet gevonden</p>;
 
@@ -68,10 +71,9 @@ export default function ProjectDetail() {
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
   const hasPhotos = (reportData?.stats.photosCount || 0) > 0;
 
-  // Centrale rapport-readiness: blocking errors + warnings
-  const readiness = useReportReadiness(id);
   const isReportReady = readiness.isReady;
   const hasReportWarnings = readiness.hasWarnings;
+
 
   // Readiness items voor de bestaande "Gereedheid"-checklist (alleen visualisatie)
   const readinessItems = [
