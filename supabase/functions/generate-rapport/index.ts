@@ -123,9 +123,19 @@ async function renderPdf(data: any): Promise<Uint8Array> {
     }
   };
 
+  // Helvetica WinAnsi kan geen Ω/em-dash etc.; vervang door ASCII-safe varianten.
+  const sanitize = (s: string) =>
+    String(s ?? "")
+      .replace(/\u03A9/g, "Ohm")
+      .replace(/[\u2013\u2014]/g, "-")
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/\u00B7/g, "-")
+      .replace(/[^\x00-\xFF]/g, "?");
+
   const text = (s: string, x: number, opts: { size?: number; b?: boolean; color?: any; y?: number } = {}) => {
     const size = opts.size ?? 10;
-    page.drawText(s ?? "", { x, y: opts.y ?? y, size, font: opts.b ? bold : font, color: opts.color ?? ink });
+    page.drawText(sanitize(s), { x, y: opts.y ?? y, size, font: opts.b ? bold : font, color: opts.color ?? ink });
   };
 
   const wrap = (s: string, maxChars: number) => {
