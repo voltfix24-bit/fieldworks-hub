@@ -48,8 +48,8 @@ export function MSRDiagramCanvas({
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('project_diagrams' as any)
+      const { data, error } = await (supabase as any)
+        .from('project_diagrams')
         .select('id, diagram_json, image_path')
         .eq('project_id', projectId)
         .order('updated_at', { ascending: false })
@@ -115,10 +115,10 @@ export function MSRDiagramCanvas({
       if (upErr) throw upErr;
 
       // 4. Update row with json + image_path
-      const { error: updErr } = await supabase
-        .from('project_diagrams' as any)
+      const { error: updErr } = await (supabase as any)
+        .from('project_diagrams')
         .update({
-          diagram_json: diagram as any,
+          diagram_json: diagram,
           image_path: path,
           measurement_session_id: measurementSessionId || null,
         })
