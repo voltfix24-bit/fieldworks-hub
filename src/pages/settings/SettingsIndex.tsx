@@ -7,7 +7,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useTechnicians } from '@/hooks/use-technicians';
 import { useEquipmentList } from '@/hooks/use-equipment';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle, Users, HardHat, Wrench, FileText, Settings, LogOut, Sun, Moon, Monitor, Bell } from 'lucide-react';
+import { Palette, User, Building2, ChevronRight, CheckCircle2, AlertCircle, Users, HardHat, Wrench, FileText, LogOut, Sun, Moon, Monitor, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -50,6 +50,8 @@ export default function SettingsIndex() {
     return new Date(e.next_calibration_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   }).length ?? 0;
 
+  const canManage = ['tenant_admin', 'admin', 'owner'].includes(profile?.role || '');
+
   const sections = [
     {
       title: 'Huisstijl',
@@ -76,7 +78,7 @@ export default function SettingsIndex() {
       status: hasKvk ? 'KvK ingevuld' : 'KvK ontbreekt',
       statusOk: hasKvk,
     },
-  ];
+  ].filter((section) => canManage || section.path === '/settings/profile');
 
   const statusItems = [
     { label: 'Actieve monteurs', value: String(activeTechs), ok: activeTechs > 0 },
@@ -90,22 +92,24 @@ export default function SettingsIndex() {
         { label: 'Profiel', description: 'Persoonlijke gegevens', icon: User, iconStyle: 'ios-meer-icon-salmon', path: '/settings/profile' },
       ],
     },
-    {
-      title: 'Stamdata',
-      items: [
-        { label: 'Klanten', description: 'Opdrachtgevers beheren', icon: Users, iconStyle: 'ios-meer-icon-blue', path: '/clients' },
-        { label: 'Monteurs', description: 'Technici en uitvoerders', icon: HardHat, iconStyle: 'ios-meer-icon-green', path: '/technicians' },
-        { label: 'Apparatuur', description: 'Meetapparatuur en kalibratie', icon: Wrench, iconStyle: 'ios-meer-icon-orange', path: '/equipment' },
-        { label: 'Rapporten', description: 'Gegenereerde rapporten', icon: FileText, iconStyle: 'ios-meer-icon-salmon', path: '/reports' },
-      ],
-    },
-    {
-      title: 'Beheer',
-      items: [
-        { label: 'Huisstijl', description: 'Logo, kleuren & rapport', icon: Palette, iconStyle: 'ios-meer-icon-blue', path: '/settings/branding' },
-        { label: 'Bedrijfsgegevens', description: 'Naam, status & info', icon: Building2, iconStyle: 'ios-meer-icon-purple', path: '/settings/tenant' },
-      ],
-    },
+    ...(canManage ? [
+      {
+        title: 'Stamdata',
+        items: [
+          { label: 'Klanten', description: 'Opdrachtgevers beheren', icon: Users, iconStyle: 'ios-meer-icon-blue', path: '/clients' },
+          { label: 'Monteurs', description: 'Technici en uitvoerders', icon: HardHat, iconStyle: 'ios-meer-icon-green', path: '/technicians' },
+          { label: 'Apparatuur', description: 'Meetapparatuur en kalibratie', icon: Wrench, iconStyle: 'ios-meer-icon-orange', path: '/equipment' },
+          { label: 'Rapporten', description: 'Gegenereerde rapporten', icon: FileText, iconStyle: 'ios-meer-icon-salmon', path: '/reports' },
+        ],
+      },
+      {
+        title: 'Beheer',
+        items: [
+          { label: 'Huisstijl', description: 'Logo, kleuren & rapport', icon: Palette, iconStyle: 'ios-meer-icon-blue', path: '/settings/branding' },
+          { label: 'Bedrijfsgegevens', description: 'Naam, status & info', icon: Building2, iconStyle: 'ios-meer-icon-purple', path: '/settings/tenant' },
+        ],
+      },
+    ] : []),
   ];
 
   if (isMobile) {
