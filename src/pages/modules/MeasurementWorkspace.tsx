@@ -32,6 +32,35 @@ const WIZARD_STEPS = [
   { label: 'Volgende', key: 'next' },
 ];
 
+const workspaceStorageKey = (projectId?: string) =>
+  projectId ? `measurement-workspace:${projectId}` : null;
+
+type StoredWorkspaceState = {
+  step?: number;
+  showSketch?: boolean;
+  activeElectrodeId?: string | null;
+  activePenId?: string | null;
+  updatedAt?: string;
+};
+
+const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | null => {
+  const key = workspaceStorageKey(projectId);
+  if (!key || typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+    return parsed as StoredWorkspaceState;
+  } catch {
+    try { window.sessionStorage.removeItem(key); } catch { /* noop */ }
+    return null;
+  }
+};
+
 export default function MeasurementWorkspace() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -39,6 +68,10 @@ export default function MeasurementWorkspace() {
   const isMobile = useIsMobile();
   const tenantId = profile?.tenant_id || '';
   const { isOnline } = useOnlineStatus();
+
+  // Restore persisted workspace position (per project, sessionStorage)
+  const storedStateRef = useRef<StoredWorkspaceState | null>(readStoredWorkspaceState(id));
+  const stored = storedStateRef.current;
 
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: session, isLoading: sessionLoading } = useMeasurementSession(id);
@@ -50,11 +83,11 @@ export default function MeasurementWorkspace() {
   const updateElectrode = useUpdateElectrode();
   const deleteElectrode = useDeleteElectrode();
 
-  const [activeElectrodeId, setActiveElectrodeId] = useState<string | null>(null);
+  const [activeElectrodeId, setActiveElectrodeId] = useState<string | null>(stored?.activeElectrodeId ?? null);
   const activeElectrode = electrodes.find((e: any) => e.id === activeElectrodeId);
   const { data: pens = [] } = usePens(activeElectrodeId || undefined);
 
-  const [activePenId, setActivePenId] = useState<string | null>(null);
+  const [activePenId, setActivePenId] = useState<string | null>(stored?.activePenId ?? null);
   const activePen = pens.find((p: any) => p.id === activePenId);
 
   // Warning count from MeasurementStep (reported via callback)
@@ -69,8 +102,15 @@ export default function MeasurementWorkspace() {
   const updateMeasurement = useUpdateDepthMeasurement();
   const deleteMeasurement = useDeleteDepthMeasurement();
 
-  const [step, setStep] = useState(0);
-  const [showSketch, setShowSketch] = useState(false);
+  const [step, setStep] = useState(() => {
+    const s = stored?.step;
+    if (typeof s === 'number' && Number.isFinite(s) && s >= 0 && s <= WIZARD_STEPS.length - 1) {
+      return s;
+    }
+    return 0;
+  });
+  const [showSketch, setShowSketch] = useState<boolean>(stored?.showSketch === true);
+
 
   const [autoInitDone, setAutoInitDone] = useState(false);
   const [autoInitError, setAutoInitError] = useState(false);
@@ -94,6 +134,27 @@ export default function MeasurementWorkspace() {
   // Photo upload state per electrode
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
+
+  // Persist workspace position per project (sessionStorage)
+  useEffect(() => {
+    const key = workspaceStorageKey(id);
+    if (!key || typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.setItem(
+        key,
+        JSON.stringify({
+          step,
+          showSketch,
+          activeElectrodeId,
+          activePenId,
+          updatedAt: new Date().toISOString(),
+        }),
+      );
+    } catch {
+      /* sessionStorage unavailable — ignore */
+    }
+  }, [id, step, showSketch, activeElectrodeId, activePenId]);
+
 
   // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
   useEffect(() => {
