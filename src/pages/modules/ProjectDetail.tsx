@@ -159,10 +159,23 @@ export default function ProjectDetail() {
             </button>
 
             {/* Action buttons */}
-            <div className="ios-detail-actions">
-              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/report`)}>
-                <FileText className="h-[18px] w-[18px] text-muted-foreground" />
+            <div className="ios-detail-actions grid grid-cols-3 gap-2">
+              <button
+                className="ios-detail-action-btn relative"
+                onClick={() => {
+                  if (!isReportReady) { setShowRapportBlock(true); return; }
+                  navigate(`/projects/${id}/report`);
+                }}
+              >
+                <FileText className={cn('h-[18px] w-[18px]', isReportReady ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/50')} />
                 Rapport
+                {!isReportReady && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
+                )}
+              </button>
+              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/measurements?tab=fotos`)}>
+                <Camera className="h-[18px] w-[18px] text-muted-foreground" />
+                Foto's
               </button>
               <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/edit`)}>
                 <Pencil className="h-[18px] w-[18px] text-muted-foreground" />
@@ -178,6 +191,9 @@ export default function ProjectDetail() {
                 { label: 'Klant', value: client?.company_name },
                 { label: 'Monteur', value: tech?.full_name },
                 { label: 'Apparaat', value: equip?.device_name },
+                ...(equip?.next_calibration_date
+                  ? [{ label: 'Kalibratie geldig t/m', value: formatNlDate(equip.next_calibration_date) }]
+                  : []),
                 { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
                 ...(session?.measurement_date
                   ? [{ label: 'Meetdatum (rapport)', value: formatNlDate(session.measurement_date) }]
