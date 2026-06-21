@@ -19,7 +19,6 @@ import { cn } from '@/lib/utils';
 import { WizardStepIndicator } from '@/components/measurement/wizard/WizardStepIndicator';
 import { StickyActionBar } from '@/components/measurement/wizard/StickyActionBar';
 import { MeasurementStep } from '@/components/measurement/wizard/steps/MeasurementStep';
-import { PhotoStep } from '@/components/measurement/wizard/steps/PhotoStep';
 import { NextActionStep } from '@/components/measurement/wizard/steps/NextActionStep';
 
 import { RapportgegevensCard } from '@/components/measurement/RapportgegevensCard';
@@ -28,9 +27,9 @@ const PREDEFINED_DEPTHS = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
 
 const WIZARD_STEPS = [
   { label: 'Metingen', key: 'measurements' },
-  { label: "Foto's", key: 'photos' },
-  { label: 'Volgende', key: 'next' },
+  { label: 'Afronden', key: 'next' },
 ];
+const LAST_STEP = WIZARD_STEPS.length - 1;
 
 export const workspaceStorageKey = (projectId?: string) =>
   projectId ? `measurement-workspace:${projectId}` : null;
