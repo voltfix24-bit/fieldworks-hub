@@ -92,7 +92,7 @@ export function MSRDiagramCanvas({
     const x = Math.max(20, Math.min(diagram.canvasSize.w - 20, anchorPoint.x + offsetX));
     const y = Math.max(20, Math.min(diagram.canvasSize.h - 20, anchorPoint.y + offsetY));
     update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `Elektrode ${n}`, x, y, anchor }] }));
-    setSelectedId(id);
+    setSelection({ kind: 'electrode', id });
     setChoosingAnchor(false);
   };
 
