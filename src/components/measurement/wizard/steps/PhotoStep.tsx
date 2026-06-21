@@ -148,6 +148,7 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
   const galleryRef = useRef<HTMLInputElement>(null);
   const [localUploading, setLocalUploading] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [kwaliteitsWaarschuwing, setKwaliteitsWaarschuwing] = useState<string | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
