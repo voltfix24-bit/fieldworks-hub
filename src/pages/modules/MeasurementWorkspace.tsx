@@ -267,8 +267,10 @@ export default function MeasurementWorkspace() {
       setAutoInitDone(true);
       (async () => {
         try {
+          // Always use today's date — the actual measurement day, not the planned date.
+          // User can still edit afterwards via Rapportgegevens.
           const payload = {
-            measurement_date: project.planned_date || new Date().toISOString().split('T')[0],
+            measurement_date: new Date().toISOString().split('T')[0],
             client_id: project.client_id || null,
             technician_id: project.technician_id || null,
             equipment_id: project.equipment_id || null,
