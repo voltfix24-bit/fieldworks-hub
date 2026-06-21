@@ -157,24 +157,17 @@ export default function MeasurementWorkspace() {
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
 
-  // Persist workspace position per project (sessionStorage)
+  // Persist workspace position per project (sessionStorage).
+  // Uses writeStoredWorkspaceState which guards against wiping a valid stored
+  // electrode/pen with null while the data is still loading.
   useEffect(() => {
-    const key = workspaceStorageKey(id);
-    if (!key || typeof window === 'undefined') return;
-    try {
-      window.sessionStorage.setItem(
-        key,
-        JSON.stringify({
-          step,
-          activeElectrodeId,
-          activePenId,
-          updatedAt: new Date().toISOString(),
-        }),
-      );
-    } catch {
-      /* sessionStorage unavailable — ignore */
-    }
+    writeStoredWorkspaceState(
+      id,
+      { step, activeElectrodeId, activePenId },
+      storedStateRef.current,
+    );
   }, [id, step, activeElectrodeId, activePenId]);
+
 
 
   // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
