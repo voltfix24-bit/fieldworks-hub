@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, Paperclip, Save, PenTool } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Map, Save, PenTool } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import HandtekeningPad from '../../HandtekeningPad';
@@ -18,14 +19,15 @@ interface ElektrodeSamenvatting {
 }
 
 interface NextActionStepProps {
-  onGoToSketch: () => void;
+  projectId: string;
   onSave: () => void;
   compact?: boolean;
   onHandtekeningChange?: (base64: string | null) => void;
   elektrodes?: ElektrodeSamenvatting[];
 }
 
-export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+export function NextActionStep({ projectId, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
@@ -168,10 +170,10 @@ export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningCh
 
       <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
         <ActionCard
-          icon={<Paperclip className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
-          label="Schets en bijlagen"
-          description="Schetsen, foto's en bestanden"
-          onClick={onGoToSketch}
+          icon={<Map className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
+          label="Situatieschets"
+          description="MSR-kast en elektrodes plaatsen"
+          onClick={() => navigate(`/projects/${projectId}/diagram`)}
           compact={compact}
         />
 
