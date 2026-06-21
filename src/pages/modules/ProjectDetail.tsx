@@ -357,11 +357,10 @@ export default function ProjectDetail() {
                 title="Rapportage"
                 sub={
                   reportComplete
-                    ? (hasReportWarnings ? 'Klaar – met waarschuwingen' : 'Klaar om te openen')
-                    : !diagramComplete ? 'Open – schets ontbreekt nog'
-                    : !readiness.isReady ? `Open – ${readiness.blockers.length} aandachtspunt(en)`
-                    : 'Open rapport'
+                    ? (hasReportWarnings ? 'Rapport beschikbaar – met waarschuwingen' : 'Rapport beschikbaar')
+                    : 'Opent met de ingevulde gegevens'
                 }
+
                 done={reportComplete}
                 onClick={openReport}
               />
