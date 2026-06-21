@@ -878,6 +878,18 @@ export default function MeasurementWorkspace() {
                   initializeDepthRows={initializeDepthRows}
                   onWarningCountChange={setWarningCount}
                   onRvMissingChange={setRvMissing}
+                  activePenId={activePenId}
+                  onActivePenChange={setActivePenId}
+                  photoControl={(() => {
+                    const eerstePen = allePens.find((p: any) => p.electrode_id === activeElectrode.id);
+                    return {
+                      displayPhotoUrl: eerstePen?.display_photo_url ?? null,
+                      overviewPhotoUrl: eerstePen?.overview_photo_url ?? null,
+                      uploading: uploadingPerElektrode[activeElectrode.id] ?? false,
+                      onUpload: (type, file) => handlePhotoUploadVoorElektrode(activeElectrode.id, type, file),
+                      onRemove: (type) => handlePhotoRemoveVoorElektrode(activeElectrode.id, type),
+                    };
+                  })()}
                   compact
                 />
                 {session && id && (
@@ -890,6 +902,7 @@ export default function MeasurementWorkspace() {
                 )}
               </>
             )}
+
 
             {step === 1 && (
               <PhotoStep
@@ -1148,7 +1161,10 @@ export default function MeasurementWorkspace() {
               depthsInitRef={depthsInitRef}
               initializeDepthRows={initializeDepthRows}
               onRvMissingChange={setRvMissing}
+              activePenId={activePenId}
+              onActivePenChange={setActivePenId}
             />
+
             {session && id && (
               <RapportgegevensCard
                 projectId={id}

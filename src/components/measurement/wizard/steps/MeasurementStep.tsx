@@ -1,12 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getDepthProgressionWarnings } from '../../DepthMeasurementTable';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { GroundingIcon } from '../../GroundingIcon';
-import { Plus, ChevronDown, Trash2, Check } from 'lucide-react';
+import { Plus, ChevronDown, Trash2, Check, Camera, X as XIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
 import { toast } from '@/hooks/use-toast';
+
+
+
+interface PhotoControl {
+  displayPhotoUrl: string | null;
+  overviewPhotoUrl: string | null;
+  uploading?: boolean;
+  onUpload: (type: 'display_photo_url' | 'overview_photo_url', file: File) => void;
+  onRemove: (type: 'display_photo_url' | 'overview_photo_url') => void;
+}
 
 interface MeasurementStepProps {
   electrode: any;
@@ -21,6 +32,11 @@ interface MeasurementStepProps {
   compact?: boolean;
   onWarningCountChange?: (count: number) => void;
   onRvMissingChange?: (missing: boolean) => void;
+  /** Controlled pen tab — single source of truth in parent workspace. */
+  activePenId?: string | null;
+  onActivePenChange?: (penId: string | null) => void;
+  /** Optional inline photo tiles (mobile measurement card). */
+  photoControl?: PhotoControl;
 }
 
 export function MeasurementStep({
@@ -28,6 +44,9 @@ export function MeasurementStep({
   onUpdateElectrode, onAddPen, onDeletePen, recalcRa,
   depthsInitRef, initializeDepthRows, compact,
   onWarningCountChange, onRvMissingChange,
+  activePenId: controlledActivePenId,
+  onActivePenChange,
+  photoControl,
 }: MeasurementStepProps) {
   const showRv = pens.length > 1;
   const hasTarget = electrode.target_value != null;
@@ -38,7 +57,18 @@ export function MeasurementStep({
   );
   const rvMissing = showRv && (electrode.rv_value == null || electrode.rv_value === 0);
 
-  const [activePenId, setActivePenId] = useState<string | null>(null);
+  // Local fallback when parent does not control the pen tab (desktop).
+  const [uncontrolledPenId, setUncontrolledPenId] = useState<string | null>(null);
+  const isControlled = controlledActivePenId !== undefined;
+  const activePenId = isControlled ? controlledActivePenId : uncontrolledPenId;
+  const setActivePenId = useCallback((id: string | null) => {
+    if (isControlled) {
+      onActivePenChange?.(id);
+    } else {
+      setUncontrolledPenId(id);
+    }
+  }, [isControlled, onActivePenChange]);
+
   const [rvInput, setRvInput] = useState('');
   const [targetInput, setTargetInput] = useState('');
   const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
@@ -61,15 +91,18 @@ export function MeasurementStep({
     onRvMissingChange?.(rvMissing);
   }, [rvMissing, onRvMissingChange]);
 
-  // Track active pen — fallback to last pen if current id disappeared
+  // Track active pen — fallback to last pen if current id disappeared.
+  // Only applied locally; controlled mode is owned by the parent.
   useEffect(() => {
-    if (pens.length === 0) { setActivePenId(null); return; }
-    if (!activePenId || !pens.find((p: any) => p.id === activePenId)) {
-      setActivePenId(pens[pens.length - 1].id);
+    if (isControlled) return;
+    if (pens.length === 0) { setUncontrolledPenId(null); return; }
+    if (!uncontrolledPenId || !pens.find((p: any) => p.id === uncontrolledPenId)) {
+      setUncontrolledPenId(pens[pens.length - 1].id);
     }
-  }, [pens, activePenId]);
+  }, [pens, uncontrolledPenId, isControlled]);
 
   const activePen = pens.find((p: any) => p.id === activePenId) || pens[0];
+
 
   // Sync RV input with electrode value
   useEffect(() => {
@@ -305,6 +338,13 @@ export function MeasurementStep({
         </div>
       )}
 
+      {/* ─── Foto's optioneel (inline mobiele meetkaart) ─── */}
+      {photoControl && (
+        <InlinePhotosSection compact={compact} {...photoControl} />
+      )}
+
+
+
       {/* DEEL 6 — Notitie per elektrode */}
       <ElectrodeNoteSection
         notes={electrode.notes}
@@ -504,3 +544,103 @@ function ElectrodeNoteSection({ notes, onSave, compact }: {
     </div>
   );
 }
+
+/* ── Inline mobile photo tiles (Display + Overzicht) ── */
+function InlinePhotosSection({
+  displayPhotoUrl, overviewPhotoUrl, uploading, onUpload, onRemove, compact,
+}: PhotoControl & { compact?: boolean }) {
+  return (
+    <div className={cn('rounded-2xl border border-border/30 bg-card overflow-hidden', compact ? 'p-3' : 'p-4')}>
+      <div className="flex items-baseline justify-between mb-2.5">
+        <h3 className="text-[13px] font-bold text-foreground tracking-tight">Foto's</h3>
+        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/40">Optioneel</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <InlinePhotoTile
+          label="Displayfoto"
+          url={displayPhotoUrl}
+          uploading={!!uploading}
+          onPick={(f) => onUpload('display_photo_url', f)}
+          onRemove={() => onRemove('display_photo_url')}
+        />
+        <InlinePhotoTile
+          label="Overzichtsfoto"
+          url={overviewPhotoUrl}
+          uploading={!!uploading}
+          onPick={(f) => onUpload('overview_photo_url', f)}
+          onRemove={() => onRemove('overview_photo_url')}
+        />
+      </div>
+    </div>
+  );
+}
+
+function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
+  label: string;
+  url: string | null;
+  uploading: boolean;
+  onPick: (file: File) => void;
+  onRemove: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (f) onPick(f);
+  };
+
+  if (url) {
+    return (
+      <div className="relative">
+        <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
+        <div className="relative rounded-xl overflow-hidden">
+          <MeasurementPhoto src={url} alt={label} className="w-full aspect-[4/3] object-cover" />
+          <button
+            type="button"
+            onClick={onRemove}
+            disabled={uploading}
+            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center active:scale-90 transition-transform"
+            aria-label={`${label} verwijderen`}
+          >
+            <XIcon className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className={cn(
+          'w-full aspect-[4/3] rounded-xl border border-dashed border-border/40 bg-muted/10',
+          'flex flex-col items-center justify-center gap-1.5 text-muted-foreground/55',
+          'active:scale-[0.98] transition-all',
+          uploading && 'opacity-60'
+        )}
+      >
+        {uploading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <>
+            <Camera className="h-4 w-4 text-[hsl(var(--tenant-primary,var(--primary)))]" />
+            <span className="text-[11px] font-semibold">Toevoegen</span>
+          </>
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleChange}
+        className="hidden"
+      />
+    </div>
+  );
+}
+

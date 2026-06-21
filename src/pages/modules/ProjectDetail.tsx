@@ -17,9 +17,10 @@ import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
-  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download, Camera, XCircle,
+  FileText, Play, ChevronRight, Calendar, Download,
   MapPin, User, Wrench, Activity, PenTool, Map as MapIcon
 } from 'lucide-react';
+
 import { supabase } from '@/integrations/supabase/client';
 
 export default function ProjectDetail() {
@@ -36,7 +37,7 @@ export default function ProjectDetail() {
   const { data: attachments = [] } = useAttachments(id);
   const { data: reportData } = useReportData(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showRapportBlock, setShowRapportBlock] = useState(false);
+  // (showRapportBlock verwijderd — rapport opent altijd, geen blokkade-sheet meer)
   const [hasDiagram, setHasDiagram] = useState(false);
 
   useEffect(() => {
@@ -89,23 +90,11 @@ export default function ProjectDetail() {
     { label: 'Situatieschets gemaakt', met: hasDiagram, optional: true },
   ];
 
-  // Bepaal "primaire fix"-route op basis van de eerste blocker (voor de sheet-knop)
-  const primaryFix: 'measurements' | 'project' | 'equipment' =
-    readiness.blockers.find(b => b.fix === 'measurements')?.fix
-      ?? readiness.blockers.find(b => b.fix === 'equipment')?.fix
-      ?? readiness.blockers[0]?.fix
-      ?? 'project';
-  const fixTarget = (fix: 'measurements' | 'project' | 'equipment'): { label: string; href: string } => {
-    if (fix === 'measurements') return { label: 'Naar metingen', href: `/projects/${id}/measurements` };
-    if (fix === 'equipment') return {
-      label: 'Apparatuur beheren',
-      href: equip?.id ? `/equipment/${equip.id}` : '/equipment',
-    };
-    return { label: 'Project bewerken', href: `/projects/${id}/edit` };
-  };
+  // (primaryFix / fixTarget verwijderd — werden alleen door de dode blokkade-sheet gebruikt)
 
-  const metingGestart = hasSession && hasElectrodes;
+
   const metingKlaar = isReportReady;
+
 
   const handleStatusChange = async (newStatus: 'planned' | 'completed') => {
     try {
@@ -222,11 +211,8 @@ export default function ProjectDetail() {
       navigate(`/projects/${id}/report`);
     };
 
-    // Primaire fix voor de blokkade-sheet: schets eerst, anders bestaande readiness
-    const sheetPrimary: { label: string; href: string } =
-      !diagramComplete
-        ? { label: 'Maak de Situatieschets', href: `/projects/${id}/diagram` }
-        : fixTarget(primaryFix);
+
+
 
     return (
       <>
@@ -372,11 +358,10 @@ export default function ProjectDetail() {
                 title="Rapportage"
                 sub={
                   reportComplete
-                    ? (hasReportWarnings ? 'Klaar – met waarschuwingen' : 'Klaar om te openen')
-                    : !diagramComplete ? 'Open – schets ontbreekt nog'
-                    : !readiness.isReady ? `Open – ${readiness.blockers.length} aandachtspunt(en)`
-                    : 'Open rapport'
+                    ? (hasReportWarnings ? 'Rapport beschikbaar – met waarschuwingen' : 'Rapport beschikbaar')
+                    : 'Opent met de ingevulde gegevens'
                 }
+
                 done={reportComplete}
                 onClick={openReport}
               />
@@ -463,77 +448,9 @@ export default function ProjectDetail() {
           </div>
         )}
 
-        {/* Rapport-blokkade / waarschuwing sheet */}
-        {showRapportBlock && (
-          <div className="ios-detail-confirm-backdrop" onClick={() => setShowRapportBlock(false)}>
-            <div className="ios-detail-confirm-sheet" onClick={e => e.stopPropagation()}>
-              <div className="ios-detail-confirm-handle" />
-              <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className={cn('h-5 w-5', mobileReportReady ? 'text-amber-500' : 'text-destructive')} />
-                <h3 className="ios-detail-confirm-title" style={{ margin: 0 }}>
-                  {mobileReportReady ? 'Rapport heeft waarschuwingen' : 'Rapport nog niet compleet'}
-                </h3>
-              </div>
-              <p className="ios-detail-confirm-sub">
-                {mobileReportReady
-                  ? 'Je kunt het rapport openen, maar controleer onderstaande punten.'
-                  : 'Vul eerst onderstaande punten aan voordat je het rapport opent.'}
-              </p>
+        {/* Rapport-blokkade sheet verwijderd — rapport opent altijd, waarschuwingen
+            verschijnen niet-blokkerend in de rapport-kaart en in het rapport zelf. */}
 
-              {!diagramComplete && (
-                <div className="mt-3 rounded-2xl bg-destructive/[0.04] border border-destructive/15 px-4 py-3 flex items-center gap-2.5">
-                  <XCircle className="h-4 w-4 text-destructive shrink-0" />
-                  <span className="text-[13px] text-foreground/85">Situatieschets ontbreekt</span>
-                </div>
-              )}
-
-              {readiness.blockers.length > 0 && (
-                <div className="mt-3 rounded-2xl bg-destructive/[0.04] divide-y divide-border/30 border border-destructive/15">
-                  {readiness.blockers.map(b => (
-                    <div key={b.code} className="flex items-center gap-2.5 px-4 py-3">
-                      <XCircle className="h-4 w-4 text-destructive shrink-0" />
-                      <span className="text-[13px] text-foreground/85">{b.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {readiness.warnings.length > 0 && (
-                <div className="mt-3 rounded-2xl bg-amber-500/[0.06] divide-y divide-border/30 border border-amber-500/20">
-                  {readiness.warnings.map(w => (
-                    <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
-                      <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-                      <span className="text-[13px] text-foreground/85">{w.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="ios-detail-confirm-actions mt-4">
-                {!mobileReportReady ? (
-                  <button
-                    className="ios-detail-confirm-delete"
-                    style={{ background: 'hsl(var(--tenant-primary))' }}
-                    onClick={() => { setShowRapportBlock(false); navigate(sheetPrimary.href); }}
-                  >
-                    {sheetPrimary.label}
-                  </button>
-                ) : (
-                  <button
-                    className="ios-detail-confirm-delete"
-                    style={{ background: 'hsl(var(--tenant-primary))' }}
-                    onClick={() => { setShowRapportBlock(false); navigate(`/projects/${id}/report`); }}
-                  >
-                    Toch openen
-                  </button>
-                )}
-                <button className="ios-detail-confirm-cancel" onClick={() => setShowRapportBlock(false)}>
-                  Sluiten
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </>
     );
   }

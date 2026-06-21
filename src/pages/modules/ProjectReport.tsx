@@ -79,18 +79,9 @@ export default function ProjectReport() {
   const location = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
 
-  // Build export filename from pattern
-  const buildFilename = () => {
-    const pattern = rs.export_filename_pattern || 'Rapport [projectnummer] - [projectnaam]';
-    const dateStr = session?.measurement_date
-      ? formatNlDate(session.measurement_date) || ''
-      : '';
-    return pattern
-      .replace(/\[projectnummer\]/g, project.project_number || '')
-      .replace(/\[projectnaam\]/g, project.project_name || '')
-      .replace(/\[datum\]/g, dateStr)
-      .replace(/\[opdrachtgever\]/g, client?.company_name || '');
-  };
+  // (buildFilename verwijderd — bestandsnaam wordt server-side in de PDF-functie bepaald)
+
+
 
 
   // Build conditional row arrays (mono = render value in IBM Plex Mono)
