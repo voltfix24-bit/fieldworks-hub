@@ -42,7 +42,7 @@ export default function ProjectReport() {
   const [emailNaam, setEmailNaam] = useState('');
   const [emailSending, setEmailSending] = useState(false);
   const [whatsAppLoading, setWhatsAppLoading] = useState(false);
-  const [adminPreview, setAdminPreview] = useState(false);
+  
 
   // Centrale readiness (zelfde hook als ProjectDetail)
   const readiness = useReportReadiness(id);
@@ -74,9 +74,7 @@ export default function ProjectReport() {
   const hasMeasurements = stats.measurementCount > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
 
-  const isReady = readiness.isReady;
   const isAdmin = ['admin', 'tenant_admin', 'office_user'].includes((profile as any)?.role || '');
-  const showDocument = isReady || adminPreview;
 
   const location = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
