@@ -6,6 +6,7 @@ interface Props {
   zoom: number;
   onMoveElectrode: (id: string, x: number, y: number) => void;
   onMoveCabinet: (x: number, y: number) => void;
+  onEditDistance?: (id: string, axis: 'x' | 'y', currentValue: number) => void;
   selectedElectrodeId?: string | null;
   onSelectElectrode?: (id: string | null) => void;
 }
@@ -20,6 +21,7 @@ export function DiagramCanvas({
   zoom,
   onMoveElectrode,
   onMoveCabinet,
+  onEditDistance,
   selectedElectrodeId,
   onSelectElectrode,
 }: Props) {
@@ -101,18 +103,50 @@ export function DiagramCanvas({
             const anchor = getAnchorPoint(c, e.anchor ?? 'br');
             const distances = getDistances(e, anchor, mpu);
             const selected = selectedElectrodeId === e.id;
+            const horizontalLabelX = (anchor.x + e.x) / 2;
+            const horizontalLabelY = anchor.y - 7;
+            const verticalLabelX = e.x + 8;
+            const verticalLabelY = (anchor.y + e.y) / 2;
             return (
-              <g key={`d-${e.id}`} pointerEvents="none">
-                <line x1={anchor.x} y1={anchor.y} x2={e.x} y2={anchor.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
-                <line x1={e.x} y1={anchor.y} x2={e.x} y2={e.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
-                <circle cx={anchor.x} cy={anchor.y} r={selected ? 6 : 4} fill="#ef4444" />
-                <circle cx={anchor.x} cy={anchor.y} r={2} fill="#ffffff" />
-                <text x={(anchor.x + e.x) / 2} y={anchor.y - 7} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
-                  H {formatMeters(distances.x)}
-                </text>
-                <text x={e.x + 8} y={(anchor.y + e.y) / 2} fontSize="11" fontWeight="700" fill="#475569">
-                  V {formatMeters(distances.y)}
-                </text>
+              <g key={`d-${e.id}`}>
+                <g pointerEvents="none">
+                  <line x1={anchor.x} y1={anchor.y} x2={e.x} y2={anchor.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
+                  <line x1={e.x} y1={anchor.y} x2={e.x} y2={e.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
+                  <circle cx={anchor.x} cy={anchor.y} r={selected ? 6 : 4} fill="#ef4444" />
+                  <circle cx={anchor.x} cy={anchor.y} r={2} fill="#ffffff" />
+                </g>
+                <g
+                  role="button"
+                  aria-label="Horizontale afstand aanpassen"
+                  onPointerDown={(ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    onSelectElectrode?.(e.id);
+                    onEditDistance?.(e.id, 'x', distances.x);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <rect x={horizontalLabelX - 34} y={horizontalLabelY - 17} width="68" height="22" rx="7" fill="#ffffff" stroke="#cbd5e1" />
+                  <text x={horizontalLabelX} y={horizontalLabelY} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
+                    H {formatMeters(distances.x)}
+                  </text>
+                </g>
+                <g
+                  role="button"
+                  aria-label="Verticale afstand aanpassen"
+                  onPointerDown={(ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    onSelectElectrode?.(e.id);
+                    onEditDistance?.(e.id, 'y', distances.y);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <rect x={verticalLabelX - 4} y={verticalLabelY - 16} width="72" height="22" rx="7" fill="#ffffff" stroke="#cbd5e1" />
+                  <text x={verticalLabelX + 32} y={verticalLabelY} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
+                    V {formatMeters(distances.y)}
+                  </text>
+                </g>
               </g>
             );
           })}
