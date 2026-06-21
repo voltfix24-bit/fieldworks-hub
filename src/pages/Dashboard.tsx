@@ -573,34 +573,43 @@ function getDotClass(project: any): string {
   return 'ios-pdot-grey';
 }
 
-function DashStatusDot({ project }: { project: any }) {
-  return <span className={cn('ios-dash-project-dot', getDotClass(project))} />;
+function getStripClass(project: any): string {
+  if (project.status === 'completed') return 'ios-strip-green';
+  if (!project.planned_date) return 'ios-strip-grey';
+  try {
+    const d = parseISO(project.planned_date);
+    if (isToday(d)) return 'ios-strip-orange';
+    if (isPast(d)) return 'ios-strip-red';
+  } catch {}
+  return 'ios-strip-grey';
 }
 
-function DashProjectRow({ project: p, onClick, showDate }: {
+function DashProjectCard({ project: p, onClick, showDate }: {
   project: any; onClick: () => void; showDate?: boolean;
 }) {
   return (
-    <button onClick={onClick} className="ios-dash-project-row">
-      <DashStatusDot project={p} />
-      <div className="ios-dash-project-info">
-        <p className="ios-dash-project-name">{p.project_name}</p>
-        <div className="ios-dash-project-meta">
+    <button onClick={onClick} className="ios-dash-project-card">
+      <span className={cn('ios-dash-project-strip', getStripClass(p))} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[15px] font-semibold text-[#0f1219] truncate">
+          {p.project_name}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1 text-[12px] text-[#5b6072] truncate">
           <span>{p.project_number}</span>
           {p.city && (
             <>
               <span>·</span>
-              <MapPin className="h-2.5 w-2.5" />
-              <span>{p.city}</span>
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">{p.city}</span>
             </>
           )}
         </div>
       </div>
-      <div className="ios-dash-project-right">
+      <div className="flex items-center gap-2 shrink-0 ml-2">
         {showDate && p.planned_date && (
-          <span className="ios-dash-project-date">{formatNlDateCompact(p.planned_date)}</span>
+          <span className="text-[12px] text-[#5b6072]">{formatNlDateCompact(p.planned_date)}</span>
         )}
-        <ChevronRight className="h-4 w-4 ios-dash-project-chevron" />
+        <ChevronRight className="h-4 w-4 text-[#9097a8]" />
       </div>
     </button>
   );
