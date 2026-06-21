@@ -65,7 +65,8 @@ export default function ProjectsPage() {
   /* ── Mobile ── */
   if (isMobile) {
     return (
-      <div className="animate-fade-in">
+      <div className="animate-fade-in w-full max-w-full min-w-0">
+
         <PageHeader
           title="Projecten"
           action={<Button size="sm" onClick={() => navigate('/projects/new')} className="rounded-xl"><Plus className="mr-1.5 h-4 w-4" /> Nieuw</Button>}
