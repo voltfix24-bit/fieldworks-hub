@@ -614,7 +614,7 @@ export default function MeasurementWorkspace() {
     if (dy > 40) return;
     if (Math.abs(dx) < SWIPE_DREMPEL) return;
     if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
-    if (dx > 0 && step < 2) {
+    if (dx > 0 && step < LAST_STEP) {
       if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
       handleStapWissel(step + 1);
       if (navigator.vibrate) navigator.vibrate(6);
