@@ -25,7 +25,9 @@ export function DiagramCanvas({
   onMoveCabinet,
   onEditDistance,
   selectedElectrodeId,
+  cabinetSelected,
   onSelectElectrode,
+  onSelectCabinet,
 }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [drag, setDrag] = useState<Drag>(null);
