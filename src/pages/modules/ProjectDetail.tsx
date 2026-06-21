@@ -218,8 +218,7 @@ export default function ProjectDetail() {
     };
 
     const openReport = () => {
-      if (!mobileReportReady) { setShowRapportBlock(true); return; }
-      if (hasReportWarnings) { setShowRapportBlock(true); return; }
+      // Rapport mag altijd geopend worden — ontbrekende data wordt in het rapport weggelaten.
       navigate(`/projects/${id}/report`);
     };
 
