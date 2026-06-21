@@ -14,7 +14,7 @@ import { ReportHeader } from '@/components/report/ReportHeader';
 import { ReportInfoSection } from '@/components/report/ReportInfoSection';
 import { ReportElectrodeSection } from '@/components/report/ReportElectrodeSection';
 import { ReportFooter } from '@/components/report/ReportFooter';
-import { ReportSummaryStats } from '@/components/report/ReportSummaryStats';
+
 
 import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
