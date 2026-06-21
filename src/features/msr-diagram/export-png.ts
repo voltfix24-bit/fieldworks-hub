@@ -184,7 +184,7 @@ export async function renderDiagramToPng(
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(e.label || 'E', e.x, e.y + 34);
-  }
+  });
 
   return await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('PNG-export mislukt'))), 'image/png');
