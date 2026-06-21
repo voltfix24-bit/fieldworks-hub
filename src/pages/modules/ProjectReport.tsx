@@ -237,69 +237,14 @@ export default function ProjectReport() {
           <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
-          {isReady && (
-            <Button size="sm" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" /> Print / PDF
-            </Button>
-          )}
+          <Button size="sm" onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" /> Print / PDF
+          </Button>
         </div>
       </div>
 
-      {/* Readiness gate — blokkeer rapport bij blocking errors */}
-      {!readiness.isLoading && !isReady && (
-        <div className="print:hidden max-w-lg mx-auto mb-8">
-          <div className="flex items-start gap-3 mb-4 p-4 rounded-2xl border border-destructive/20 bg-destructive/[0.04]">
-            <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Rapport nog niet beschikbaar</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Vul eerst onderstaande verplichte gegevens aan.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-card border border-border/40 divide-y divide-border/30">
-            {readiness.blockers.map(b => (
-              <div key={b.code} className="flex items-center gap-2.5 px-4 py-3">
-                <X className="h-4 w-4 text-destructive shrink-0" />
-                <span className="text-[13px] text-foreground/85 flex-1">{b.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {readiness.warnings.length > 0 && (
-            <div className="mt-3 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 divide-y divide-border/30">
-              {readiness.warnings.map(w => (
-                <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
-                  <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-                  <span className="text-[13px] text-foreground/85 flex-1">{w.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
-              Naar metingen
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/edit`)}>
-              Project bewerken
-            </Button>
-            {isAdmin && !adminPreview && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground/60"
-                onClick={() => setAdminPreview(true)}
-              >
-                Toch bekijken (preview)
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {isReady && readiness.warnings.length > 0 && (
+      {/* Soft warnings — rapport blokkeert nooit meer */}
+      {!readiness.isLoading && readiness.warnings.length > 0 && (
         <div className="print:hidden max-w-lg mx-auto mb-6 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 divide-y divide-border/30">
           {readiness.warnings.map(w => (
             <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
@@ -312,8 +257,7 @@ export default function ProjectReport() {
 
 
       {/* ─── DOWNLOAD SECTIE ─── */}
-      {isReady && (
-        <div className="print:hidden max-w-lg mx-auto mb-8">
+      <div className="print:hidden max-w-lg mx-auto mb-8">
           <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
             <div className="flex items-center gap-2.5 mb-1">
               <Printer className="h-4 w-4 text-muted-foreground/50" />
