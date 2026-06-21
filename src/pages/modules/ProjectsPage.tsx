@@ -80,7 +80,7 @@ export default function ProjectsPage() {
           <>
             <ListToolbar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Zoek op naam, nummer, adres of klant…">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-28 h-8 text-xs rounded-lg"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs rounded-lg min-w-0"><SelectValue placeholder="Status" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle</SelectItem>
                   <SelectItem value="planned">Gepland</SelectItem>
@@ -88,7 +88,7 @@ export default function ProjectsPage() {
                 </SelectContent>
               </Select>
               <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="w-28 h-8 text-xs rounded-lg"><SelectValue placeholder="Datum" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs rounded-lg min-w-0"><SelectValue placeholder="Datum" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle data</SelectItem>
                   <SelectItem value="today">Vandaag</SelectItem>
@@ -97,6 +97,7 @@ export default function ProjectsPage() {
                   <SelectItem value="overdue">Achterstallig</SelectItem>
                 </SelectContent>
               </Select>
+
             </ListToolbar>
             <div className="flex items-center justify-between mb-3 px-0.5">
               <span className="text-[11px] text-muted-foreground/40">{filtered.length} van {projects?.length} projecten</span>
