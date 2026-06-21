@@ -1,10 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getDepthProgressionWarnings } from '../../DepthMeasurementTable';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { GroundingIcon } from '../../GroundingIcon';
-import { Plus, ChevronDown, Trash2, Check } from 'lucide-react';
+import { Plus, ChevronDown, Trash2, Check, Camera, X as XIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
+import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
+import { toast } from '@/hooks/use-toast';
+
 import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
 import { toast } from '@/hooks/use-toast';
 
