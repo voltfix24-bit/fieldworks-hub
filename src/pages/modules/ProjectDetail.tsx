@@ -364,14 +364,14 @@ export default function ProjectDetail() {
                 sub={
                   reportComplete
                     ? (hasReportWarnings ? 'Klaar – met waarschuwingen' : 'Klaar om te openen')
-                    : !diagramComplete ? 'Wacht op situatieschets'
-                    : !readiness.isReady ? `${readiness.blockers.length} blokkade(s)`
-                    : 'Bijna klaar'
+                    : !diagramComplete ? 'Open – schets ontbreekt nog'
+                    : !readiness.isReady ? `Open – ${readiness.blockers.length} aandachtspunt(en)`
+                    : 'Open rapport'
                 }
                 done={reportComplete}
-                disabled={!reportComplete}
                 onClick={openReport}
               />
+
             </div>
 
             {/* Projectbestanden */}
