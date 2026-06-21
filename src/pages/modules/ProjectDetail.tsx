@@ -210,11 +210,8 @@ export default function ProjectDetail() {
       navigate(`/projects/${id}/report`);
     };
 
-    // Primaire fix voor de blokkade-sheet: schets eerst, anders bestaande readiness
-    const sheetPrimary: { label: string; href: string } =
-      !diagramComplete
-        ? { label: 'Maak de Situatieschets', href: `/projects/${id}/diagram` }
-        : fixTarget(primaryFix);
+
+
 
     return (
       <>
