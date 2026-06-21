@@ -323,14 +323,15 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         className={cn(
           'grid items-center relative',
           compact
-            ? 'grid-cols-[52px_1fr_32px] gap-0 px-1 min-h-[52px]'
+            ? 'grid-cols-[44px_1fr] gap-3 px-1 min-h-[56px]'
             : 'grid-cols-[64px_1fr_40px] gap-2 px-2 min-h-[56px]',
-          isEven ? 'bg-card' : 'bg-muted/20',
-          isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
-          (hasProgressionWarning || hasHighResistanceWarning) && 'bg-amber-500/[0.04]',
-          isNextEmpty && !hasValue && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.045)]',
-          isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
-          saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
+          // Background coloring is on the input pill in compact mode; only desktop uses row stripes.
+          !compact && (isEven ? 'bg-card' : 'bg-muted/20'),
+          !compact && isLowest && 'bg-[hsl(var(--measure-lowest)/0.05)]',
+          !compact && (hasProgressionWarning || hasHighResistanceWarning) && 'bg-amber-500/[0.04]',
+          !compact && isNextEmpty && !hasValue && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.045)]',
+          !compact && isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] ring-1 ring-inset ring-[hsl(var(--tenant-primary,var(--primary))/0.15)]',
+          !compact && saved && 'bg-[hsl(var(--status-completed)/0.08)] transition-colors duration-300',
         )}
         style={canSwipe ? {
           transform: `translateX(-${swipeX}px)`,
@@ -354,25 +355,31 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
           setSwiping(false);
         } : undefined}
       >
-        {/* Depth — static display */}
-        <div className="relative">
+        {/* Depth — label outside the pill */}
+        {compact ? (
           <span className={cn(
-            'block text-center tabular-nums leading-none',
-            compact ? 'text-[15px] font-bold py-3' : 'text-[16px] font-bold py-3',
-            isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/80' : 'text-muted-foreground/45'
+            'text-[15px] font-extrabold tabular-nums pl-1',
+            isLowest ? 'text-[hsl(var(--measure-lowest))]' : 'text-foreground/90'
           )}>
-            {row.depth_meters}
+            {row.depth_meters}m
           </span>
-          <span className={cn(
-            'absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none',
-            compact ? 'text-[10px] font-semibold' : 'text-[10px] font-semibold'
-          )}>m</span>
-          {isNextEmpty && !hasValue && (
-            <span className="absolute left-1/2 -translate-x-1/2 bottom-0 text-[8px] font-bold uppercase tracking-wide text-[hsl(var(--tenant-primary,var(--primary)))]">
-              nu
+        ) : (
+          <div className="relative">
+            <span className={cn(
+              'block text-center tabular-nums leading-none text-[16px] font-bold py-3',
+              isLowest ? 'text-[hsl(var(--measure-lowest))] font-bold' : hasValue ? 'text-foreground/80' : 'text-muted-foreground/45'
+            )}>
+              {row.depth_meters}
             </span>
-          )}
-        </div>
+            <span className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none text-[10px] font-semibold">m</span>
+            {isNextEmpty && !hasValue && (
+              <span className="absolute left-1/2 -translate-x-1/2 bottom-0 text-[8px] font-bold uppercase tracking-wide text-[hsl(var(--tenant-primary,var(--primary)))]">
+                nu
+              </span>
+            )}
+          </div>
+        )}
+
 
         {/* Resistance — the main input, accepts comma */}
         <div className="relative">
