@@ -176,24 +176,8 @@ export function NextActionStep({ projectId, onSave, compact, elektrodes = [] }: 
         />
       </div>
 
-      {/* Handtekening sectie */}
-      <div className="mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <PenTool className="h-3.5 w-3.5 text-muted-foreground/40" />
-          <h3 className="text-[13px] font-semibold text-foreground">
-            Handtekening monteur
-          </h3>
-          <span className="text-[11px] text-muted-foreground/30 ml-auto">
-            Optioneel
-          </span>
-        </div>
-        <HandtekeningPad
-          onChange={handleHandtekeningChange}
-          breedte={compact ? 400 : 500}
-          hoogte={compact ? 140 : 180}
-          monteurId={user?.id}
-        />
-      </div>
+      {/* Handtekening is verplaatst naar de rapportpagina — één centrale plek. */}
+
 
       {/* DEEL 4 — Save confirmation dialog */}
       {opslaanBevestiging && (
