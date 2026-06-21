@@ -240,10 +240,12 @@ export default function MeasurementWorkspace() {
   // Exit confirmation
   const [toonAfsluitBevestiging, setToonAfsluitBevestiging] = useState(false);
 
-  // Track active electrode — fallback to FIRST available when stored/current id is gone
+  // Track active electrode — fallback to FIRST available when stored/current id is gone.
+  // Also clear the stale activePenId so it doesn't briefly survive the switch.
   useEffect(() => {
     if (electrodes.length > 0 && !electrodes.find((e: any) => e.id === activeElectrodeId)) {
       setActiveElectrodeId(electrodes[0].id);
+      setActivePenId(null);
     }
   }, [electrodes]);
 
@@ -253,6 +255,7 @@ export default function MeasurementWorkspace() {
       setActivePenId(pens[0].id);
     }
   }, [pens]);
+
 
   // Auto-initialize: create session + electrode 1 + pen 1 + depths if nothing exists
   useEffect(() => {
