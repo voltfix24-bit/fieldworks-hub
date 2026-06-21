@@ -1,5 +1,4 @@
-import { Plus, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ElectrodeTabSwitcherProps {
@@ -10,35 +9,68 @@ interface ElectrodeTabSwitcherProps {
   addDisabled?: boolean;
 }
 
+/**
+ * Pill-style elektrode tabs (mobiel-eerst).
+ * - Actieve pill: filled met tenant-primary (oranje), wit label.
+ * - Inactieve pill: wit met dunne border.
+ * - "+ Elektrode": gestippelde outline pill.
+ */
 export function ElectrodeTabSwitcher({ electrodes, activeId, onSelect, onAdd, addDisabled }: ElectrodeTabSwitcherProps) {
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-      {electrodes.map((e) => (
-        <button
-          key={e.id}
-          onClick={() => onSelect(e.id)}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all',
-            'border min-h-[40px]',
-            e.id === activeId
-              ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-              : 'bg-card text-foreground border-border hover:bg-muted/50'
-          )}
-        >
-          <Zap className="h-3.5 w-3.5" />
-          <span>{e.electrode_code}</span>
-          {e.label && <span className="text-xs opacity-75">· {e.label}</span>}
-        </button>
-      ))}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onAdd}
+    <div className="flex items-center gap-2 overflow-x-auto -mx-4 px-4 pb-1 scrollbar-none">
+      {electrodes.map((e) => {
+        const isActive = e.id === activeId;
+        return (
+          <button
+            key={e.id}
+            type="button"
+            onMouseDown={(ev) => {
+              ev.preventDefault();
+              (document.activeElement as HTMLElement)?.blur();
+              setTimeout(() => onSelect(e.id), 30);
+            }}
+            className={cn(
+              'shrink-0 inline-flex items-center justify-center whitespace-nowrap',
+              'h-11 px-6 rounded-full text-[15px] font-bold tracking-tight',
+              'transition-all duration-150 active:scale-[0.97]',
+              isActive
+                ? 'bg-[hsl(var(--tenant-primary,var(--primary)))] text-white shadow-[0_2px_8px_-2px_hsl(var(--tenant-primary,var(--primary))/0.45)]'
+                : 'bg-card text-foreground border border-border/50',
+            )}
+          >
+            <span>Elektrode {indexLabel(electrodes, e.id, e.electrode_code)}</span>
+          </button>
+        );
+      })}
+      <button
+        type="button"
+        onMouseDown={(ev) => {
+          ev.preventDefault();
+          (document.activeElement as HTMLElement)?.blur();
+          setTimeout(onAdd, 30);
+        }}
         disabled={addDisabled}
-        className="min-h-[40px] px-3 border-dashed whitespace-nowrap"
+        className={cn(
+          'shrink-0 inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
+          'h-11 px-5 rounded-full text-[14px] font-bold tracking-tight',
+          'border border-dashed border-border/60 text-foreground/70 bg-transparent',
+          'transition-all duration-150 active:scale-[0.97]',
+          'disabled:opacity-40 disabled:cursor-not-allowed',
+        )}
       >
-        <Plus className="h-3.5 w-3.5 mr-1" /> Elektrode
-      </Button>
+        <Plus className="h-4 w-4" />
+        Elektrode
+      </button>
     </div>
   );
+}
+
+/**
+ * Toon "Elektrode 1", "Elektrode 2", ... op basis van positie.
+ * Valt terug op de echte code als die niet numeriek te mappen is.
+ */
+function indexLabel(electrodes: any[], id: string, fallback: string) {
+  const idx = electrodes.findIndex((x) => x.id === id);
+  if (idx >= 0) return String(idx + 1);
+  return fallback;
 }
