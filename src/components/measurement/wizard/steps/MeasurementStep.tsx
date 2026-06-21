@@ -9,8 +9,7 @@ import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurem
 import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
 import { toast } from '@/hooks/use-toast';
 
-import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
-import { toast } from '@/hooks/use-toast';
+
 
 interface MeasurementStepProps {
   electrode: any;
