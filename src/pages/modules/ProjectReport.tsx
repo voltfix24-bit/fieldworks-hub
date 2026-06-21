@@ -93,34 +93,34 @@ export default function ProjectReport() {
   };
 
 
-  // Build conditional row arrays
+  // Build conditional row arrays (mono = render value in IBM Plex Mono)
   const projectRows = [
-    fld('projectnummer') && { label: 'Projectnummer', value: project.project_number },
+    fld('projectnummer') && { label: 'Projectnummer', value: project.project_number, mono: true },
     fld('projectnaam') && { label: 'Projectnaam', value: project.project_name },
     { label: 'Locatie', value: project.site_name },
     fld('adres') && { label: 'Adres', value: location || null },
-    fld('meetdatum') && { label: 'Meetdatum', value: formatNlDate(session?.measurement_date, 'long') },
-  ].filter(Boolean) as { label: string; value: string | null | undefined }[];
+    fld('meetdatum') && { label: 'Meetdatum', value: formatNlDate(session?.measurement_date, 'long'), mono: true },
+  ].filter(Boolean) as { label: string; value: string | null | undefined; mono?: boolean }[];
 
   const clientRows = [
     fld('opdrachtgever_bedrijf') && { label: 'Bedrijf', value: client?.company_name },
     fld('opdrachtgever_contact') && { label: 'Contactpersoon', value: client?.contact_name },
     fld('opdrachtgever_email') && { label: 'E-mail', value: client?.email },
-    fld('opdrachtgever_telefoon') && { label: 'Telefoon', value: client?.phone },
-  ].filter(Boolean) as { label: string; value: string | null | undefined }[];
+    fld('opdrachtgever_telefoon') && { label: 'Telefoon', value: client?.phone, mono: true },
+  ].filter(Boolean) as { label: string; value: string | null | undefined; mono?: boolean }[];
 
   const techRows = [
     fld('monteur_naam') && { label: 'Naam', value: tech?.full_name },
-    fld('monteur_code') && { label: 'Medewerkernr.', value: tech?.employee_code },
-  ].filter(Boolean) as { label: string; value: string | null | undefined }[];
+    fld('monteur_code') && { label: 'Medewerkernr.', value: tech?.employee_code, mono: true },
+  ].filter(Boolean) as { label: string; value: string | null | undefined; mono?: boolean }[];
 
   const equipRows = [
     fld('apparaat_naam') && { label: 'Apparaat', value: equip?.device_name },
     fld('apparaat_merk') && { label: 'Merk / Model', value: [equip?.brand, equip?.model].filter(Boolean).join(' ') || null },
-    fld('apparaat_serienummer') && { label: 'Serienummer', value: equip?.serial_number },
-    fld('apparaat_kalibratie') && { label: 'Kalibratiedatum', value: formatNlDate(equip?.calibration_date) },
-    fld('apparaat_volgende_kalibratie') && { label: 'Volgende kalibratie', value: formatNlDate(equip?.next_calibration_date) },
-  ].filter(Boolean) as { label: string; value: string | null | undefined }[];
+    fld('apparaat_serienummer') && { label: 'Serienummer', value: equip?.serial_number, mono: true },
+    fld('apparaat_kalibratie') && { label: 'Kalibratiedatum', value: formatNlDate(equip?.calibration_date), mono: true },
+    fld('apparaat_volgende_kalibratie') && { label: 'Volgende kalibratie', value: formatNlDate(equip?.next_calibration_date), mono: true },
+  ].filter(Boolean) as { label: string; value: string | null | undefined; mono?: boolean }[];
 
   const showSignBlock = rs.report_sign_block === true && sec('ondertekening');
 
