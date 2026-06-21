@@ -179,49 +179,38 @@ export function MSRDiagramCanvas({
 
   return (
     <div className="fixed inset-0 z-[1000] flex flex-col bg-[#f4f8f7]">
-      <div className="shrink-0 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]">
-        <div className="mb-5 flex items-center gap-4">
+      <div className="shrink-0 px-4 pb-2 pt-[max(10px,env(safe-area-inset-top))]">
+        <div className="mb-2 flex items-center gap-3">
           <button
             onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground active:scale-95"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-foreground active:scale-95"
             aria-label="Terug"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-[25px] font-extrabold tracking-tight text-foreground">Situatieschets</h1>
-        </div>
-
-        <div className="mb-2 grid grid-cols-2 gap-2 rounded-2xl bg-white/70 p-1 shadow-sm ring-1 ring-border/50">
-          <button className="flex h-12 items-center justify-center gap-2 rounded-xl bg-white text-[15px] font-bold text-foreground shadow-sm">
-            <Pencil className="h-4 w-4" />
-            Tekenen
-          </button>
-          <button className="flex h-12 items-center justify-center gap-2 rounded-xl text-[15px] font-semibold text-muted-foreground/70">
-            <Upload className="h-4 w-4" />
-            Uploaden
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 rounded-t-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-border/50">
-          <button
-            onClick={() => setChoosingAnchor(true)}
-            className="flex h-14 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-[17px] font-extrabold text-white shadow-sm active:scale-[0.98]"
-          >
-            <Plus className="h-5 w-5" />
-            Toevoegen
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex h-14 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-[17px] font-extrabold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
-          >
-            {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <ImageIcon className="h-5 w-5" />}
-            Opslaan
-          </button>
+          <h1 className="text-[19px] font-extrabold tracking-tight text-foreground">Situatieschets</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setChoosingAnchor(true)}
+              className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-[13px] font-bold text-white shadow-sm active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              Toevoegen
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-[13px] font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+              Opslaan
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="relative mx-5 mb-5 min-h-0 flex-1 overflow-hidden rounded-b-2xl rounded-t-none border border-border/50 bg-white shadow-sm">
+      <div className="relative mx-3 mb-2 min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/50 bg-white shadow-sm">
+
         <DiagramCanvas
           diagram={diagram}
           zoom={zoom}
