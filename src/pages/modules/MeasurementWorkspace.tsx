@@ -1161,7 +1161,10 @@ export default function MeasurementWorkspace() {
               depthsInitRef={depthsInitRef}
               initializeDepthRows={initializeDepthRows}
               onRvMissingChange={setRvMissing}
+              activePenId={activePenId}
+              onActivePenChange={setActivePenId}
             />
+
             {session && id && (
               <RapportgegevensCard
                 projectId={id}
