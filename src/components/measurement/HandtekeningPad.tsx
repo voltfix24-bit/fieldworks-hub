@@ -19,6 +19,8 @@ interface Props {
   hoogte?: number;
   /** Monteur ID voor opslag per gebruiker */
   monteurId?: string;
+  /** Initiële handtekening (base64 PNG zonder data: prefix) die direct getekend wordt */
+  initieleHandtekening?: string | null;
   className?: string;
 }
 
@@ -27,8 +29,10 @@ export default function HandtekeningPad({
   breedte = 500,
   hoogte = 180,
   monteurId,
+  initieleHandtekening,
   className = "",
 }: Props) {
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tekenenRef = useRef(false);
   const heeftInhoudRef = useRef(false);
@@ -145,7 +149,7 @@ export default function HandtekeningPad({
     };
   }, [startTekenen, tekeningVoortgang, stopTekenen]);
 
-  // ── Canvas initialisatie ──
+  // ── Canvas initialisatie + auto-load initiële handtekening ──
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -153,7 +157,19 @@ export default function HandtekeningPad({
     if (!ctx) return;
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (initieleHandtekening) {
+      const img = new window.Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        heeftInhoudRef.current = true;
+        setHeeftInhoud(true);
+      };
+      img.src = `data:image/png;base64,${initieleHandtekening}`;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // ── Acties ──
   const leegMaken = () => {

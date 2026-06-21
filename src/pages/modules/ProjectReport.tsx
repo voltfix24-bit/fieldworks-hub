@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import { ReportFooter } from '@/components/report/ReportFooter';
 import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
 import { useHandtekening } from '@/hooks/useHandtekening';
+import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -30,11 +31,31 @@ export default function ProjectReport() {
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
-  const { opgeslagenHandtekening } = useHandtekening(user?.id);
+  const { opgeslagenHandtekening, slaHandtekeningOp } = useHandtekening(user?.id);
   const { toast } = useToast();
 
-  // Handtekening uit wizard wordt automatisch gebruikt
-  const actieveHandtekening = opgeslagenHandtekening;
+  // Eén plek voor de handtekening: hier op de rapportpagina.
+  // Auto-laadt opgeslagen handtekening; nieuwe tekening overschrijft direct.
+  const [actieveHandtekening, setActieveHandtekening] = useState<string | null>(opgeslagenHandtekening);
+
+  // Sync wanneer opgeslagenHandtekening uit localStorage geladen wordt (na mount).
+  useEffect(() => {
+    if (opgeslagenHandtekening && !actieveHandtekening) {
+      setActieveHandtekening(opgeslagenHandtekening);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opgeslagenHandtekening]);
+
+  const handleHandtekeningChange = (b64: string | null) => {
+    setActieveHandtekening(b64);
+    if (b64) {
+      slaHandtekeningOp(b64).catch(() => {
+        // Stille fallback — werkt nog voor huidige sessie
+      });
+    }
+  };
+
+
 
   // Email state — must be before early returns
   const [emailOpen, setEmailOpen] = useState(false);
@@ -256,26 +277,27 @@ export default function ProjectReport() {
               Gebruik de printknop van je browser om op te slaan als PDF of direct te printen.
             </p>
 
-            {/* Handtekening preview */}
-            {actieveHandtekening ? (
-              <div className="mb-4 mt-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <PenTool className="h-3 w-3 text-muted-foreground/40" />
-                  <span className="text-[11px] text-muted-foreground/50">Handtekening uit meetwizard</span>
-                </div>
-                <div className="rounded-xl border border-border bg-white p-3">
-                  <img
-                    src={`data:image/png;base64,${actieveHandtekening}`}
-                    alt="Opgeslagen handtekening"
-                    className="w-full h-20 object-contain"
-                  />
-                </div>
+            {/* Handtekening — enige plek in de app waar getekend wordt */}
+            <div className="mt-4 mb-4 rounded-xl border border-border/40 bg-muted/10 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <PenTool className="h-3.5 w-3.5 text-muted-foreground/60" />
+                <span className="text-[12px] font-semibold text-foreground">Handtekening monteur</span>
+                <span className="text-[10px] text-muted-foreground/40 ml-auto uppercase tracking-wide">Optioneel</span>
               </div>
-            ) : (
-              <p className="text-[12px] text-amber-600 mt-2 mb-4">
-                Nog geen handtekening — teken deze in de meetwizard bij "Volgende actie".
+              <p className="text-[11px] text-muted-foreground/60 mb-2 leading-snug">
+                {opgeslagenHandtekening
+                  ? 'Je opgeslagen handtekening is automatisch geladen. Teken opnieuw om hem te vervangen.'
+                  : 'Teken hieronder. De handtekening wordt onthouden voor volgende rapporten.'}
               </p>
-            )}
+              <HandtekeningPad
+                onChange={handleHandtekeningChange}
+                monteurId={user?.id}
+                initieleHandtekening={opgeslagenHandtekening}
+                breedte={500}
+                hoogte={160}
+              />
+            </div>
+
 
             {/* Primary CTA: browser print/download — gratis, altijd actuele data */}
             <div className="mt-5">

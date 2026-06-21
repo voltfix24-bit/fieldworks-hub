@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Map, Save, PenTool } from 'lucide-react';
+import { AlertTriangle, Map, Save } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import HandtekeningPad from '../../HandtekeningPad';
-import { useHandtekening } from '@/hooks/useHandtekening';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
 
 interface ElektrodeSamenvatting {
   id: string;
@@ -22,31 +18,17 @@ interface NextActionStepProps {
   projectId: string;
   onSave: () => void;
   compact?: boolean;
-  onHandtekeningChange?: (base64: string | null) => void;
   elektrodes?: ElektrodeSamenvatting[];
 }
 
-export function NextActionStep({ projectId, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+export function NextActionStep({ projectId, onSave, compact, elektrodes = [] }: NextActionStepProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
   const elektrodesMetOntbrekendeVerplichteFotos = elektrodes.filter((e) => {
     const voldoet = e.eindwaarde !== null && e.targetValue !== null && e.eindwaarde <= e.targetValue;
     return voldoet && (!e.heeftDisplayFoto || !e.heeftOverzichtFoto);
   });
 
-  const handleHandtekeningChange = async (base64: string | null) => {
-    onHandtekeningChange?.(base64);
-    if (base64) {
-      try {
-        await slaHandtekeningOp(base64);
-        toast({ title: 'Handtekening opgeslagen', description: 'Wordt automatisch gebruikt op de rapportpagina.' });
-      } catch {
-        // Silent fail — signature still works for current session
-      }
-    }
-  };
   return (
     <div>
       <div className={compact ? 'mb-3' : 'mb-5'}>
@@ -194,24 +176,8 @@ export function NextActionStep({ projectId, onSave, compact, onHandtekeningChang
         />
       </div>
 
-      {/* Handtekening sectie */}
-      <div className="mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <PenTool className="h-3.5 w-3.5 text-muted-foreground/40" />
-          <h3 className="text-[13px] font-semibold text-foreground">
-            Handtekening monteur
-          </h3>
-          <span className="text-[11px] text-muted-foreground/30 ml-auto">
-            Optioneel
-          </span>
-        </div>
-        <HandtekeningPad
-          onChange={handleHandtekeningChange}
-          breedte={compact ? 400 : 500}
-          hoogte={compact ? 140 : 180}
-          monteurId={user?.id}
-        />
-      </div>
+      {/* Handtekening is verplaatst naar de rapportpagina — één centrale plek. */}
+
 
       {/* DEEL 4 — Save confirmation dialog */}
       {opslaanBevestiging && (
