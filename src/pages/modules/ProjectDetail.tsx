@@ -303,18 +303,19 @@ export default function ProjectDetail() {
                 if (nextStep.label === 'Rapport openen') openReport();
                 else navigate(nextStep.href);
               }}
-              className="w-full flex items-center gap-3 rounded-2xl px-4 py-4 mb-4 bg-[hsl(var(--tenant-primary))] active:scale-[0.98] transition-all shadow-sm"
+              className="w-full max-w-full flex items-center gap-3 rounded-2xl px-4 py-4 mb-4 bg-[hsl(var(--tenant-primary))] active:scale-[0.98] transition-all shadow-sm"
             >
               <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                 <nextStep.icon className="h-5 w-5 text-white" />
               </div>
-              <div className="flex-1 text-left">
+              <div className="flex-1 min-w-0 text-left">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-0.5">Volgende stap</p>
-                <p className="text-[15px] font-bold text-white leading-tight">{nextStep.label}</p>
-                <p className="text-[11px] text-white/75 mt-0.5">{nextStep.sub}</p>
+                <p className="text-[15px] font-bold text-white leading-tight break-words">{nextStep.label}</p>
+                <p className="text-[11px] text-white/75 mt-0.5 break-words">{nextStep.sub}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-white/70 shrink-0" />
             </button>
+
 
             {/* Voortgangsbalk */}
             <div className="px-1 mb-2 flex items-center justify-between">
