@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { getDepthProgressionWarnings } from '../../DepthMeasurementTable';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { GroundingIcon } from '../../GroundingIcon';
-import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, ChevronDown, Trash2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
 import { parsePositiveNlNumberOrNull, formatNlNumber, normaliseNlInput } from '@/lib/nl-number';
-import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 
 interface MeasurementStepProps {
   electrode: any;
@@ -38,7 +38,7 @@ export function MeasurementStep({
   );
   const rvMissing = showRv && (electrode.rv_value == null || electrode.rv_value === 0);
 
-  const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
+  const [activePenId, setActivePenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
   const [targetInput, setTargetInput] = useState('');
   const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
@@ -61,11 +61,15 @@ export function MeasurementStep({
     onRvMissingChange?.(rvMissing);
   }, [rvMissing, onRvMissingChange]);
 
+  // Track active pen — fallback to last pen if current id disappeared
   useEffect(() => {
-    if (pens.length > 0 && !expandedPenId) {
-      setExpandedPenId(pens[pens.length - 1].id);
+    if (pens.length === 0) { setActivePenId(null); return; }
+    if (!activePenId || !pens.find((p: any) => p.id === activePenId)) {
+      setActivePenId(pens[pens.length - 1].id);
     }
-  }, [pens.length]);
+  }, [pens, activePenId]);
+
+  const activePen = pens.find((p: any) => p.id === activePenId) || pens[0];
 
   // Sync RV input with electrode value
   useEffect(() => {
@@ -172,93 +176,134 @@ export function MeasurementStep({
           </div>
         )}
       </div>
-      {/* ─── Per-pen measurement sections ─── */}
-      {pens.map((pen: any, idx: number) => {
-        const isExpanded = expandedPenId === pen.id;
-        const isLast = idx === pens.length - 1;
-
-        return (
-          <div key={pen.id}>
-            {isExpanded ? (
-              <PenMeasurementSection
-                pen={pen}
-                electrode={electrode}
-                tenantId={tenantId}
-                recalcRa={recalcRa}
-                depthsInitRef={depthsInitRef}
-                initializeDepthRows={initializeDepthRows}
-                onWarningCount={(count) => handlePenWarnings(pen.id, count)}
-                compact={compact}
-                canDelete={pens.length > 1}
-                onDeletePen={onDeletePen}
-              />
-            ) : (
-              <CollapsedPenSummary
-                pen={pen}
-                electrode={electrode}
-                tenantId={tenantId}
-                depthsInitRef={depthsInitRef}
-                initializeDepthRows={initializeDepthRows}
-                onExpand={() => setExpandedPenId(pen.id)}
-                compact={compact}
-              />
-            )}
-
-            {isLast && showRv && (
-              <div className={cn(
-                'mt-2 rounded-xl border border-border/30 bg-card overflow-hidden',
-                compact ? 'p-3' : 'p-4',
-              )}>
-                <label className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/60 mb-1.5 block">
-                  RV-waarde (Ω)
-                </label>
-                <div className="flex items-center gap-2">
-                  <GroundingIcon size={13} className="shrink-0 text-muted-foreground/60" />
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={rvInput}
-                    onChange={e => setRvInput(normaliseNlInput(e.target.value).replace('-', ''))}
-                    onBlur={handleRvBlur}
-                    placeholder="Bijv. 1,82"
-                    className={cn(
-                      'flex-1 bg-transparent outline-none border-0 font-bold tabular-nums text-foreground',
-                      compact ? 'h-9 text-[15px]' : 'h-10 text-[16px]',
-                      'placeholder:text-muted-foreground/30'
-                    )}
-                  />
-                  <span className="text-[12px] text-muted-foreground/45 font-semibold">Ω</span>
-                </div>
-                {!rvInput && (
-                  <p className="text-[11px] text-muted-foreground/40 mt-1.5">
-                    Vul in na de laatste pen — afgelezen van meetapparaat
-                  </p>
+      {/* ─── Pen tabs (horizontaal) ─── */}
+      {pens.length > 0 && (
+        <div className="flex items-stretch gap-0.5 overflow-x-auto -mx-4 px-4 border-b border-border/20">
+          {pens.map((pen: any) => {
+            const isActive = activePen?.id === pen.id;
+            return (
+              <button
+                key={pen.id}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  (document.activeElement as HTMLElement)?.blur();
+                  setTimeout(() => setActivePenId(pen.id), 30);
+                }}
+                className={cn(
+                  'shrink-0 px-3.5 pt-2.5 pb-2 text-[13px] font-semibold whitespace-nowrap transition-colors',
+                  'border-b-2 -mb-px',
+                  isActive
+                    ? 'border-[hsl(var(--tenant-primary,var(--primary)))] text-[hsl(var(--tenant-primary,var(--primary)))]'
+                    : 'border-transparent text-muted-foreground/55 hover:text-foreground/80'
                 )}
-              </div>
+              >
+                {pen.pen_code}
+              </button>
+            );
+          })}
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault();
+              (document.activeElement as HTMLElement)?.blur();
+              setTimeout(onAddPen, 50);
+            }}
+            className="shrink-0 flex items-center gap-1 px-3 pt-2.5 pb-2 text-[12px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.75)] active:scale-[0.96] transition-transform"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Pen
+          </button>
+        </div>
+      )}
+
+      {/* ─── Actieve pen: 'Diepte metingen' kaart ─── */}
+      {activePen && (
+        <div className="rounded-2xl border border-border/30 bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/20">
+            <h3 className="text-[13px] font-bold text-foreground tracking-tight">Diepte metingen</h3>
+            {pens.length > 1 && onDeletePen && (
+              <button
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (window.confirm(`${activePen.pen_code} verwijderen? Alle metingen van deze pen gaan verloren.`)) {
+                    onDeletePen(activePen.id);
+                  }
+                }}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-destructive/60 hover:bg-destructive/8 active:scale-95 transition-all"
+              >
+                <Trash2 className="h-3 w-3" />
+                Verwijderen
+              </button>
             )}
           </div>
-        );
-      })}
+          <div className="px-2 py-2">
+            <PenMeasurementSection
+              key={activePen.id}
+              pen={activePen}
+              electrode={electrode}
+              tenantId={tenantId}
+              recalcRa={recalcRa}
+              depthsInitRef={depthsInitRef}
+              initializeDepthRows={initializeDepthRows}
+              onWarningCount={(count) => handlePenWarnings(activePen.id, count)}
+              compact={compact}
+            />
+          </div>
+          <div className="border-t border-border/20 px-3 py-2.5 flex items-center justify-end">
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const actief = document.activeElement as HTMLElement;
+                if (actief && (actief.tagName === 'INPUT' || actief.tagName === 'TEXTAREA')) {
+                  actief.blur();
+                }
+                setTimeout(() => {
+                  toast({ description: `${activePen.pen_code} opgeslagen ✓`, duration: 1500 });
+                  if (navigator.vibrate) navigator.vibrate(8);
+                }, 60);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-bold text-white bg-[hsl(var(--tenant-primary,var(--primary)))] active:scale-[0.97] transition-transform"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Pen opslaan
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* ─── Add pen ─── */}
-      <button
-        onMouseDown={(e) => {
-          e.preventDefault();
-          (document.activeElement as HTMLElement)?.blur();
-          setTimeout(onAddPen, 50);
-        }}
-        className={cn(
-          'w-full flex items-center justify-center gap-1.5',
-          'rounded-lg border border-dashed border-[hsl(var(--tenant-primary,var(--primary))/0.2)]',
-          'text-[12px] font-bold text-[hsl(var(--tenant-primary,var(--primary))/0.6)]',
-          'hover:bg-[hsl(var(--tenant-primary,var(--primary))/0.04)] hover:text-[hsl(var(--tenant-primary,var(--primary)))]',
-          'transition-all duration-150 active:scale-[0.997]',
-          compact ? 'py-2.5 min-h-[36px]' : 'py-3.5 min-h-[48px]'
-        )}
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Pen toevoegen
-      </button>
+      {/* ─── RV-waarde (alleen bij meerdere pennen) ─── */}
+      {showRv && (
+        <div className={cn(
+          'rounded-xl border border-border/30 bg-card overflow-hidden',
+          compact ? 'p-3' : 'p-4',
+        )}>
+          <label className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/60 mb-1.5 block">
+            RV-waarde (Ω) · handmatig
+          </label>
+          <div className="flex items-center gap-2">
+            <GroundingIcon size={13} className="shrink-0 text-muted-foreground/60" />
+            <input
+              type="text"
+              inputMode="decimal"
+              value={rvInput}
+              onChange={e => setRvInput(normaliseNlInput(e.target.value).replace('-', ''))}
+              onBlur={handleRvBlur}
+              placeholder="Bijv. 1,82"
+              className={cn(
+                'flex-1 bg-transparent outline-none border-0 font-bold tabular-nums text-foreground',
+                compact ? 'h-9 text-[15px]' : 'h-10 text-[16px]',
+                'placeholder:text-muted-foreground/30'
+              )}
+            />
+            <span className="text-[12px] text-muted-foreground/45 font-semibold">Ω</span>
+          </div>
+          {!rvInput && (
+            <p className="text-[11px] text-muted-foreground/40 mt-1.5">
+              Vul in na de laatste pen — afgelezen van meetapparaat
+            </p>
+          )}
+        </div>
+      )}
 
       {/* DEEL 6 — Notitie per elektrode */}
       <ElectrodeNoteSection

@@ -497,13 +497,13 @@ export default function MeasurementWorkspace() {
     );
     const startE = Math.max(0, electrodeOrder.findIndex((e: any) => e.id === activeElectrodeId));
 
-    // Doelwaarde bereikt? Dan zijn lege rijen op deze elektrode geen blocker meer.
+    // Doelwaarde bereikt? Alleen relevant als target_value is ingevuld — anders nooit auto-overslaan.
     const targetReached = (e: any): boolean => {
-      const target = typeof e.target_value === 'number' ? e.target_value : 2;
+      if (typeof e.target_value !== 'number') return false;
       const ePens = allePens.filter((p: any) => p.electrode_id === e.id);
       const isRv = ePens.length >= 2;
       const eind = isRv ? e.rv_value : e.ra_value;
-      return typeof eind === 'number' && eind > 0 && eind <= target;
+      return typeof eind === 'number' && eind > 0 && eind <= e.target_value;
     };
 
     for (let i = 0; i < electrodeOrder.length; i++) {
@@ -670,7 +670,10 @@ export default function MeasurementWorkspace() {
     <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 overflow-x-auto border-b border-border/10">
       {electrodes.map((e: any) => {
         const klaar = e.ra_value != null || e.rv_value != null;
-        const voldoet = klaar && ((e.ra_value ?? e.rv_value) <= (e.target_value ?? 999));
+        const heeftTarget = typeof e.target_value === 'number';
+        // Geen oordeel zonder toetswaarde — geen groen/rood, geen vinkje.
+        const voldoet = klaar && heeftTarget && ((e.ra_value ?? e.rv_value) <= e.target_value);
+        const voldoetNiet = klaar && heeftTarget && !voldoet;
         const actief = e.id === activeElectrodeId;
         return (
           <div key={e.id} className="relative shrink-0">
@@ -685,14 +688,14 @@ export default function MeasurementWorkspace() {
                 !actief && electrodes.length > 1 ? 'pl-3 pr-6' : 'px-3',
                 actief
                   ? 'bg-[hsl(var(--tenant-primary))] text-white shadow-sm'
-                  : klaar && voldoet
+                  : voldoet
                     ? 'bg-green-500/10 text-green-600 border border-green-500/20'
-                    : klaar && !voldoet
+                    : voldoetNiet
                       ? 'bg-destructive/8 text-destructive border border-destructive/20'
                       : 'bg-card text-foreground border border-border/40'
               )}
             >
-              {klaar && voldoet && !actief && (
+              {voldoet && !actief && (
                 <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                   <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
