@@ -1166,14 +1166,6 @@ export default function MeasurementWorkspace() {
         )}
 
         {step === 1 && (
-          <PhotoStep
-            elektrodes={elektrodesMetFotos}
-            onUpload={handlePhotoUploadVoorElektrode}
-            onRemove={handlePhotoRemoveVoorElektrode}
-          />
-        )}
-
-        {step === 2 && (
           <NextActionStep
             projectId={id!}
             onSave={() => navigate(`/projects/${id}`)}
@@ -1183,7 +1175,7 @@ export default function MeasurementWorkspace() {
         )}
       </div>
 
-      {step < 2 && (
+      {step < LAST_STEP && (
         <StickyActionBar
           showPrev={step > 0}
           onPrev={() => handleStapWissel(step - 1)}
