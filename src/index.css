@@ -536,9 +536,23 @@
   }
 
   .report-panel, .report-approval, .report-electrode, .report-summary { break-inside: avoid; }
-  table { break-inside: avoid; }
-  h2, h3 { break-after: avoid; }
+  table, thead, tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+  h2, h3, h4 { break-after: avoid; }
   img { max-width: 100% !important; break-inside: avoid; }
+
+  /* Brandbar repeats on every printed page */
+  .report-print-brandbar {
+    display: block !important;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg,
+      hsl(var(--tenant-primary)) 0%,
+      hsl(var(--tenant-primary)) 55%,
+      #4b3fa3 100%);
+    z-index: 9999;
+  }
 }
 
 /* Safe area */
