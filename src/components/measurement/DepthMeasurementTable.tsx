@@ -130,7 +130,11 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
       )}
 
       {/* Measurement rows */}
-      <div className="rounded-lg overflow-hidden border border-border/30">
+      <div className={cn(
+        compact
+          ? 'flex flex-col gap-2'
+          : 'rounded-lg overflow-hidden border border-border/30'
+      )}>
         {sortedMeasurements.map((m, idx) => (
           <DepthRowComponent
             key={m.id}
@@ -149,6 +153,7 @@ export function DepthMeasurementTable({ measurements, onAdd, onUpdate, onDelete,
           />
         ))}
       </div>
+
 
       {/* Add deeper action */}
       <button
