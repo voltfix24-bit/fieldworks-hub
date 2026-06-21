@@ -480,6 +480,10 @@
   }
 }
 
+/* Print-only brandbar repeated on every printed page.
+   Chrome/Edge/Safari repeat position:fixed elements on each printed page. */
+.report-print-brandbar { display: none; }
+
 /* Print stylesheet */
 @media print {
   html, body {

@@ -396,6 +396,9 @@ export default function ProjectReport() {
           </div>
         </div>
 
+      {/* Print-only brandbar — herhaalt op elke geprinte pagina via position:fixed */}
+      <div className="report-print-brandbar" aria-hidden />
+
       {/* ─── REPORT DOCUMENT — altijd zichtbaar ─── */}
       <div className="report-preview-wrap">
         <div className="report-document">
