@@ -74,20 +74,17 @@ export async function renderDiagramToPng(
 
   const mpu = diagram.metersPerUnit ?? 0.05;
 
-  for (const e of diagram.electrodes) {
+  diagram.electrodes.forEach((e, i) => {
     const anchor = getAnchorPoint(c, e.anchor ?? 'br');
     const distances = getDistances(e, anchor, mpu);
 
-    // Orthogonal distance lines from selected MSR corner.
-    ctx.strokeStyle = '#94a3b8';
-    ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(anchor.x, anchor.y);
-    ctx.lineTo(e.x, anchor.y);
-    ctx.lineTo(e.x, e.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    const hDimY = 28 + i * 26;
+    const vDimX = 28 + i * 26;
+    const hLeft = Math.min(anchor.x, e.x);
+    const hRight = Math.max(anchor.x, e.x);
+    const vTop = Math.min(anchor.y, e.y);
+    const vBot = Math.max(anchor.y, e.y);
+    const tickHalf = 5;
 
     // Anchor marker.
     ctx.fillStyle = '#ef4444';
@@ -99,14 +96,64 @@ export async function renderDiagramToPng(
     ctx.arc(anchor.x, anchor.y, 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Distance labels.
+    // ── Horizontal dimension at top ──
+    ctx.strokeStyle = '#94a3b8';
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchor.y); ctx.lineTo(anchor.x, hDimY + 4);
+    ctx.moveTo(e.x, e.y);           ctx.lineTo(e.x, hDimY + 4);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(hLeft, hDimY); ctx.lineTo(hRight, hDimY);
+    ctx.moveTo(hLeft, hDimY - tickHalf); ctx.lineTo(hLeft, hDimY + tickHalf);
+    ctx.moveTo(hRight, hDimY - tickHalf); ctx.lineTo(hRight, hDimY + tickHalf);
+    ctx.stroke();
+
+    const hCx = (hLeft + hRight) / 2;
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1;
+    roundRect(ctx, hCx - 34, hDimY - 19, 68, 16, 6);
+    ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#475569';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(`H ${formatMeters(distances.x)}`, (anchor.x + e.x) / 2, anchor.y - 7);
-    ctx.textAlign = 'left';
-    ctx.fillText(`V ${formatMeters(distances.y)}`, e.x + 8, (anchor.y + e.y) / 2);
+    ctx.fillText(formatMeters(distances.x), hCx, hDimY - 7);
+
+    // ── Vertical dimension at left ──
+    ctx.strokeStyle = '#94a3b8';
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchor.y); ctx.lineTo(vDimX + 4, anchor.y);
+    ctx.moveTo(e.x, e.y);           ctx.lineTo(vDimX + 4, e.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(vDimX, vTop); ctx.lineTo(vDimX, vBot);
+    ctx.moveTo(vDimX - tickHalf, vTop); ctx.lineTo(vDimX + tickHalf, vTop);
+    ctx.moveTo(vDimX - tickHalf, vBot); ctx.lineTo(vDimX + tickHalf, vBot);
+    ctx.stroke();
+
+    const vCy = (vTop + vBot) / 2;
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1;
+    roundRect(ctx, vDimX + 6, vCy - 8, 68, 16, 6);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(formatMeters(distances.y), vDimX + 40, vCy + 4);
 
     // Electrode earth symbol.
     ctx.fillStyle = '#ffffff';
