@@ -612,17 +612,17 @@ function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
   if (url) {
     return (
       <div className="relative">
-        <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
-        <div className="relative rounded-xl overflow-hidden">
-          <MeasurementPhoto src={url} alt={label} className="w-full aspect-[4/3] object-cover" />
+        <p className="text-[13px] font-semibold text-foreground/85 mb-2">{label}</p>
+        <div className="relative rounded-2xl overflow-hidden aspect-square">
+          <MeasurementPhoto src={url} alt={label} className="w-full h-full object-cover" />
           <button
             type="button"
             onClick={onRemove}
             disabled={uploading}
-            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center active:scale-90 transition-transform"
+            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center active:scale-90 transition-transform"
             aria-label={`${label} verwijderen`}
           >
-            <XIcon className="h-3 w-3" />
+            <XIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
@@ -631,24 +631,24 @@ function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
 
   return (
     <div>
-      <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
+      <p className="text-[13px] font-semibold text-foreground/85 mb-2">{label}</p>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         className={cn(
-          'w-full aspect-[4/3] rounded-xl border border-dashed border-border/40 bg-muted/10',
-          'flex flex-col items-center justify-center gap-1.5 text-muted-foreground/55',
+          'w-full aspect-square rounded-2xl border-2 border-dashed border-border/45 bg-muted/[0.04]',
+          'flex flex-col items-center justify-center gap-2.5 text-foreground/70',
           'active:scale-[0.98] transition-all',
           uploading && 'opacity-60'
         )}
       >
         {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-6 w-6 animate-spin" />
         ) : (
           <>
-            <Camera className="h-4 w-4 text-[hsl(var(--tenant-primary,var(--primary)))]" />
-            <span className="text-[11px] font-semibold">Toevoegen</span>
+            <Camera className="h-7 w-7" strokeWidth={1.5} />
+            <span className="text-[14px] font-medium">Toevoegen</span>
           </>
         )}
       </button>
@@ -661,6 +661,7 @@ function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
         className="hidden"
       />
     </div>
+
   );
 }
 
