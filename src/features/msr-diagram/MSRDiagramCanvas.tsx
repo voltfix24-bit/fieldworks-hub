@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -7,7 +7,7 @@ import { DiagramCanvas } from './Canvas';
 import { DiagramToolbar } from './Toolbar';
 import { ZoomControls } from './ZoomControls';
 import { renderDiagramToPng } from './export-png';
-import { DEFAULT_DIAGRAM, type DiagramElectrode, type DoorSide, type MSRDiagram } from './types';
+import { DEFAULT_DIAGRAM, type DiagramElectrode, type DoorSide, type MSRAnchor, type MSRDiagram } from './types';
 
 interface Props {
   projectId: string;
@@ -22,6 +22,13 @@ interface ExistingRow {
   diagram_json: MSRDiagram;
   image_path: string | null;
 }
+
+const anchorOptions: Array<{ value: MSRAnchor; label: string; hint: string }> = [
+  { value: 'tl', label: 'Linksboven', hint: 'LB' },
+  { value: 'tr', label: 'Rechtsboven', hint: 'RB' },
+  { value: 'bl', label: 'Linksonder', hint: 'LO' },
+  { value: 'br', label: 'Rechtsonder', hint: 'RO' },
+];
 
 export function MSRDiagramCanvas({
   projectId,
@@ -42,6 +49,7 @@ export function MSRDiagramCanvas({
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [choosingAnchor, setChoosingAnchor] = useState(false);
 
   // Load existing diagram
   useEffect(() => {
@@ -72,16 +80,18 @@ export function MSRDiagramCanvas({
     setDiagram((d) => patch(d));
   }, []);
 
-  const addElectrode = () => {
+  const addElectrode = (anchor: MSRAnchor) => {
     const n = diagram.electrodes.length + 1;
     const id = (globalThis.crypto?.randomUUID?.() ?? `e-${Date.now()}-${n}`);
     const c = diagram.cabinet;
-    const angle = ((n - 1) * 60 * Math.PI) / 180;
-    const r = 180;
-    const x = Math.max(20, Math.min(diagram.canvasSize.w - 20, c.x + c.w / 2 + Math.cos(angle) * r));
-    const y = Math.max(20, Math.min(diagram.canvasSize.h - 20, c.y + c.h / 2 + Math.sin(angle) * r));
-    update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `E${n}`, x, y, anchor: 'br' }] }));
+    const anchorPoint = getAnchorPoint(c, anchor);
+    const offsetX = anchor === 'tl' || anchor === 'bl' ? -170 : 170;
+    const offsetY = anchor === 'tl' || anchor === 'tr' ? -150 : 150;
+    const x = Math.max(20, Math.min(diagram.canvasSize.w - 20, anchorPoint.x + offsetX));
+    const y = Math.max(20, Math.min(diagram.canvasSize.h - 20, anchorPoint.y + offsetY));
+    update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `E${n}`, x, y, anchor }] }));
     setSelectedId(id);
+    setChoosingAnchor(false);
   };
 
   const updateElectrode = (id: string, patch: Partial<DiagramElectrode>) => {
@@ -89,6 +99,23 @@ export function MSRDiagramCanvas({
       ...d,
       electrodes: d.electrodes.map((e) => (e.id === id ? { ...e, ...patch } : e)),
     }));
+  };
+
+  const editDistance = (id: string, axis: 'x' | 'y', currentValue: number) => {
+    const label = axis === 'x' ? 'Horizontale afstand (m)' : 'Verticale afstand (m)';
+    const input = window.prompt(label, currentValue.toFixed(2).replace('.', ','));
+    if (input == null) return;
+    const normalized = input.trim().replace(',', '.');
+    if (normalized === '') {
+      updateElectrode(id, axis === 'x' ? { overrideDistanceX: null } : { overrideDistanceY: null });
+      return;
+    }
+    const next = Number(normalized);
+    if (!Number.isFinite(next) || next < 0) {
+      toast({ title: 'Ongeldige afstand', description: 'Gebruik een positief getal in meters.', variant: 'destructive' });
+      return;
+    }
+    updateElectrode(id, axis === 'x' ? { overrideDistanceX: next } : { overrideDistanceY: next });
   };
 
   const handleSave = async () => {
@@ -179,6 +206,7 @@ export function MSRDiagramCanvas({
           zoom={zoom}
           onMoveCabinet={(x, y) => update((d) => ({ ...d, cabinet: { ...d.cabinet, x, y } }))}
           onMoveElectrode={(id, x, y) => updateElectrode(id, { x, y })}
+          onEditDistance={editDistance}
           selectedElectrodeId={selectedId}
           onSelectElectrode={setSelectedId}
         />
@@ -197,7 +225,7 @@ export function MSRDiagramCanvas({
         onDoorSideChange={(v: DoorSide) =>
           update((d) => ({ ...d, cabinet: { ...d.cabinet, doorSide: v } }))
         }
-        onAddElectrode={addElectrode}
+        onAddElectrode={() => setChoosingAnchor(true)}
         onRenameElectrode={(id, label) => updateElectrode(id, { label })}
         onUpdateElectrode={updateElectrode}
         onRemoveElectrode={(id) => {
@@ -205,6 +233,47 @@ export function MSRDiagramCanvas({
           if (selectedId === id) setSelectedId(null);
         }}
       />
+
+      {choosingAnchor && (
+        <div className="absolute inset-0 z-10 flex items-end bg-black/25 p-3">
+          <div className="w-full rounded-2xl border border-border/60 bg-card p-4 shadow-xl">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[14px] font-bold text-foreground">Vanaf welke hoek meten?</p>
+                <p className="mt-0.5 text-[12px] text-muted-foreground">Kies de referentiehoek van het object.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChoosingAnchor(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/40"
+                aria-label="Sluiten"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {anchorOptions.map((anchor) => (
+                <button
+                  key={anchor.value}
+                  type="button"
+                  onClick={() => addElectrode(anchor.value)}
+                  className="rounded-xl border border-border/60 bg-background px-3 py-4 text-left active:scale-[0.98]"
+                >
+                  <span className="block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[hsl(var(--tenant-primary,var(--primary)))]">{anchor.hint}</span>
+                  <span className="mt-1 block text-[14px] font-semibold text-foreground">{anchor.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function getAnchorPoint(cabinet: MSRDiagram['cabinet'], anchor: MSRAnchor) {
+  if (anchor === 'tl') return { x: cabinet.x, y: cabinet.y };
+  if (anchor === 'tr') return { x: cabinet.x + cabinet.w, y: cabinet.y };
+  if (anchor === 'bl') return { x: cabinet.x, y: cabinet.y + cabinet.h };
+  return { x: cabinet.x + cabinet.w, y: cabinet.y + cabinet.h };
 }
