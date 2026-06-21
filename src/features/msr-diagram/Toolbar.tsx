@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -36,46 +36,49 @@ export function DiagramToolbar({
   const sel = diagram.electrodes.find((e) => e.id === selectedElectrodeId) || null;
 
   return (
-    <div className="p-3 space-y-3 bg-card border-t border-border/60">
-      <div className="grid grid-cols-2 gap-3">
+    <div className="shrink-0 border-t border-border/60 bg-card p-3 space-y-2 safe-bottom">
+      <div className="grid grid-cols-[1fr_auto] gap-2">
         <div>
-          <Label className="text-[11px] text-muted-foreground font-medium">Behuizingsnummer</Label>
+          <Label className="text-[10px] text-muted-foreground font-medium">Object</Label>
           <Input
             value={diagram.cabinet.housingNumber}
             onChange={(e) => onHousingNumberChange(e.target.value)}
-            placeholder="MSR-01"
-            className="h-9 text-[13px] mt-1"
+            placeholder="MSR"
+            className="h-10 text-[14px] mt-1"
           />
         </div>
-        <div>
-          <Label className="text-[11px] text-muted-foreground font-medium">Elektrodes</Label>
-          <div className="h-9 mt-1 flex items-center">
-            <button
-              onClick={onAddElectrode}
-              className="h-9 px-3 rounded-lg bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[12px] font-semibold flex items-center gap-1.5 active:scale-[0.97]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Toevoegen
-            </button>
+        <div className="flex items-end">
+          <button
+            onClick={onAddElectrode}
+            className="h-10 px-3 rounded-xl bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[12px] font-semibold flex items-center gap-1.5 active:scale-[0.97]"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Elektrode
+          </button>
+        </div>
+      </div>
+
+      <details className="group rounded-xl border border-border/50 bg-muted/10">
+        <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-[12px] font-semibold text-muted-foreground">
+          Object instellingen
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="px-3 pb-3">
+          <Label className="text-[10px] text-muted-foreground font-medium">Deurzijde</Label>
+          <div className="mt-1">
+            <DoorSideSelector value={diagram.cabinet.doorSide} onChange={onDoorSideChange} />
           </div>
         </div>
-      </div>
-
-      <div>
-        <Label className="text-[11px] text-muted-foreground font-medium">Deurzijde</Label>
-        <div className="mt-1">
-          <DoorSideSelector value={diagram.cabinet.doorSide} onChange={onDoorSideChange} />
-        </div>
-      </div>
+      </details>
 
       {sel && (
-        <div className="rounded-lg border border-border/60 p-2.5 bg-muted/20 space-y-3">
+        <div className="rounded-xl border border-border/60 bg-background p-3 space-y-3">
           <div className="flex items-center gap-2">
             <Input
               value={sel.label}
               onChange={(e) => onRenameElectrode(sel.id, e.target.value)}
               className="h-9 text-[13px]"
-              placeholder="Label"
+              placeholder="Elektrode label"
             />
             <button
               onClick={() => onRemoveElectrode(sel.id)}
@@ -87,7 +90,7 @@ export function DiagramToolbar({
           </div>
 
           <div>
-            <Label className="text-[11px] text-muted-foreground font-medium">Referentiehoek MSR</Label>
+            <Label className="text-[10px] text-muted-foreground font-medium">Referentiehoek</Label>
             <div className="grid grid-cols-4 gap-1.5 mt-1">
               {anchors.map((anchor) => {
                 const active = (sel.anchor ?? 'br') === anchor.value;
@@ -100,7 +103,7 @@ export function DiagramToolbar({
                       'h-8 rounded-lg text-[11px] font-semibold border active:scale-[0.97]',
                       active
                         ? 'bg-[hsl(var(--tenant-primary,var(--primary)))] text-white border-transparent'
-                        : 'bg-background text-muted-foreground border-border/60'
+                        : 'bg-muted/20 text-muted-foreground border-border/60'
                     )}
                   >
                     {anchor.label}
@@ -112,20 +115,16 @@ export function DiagramToolbar({
 
           <div className="grid grid-cols-2 gap-2">
             <DistanceInput
-              label="Horizontaal (m)"
+              label="H (m)"
               value={sel.overrideDistanceX}
               onChange={(value) => onUpdateElectrode(sel.id, { overrideDistanceX: value })}
             />
             <DistanceInput
-              label="Verticaal (m)"
+              label="V (m)"
               value={sel.overrideDistanceY}
               onChange={(value) => onUpdateElectrode(sel.id, { overrideDistanceY: value })}
             />
           </div>
-
-          <p className="text-[10.5px] text-muted-foreground mt-1.5">
-            Laat H/V leeg om automatisch uit de tekening te berekenen. Vul een waarde in als de schets niet precies op schaal is.
-          </p>
         </div>
       )}
     </div>
@@ -143,7 +142,7 @@ function DistanceInput({
 }) {
   return (
     <div>
-      <Label className="text-[11px] text-muted-foreground font-medium">{label}</Label>
+      <Label className="text-[10px] text-muted-foreground font-medium">{label}</Label>
       <Input
         type="number"
         inputMode="decimal"
