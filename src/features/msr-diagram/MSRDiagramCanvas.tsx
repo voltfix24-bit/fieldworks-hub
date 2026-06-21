@@ -45,7 +45,9 @@ export function MSRDiagramCanvas({
     electrodes: [],
   }));
   const [existing, setExisting] = useState<ExistingRow | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<import('./Toolbar').Selection>(null);
+  const selectedId = selection?.kind === 'electrode' ? selection.id : null;
+  const cabinetSelected = selection?.kind === 'cabinet';
   const [zoom, setZoom] = useState(0.7);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
