@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, Paperclip, Save, PenTool } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Map, Save, PenTool } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import HandtekeningPad from '../../HandtekeningPad';
