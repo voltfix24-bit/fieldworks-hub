@@ -261,13 +261,22 @@ export default function ProjectDetail() {
                     {statusLabel}
                   </span>
                 </div>
-                <p className="text-[12px] font-mono tabular-nums text-muted-foreground/40 mb-3">{project.project_number}</p>
+                {project.project_number && (
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/50 mb-3">{project.project_number}</p>
+                )}
 
-                <div className="space-y-1.5">
-                  <MobileProjectMeta icon={MapPin} value={[project.address_line_1, project.city].filter(Boolean).join(', ') || 'Geen adres'} />
-                  <MobileProjectMeta icon={Calendar} value={mobileDate ? formatNlDate(mobileDate) : 'Geen datum gepland'} />
-                  <MobileProjectMeta icon={User} value={tech?.full_name || 'Geen monteur toegewezen'} />
-                </div>
+                {(() => {
+                  const locatie = [project.address_line_1, project.city].filter(Boolean).join(', ');
+                  const hasAny = locatie || mobileDate || tech?.full_name;
+                  if (!hasAny) return null;
+                  return (
+                    <div className="space-y-1.5">
+                      {locatie && <MobileProjectMeta icon={MapPin} value={locatie} />}
+                      {mobileDate && <MobileProjectMeta icon={Calendar} value={formatNlDate(mobileDate)} />}
+                      {tech?.full_name && <MobileProjectMeta icon={User} value={tech.full_name} />}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Actions row */}
