@@ -19,14 +19,15 @@ interface ElektrodeSamenvatting {
 }
 
 interface NextActionStepProps {
-  onGoToSketch: () => void;
+  projectId: string;
   onSave: () => void;
   compact?: boolean;
   onHandtekeningChange?: (base64: string | null) => void;
   elektrodes?: ElektrodeSamenvatting[];
 }
 
-export function NextActionStep({ onGoToSketch, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+export function NextActionStep({ projectId, onSave, compact, onHandtekeningChange, elektrodes = [] }: NextActionStepProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { slaHandtekeningOp } = useHandtekening(user?.id);
   const [opslaanBevestiging, setOpslaanBevestiging] = useState(false);
