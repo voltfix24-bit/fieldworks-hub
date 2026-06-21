@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
+import { resolveMeetdatum } from "./date-utils.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -474,16 +475,11 @@ Deno.serve(async (req) => {
 
     // Use the session measurement_date verbatim (YYYY-MM-DD from a Postgres `date` column)
     // and format dd-MM-yyyy without going through Date() to avoid any timezone drift.
-    const formatDateNL = (iso: string | null | undefined): string => {
-      if (!iso) return "";
-      const m = String(iso).slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!m) return "";
-      return `${m[3]}-${m[2]}-${m[1]}`;
-    };
-    const meetdatum =
-      formatDateNL(session?.measurement_date) ||
-      formatDateNL(project.completed_date as string | null) ||
-      formatDateNL(new Date().toISOString().split("T")[0]);
+    // See ./date-utils.ts for unit tests covering this behavior.
+    const meetdatum = resolveMeetdatum(
+      session?.measurement_date as string | null | undefined,
+      project.completed_date as string | null | undefined,
+    );
 
     // Build elektrodes — pass photo URLs instead of base64 to avoid memory limits
     const elektrodes = electrodes.map((el, idx) => {
