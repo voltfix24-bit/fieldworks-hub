@@ -38,7 +38,7 @@ export function MeasurementStep({
   );
   const rvMissing = showRv && (electrode.rv_value == null || electrode.rv_value === 0);
 
-  const [expandedPenId, setExpandedPenId] = useState<string | null>(null);
+  const [activePenId, setActivePenId] = useState<string | null>(null);
   const [rvInput, setRvInput] = useState('');
   const [targetInput, setTargetInput] = useState('');
   const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
@@ -61,11 +61,15 @@ export function MeasurementStep({
     onRvMissingChange?.(rvMissing);
   }, [rvMissing, onRvMissingChange]);
 
+  // Track active pen — fallback to last pen if current id disappeared
   useEffect(() => {
-    if (pens.length > 0 && !expandedPenId) {
-      setExpandedPenId(pens[pens.length - 1].id);
+    if (pens.length === 0) { setActivePenId(null); return; }
+    if (!activePenId || !pens.find((p: any) => p.id === activePenId)) {
+      setActivePenId(pens[pens.length - 1].id);
     }
-  }, [pens.length]);
+  }, [pens, activePenId]);
+
+  const activePen = pens.find((p: any) => p.id === activePenId) || pens[0];
 
   // Sync RV input with electrode value
   useEffect(() => {
