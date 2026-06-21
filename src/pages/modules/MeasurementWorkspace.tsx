@@ -497,13 +497,13 @@ export default function MeasurementWorkspace() {
     );
     const startE = Math.max(0, electrodeOrder.findIndex((e: any) => e.id === activeElectrodeId));
 
-    // Doelwaarde bereikt? Dan zijn lege rijen op deze elektrode geen blocker meer.
+    // Doelwaarde bereikt? Alleen relevant als target_value is ingevuld — anders nooit auto-overslaan.
     const targetReached = (e: any): boolean => {
-      const target = typeof e.target_value === 'number' ? e.target_value : 2;
+      if (typeof e.target_value !== 'number') return false;
       const ePens = allePens.filter((p: any) => p.electrode_id === e.id);
       const isRv = ePens.length >= 2;
       const eind = isRv ? e.rv_value : e.ra_value;
-      return typeof eind === 'number' && eind > 0 && eind <= target;
+      return typeof eind === 'number' && eind > 0 && eind <= e.target_value;
     };
 
     for (let i = 0; i < electrodeOrder.length; i++) {
