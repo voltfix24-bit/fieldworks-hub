@@ -102,22 +102,39 @@ export function DiagramCanvas({
           </defs>
           <rect x="0" y="0" width={w} height={h} fill="url(#grid)" />
 
-          {/* Distance lines + labels */}
-          {diagram.electrodes.map((e) => {
+          {/* Dimension lines — H at top, V at left (architectural style) */}
+          {diagram.electrodes.map((e, i) => {
             const anchor = getAnchorPoint(c, e.anchor ?? 'br');
             const distances = getDistances(e, anchor, mpu);
             const selected = selectedElectrodeId === e.id;
-            const horizontalLabelX = (anchor.x + e.x) / 2;
-            const horizontalLabelY = anchor.y - 7;
-            const verticalLabelX = e.x + 8;
-            const verticalLabelY = (anchor.y + e.y) / 2;
+
+            // Stacked dimension axes so multiple electrodes don't collide
+            const hDimY = 28 + i * 26;        // horizontal dim line near the top
+            const vDimX = 28 + i * 26;        // vertical dim line near the left
+            const hLeft = Math.min(anchor.x, e.x);
+            const hRight = Math.max(anchor.x, e.x);
+            const vTop = Math.min(anchor.y, e.y);
+            const vBot = Math.max(anchor.y, e.y);
+            const tickHalf = 5;
+
             return (
               <g key={`d-${e.id}`}>
+                {/* Reference dot at MSR anchor */}
                 <g pointerEvents="none">
-                  <line x1={anchor.x} y1={anchor.y} x2={e.x} y2={anchor.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
-                  <line x1={e.x} y1={anchor.y} x2={e.x} y2={e.y} stroke="#94a3b8" strokeWidth={1.2} strokeDasharray="4 4" />
                   <circle cx={anchor.x} cy={anchor.y} r={selected ? 6 : 4} fill="#ef4444" />
                   <circle cx={anchor.x} cy={anchor.y} r={2} fill="#ffffff" />
+                </g>
+
+                {/* ── Horizontal dimension at top ── */}
+                <g pointerEvents="none">
+                  {/* extension lines from points up to dim line */}
+                  <line x1={anchor.x} y1={anchor.y} x2={anchor.x} y2={hDimY + 4} stroke="#94a3b8" strokeWidth={1} strokeDasharray="3 3" />
+                  <line x1={e.x} y1={e.y} x2={e.x} y2={hDimY + 4} stroke="#94a3b8" strokeWidth={1} strokeDasharray="3 3" />
+                  {/* dim line */}
+                  <line x1={hLeft} y1={hDimY} x2={hRight} y2={hDimY} stroke="#475569" strokeWidth={1.2} />
+                  {/* end ticks */}
+                  <line x1={hLeft} y1={hDimY - tickHalf} x2={hLeft} y2={hDimY + tickHalf} stroke="#475569" strokeWidth={1.2} />
+                  <line x1={hRight} y1={hDimY - tickHalf} x2={hRight} y2={hDimY + tickHalf} stroke="#475569" strokeWidth={1.2} />
                 </g>
                 <g
                   role="button"
@@ -130,10 +147,22 @@ export function DiagramCanvas({
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  <rect x={horizontalLabelX - 34} y={horizontalLabelY - 17} width="68" height="22" rx="7" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x={horizontalLabelX} y={horizontalLabelY} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
-                    H {formatMeters(distances.x)}
+                  <rect x={(hLeft + hRight) / 2 - 34} y={hDimY - 19} width="68" height="16" rx="6" fill="#ffffff" stroke="#cbd5e1" />
+                  <text x={(hLeft + hRight) / 2} y={hDimY - 7} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
+                    {formatMeters(distances.x)}
                   </text>
+                </g>
+
+                {/* ── Vertical dimension at left ── */}
+                <g pointerEvents="none">
+                  {/* extension lines from points left to dim line */}
+                  <line x1={anchor.x} y1={anchor.y} x2={vDimX + 4} y2={anchor.y} stroke="#94a3b8" strokeWidth={1} strokeDasharray="3 3" />
+                  <line x1={e.x} y1={e.y} x2={vDimX + 4} y2={e.y} stroke="#94a3b8" strokeWidth={1} strokeDasharray="3 3" />
+                  {/* dim line */}
+                  <line x1={vDimX} y1={vTop} x2={vDimX} y2={vBot} stroke="#475569" strokeWidth={1.2} />
+                  {/* end ticks */}
+                  <line x1={vDimX - tickHalf} y1={vTop} x2={vDimX + tickHalf} y2={vTop} stroke="#475569" strokeWidth={1.2} />
+                  <line x1={vDimX - tickHalf} y1={vBot} x2={vDimX + tickHalf} y2={vBot} stroke="#475569" strokeWidth={1.2} />
                 </g>
                 <g
                   role="button"
@@ -146,9 +175,9 @@ export function DiagramCanvas({
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  <rect x={verticalLabelX - 4} y={verticalLabelY - 16} width="72" height="22" rx="7" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x={verticalLabelX + 32} y={verticalLabelY} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
-                    V {formatMeters(distances.y)}
+                  <rect x={vDimX + 6} y={(vTop + vBot) / 2 - 8} width="68" height="16" rx="6" fill="#ffffff" stroke="#cbd5e1" />
+                  <text x={vDimX + 40} y={(vTop + vBot) / 2 + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#475569">
+                    {formatMeters(distances.y)}
                   </text>
                 </g>
               </g>
