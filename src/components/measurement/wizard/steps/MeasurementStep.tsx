@@ -11,6 +11,14 @@ import { toast } from '@/hooks/use-toast';
 
 
 
+interface PhotoControl {
+  displayPhotoUrl: string | null;
+  overviewPhotoUrl: string | null;
+  uploading?: boolean;
+  onUpload: (type: 'display_photo_url' | 'overview_photo_url', file: File) => void;
+  onRemove: (type: 'display_photo_url' | 'overview_photo_url') => void;
+}
+
 interface MeasurementStepProps {
   electrode: any;
   pens: any[];
@@ -24,6 +32,11 @@ interface MeasurementStepProps {
   compact?: boolean;
   onWarningCountChange?: (count: number) => void;
   onRvMissingChange?: (missing: boolean) => void;
+  /** Controlled pen tab — single source of truth in parent workspace. */
+  activePenId?: string | null;
+  onActivePenChange?: (penId: string | null) => void;
+  /** Optional inline photo tiles (mobile measurement card). */
+  photoControl?: PhotoControl;
 }
 
 export function MeasurementStep({
@@ -31,6 +44,9 @@ export function MeasurementStep({
   onUpdateElectrode, onAddPen, onDeletePen, recalcRa,
   depthsInitRef, initializeDepthRows, compact,
   onWarningCountChange, onRvMissingChange,
+  activePenId: controlledActivePenId,
+  onActivePenChange,
+  photoControl,
 }: MeasurementStepProps) {
   const showRv = pens.length > 1;
   const hasTarget = electrode.target_value != null;
@@ -41,7 +57,18 @@ export function MeasurementStep({
   );
   const rvMissing = showRv && (electrode.rv_value == null || electrode.rv_value === 0);
 
-  const [activePenId, setActivePenId] = useState<string | null>(null);
+  // Local fallback when parent does not control the pen tab (desktop).
+  const [uncontrolledPenId, setUncontrolledPenId] = useState<string | null>(null);
+  const isControlled = controlledActivePenId !== undefined;
+  const activePenId = isControlled ? controlledActivePenId : uncontrolledPenId;
+  const setActivePenId = useCallback((id: string | null) => {
+    if (isControlled) {
+      onActivePenChange?.(id);
+    } else {
+      setUncontrolledPenId(id);
+    }
+  }, [isControlled, onActivePenChange]);
+
   const [rvInput, setRvInput] = useState('');
   const [targetInput, setTargetInput] = useState('');
   const [penWarnings, setPenWarnings] = useState<Record<string, number>>({});
@@ -64,15 +91,18 @@ export function MeasurementStep({
     onRvMissingChange?.(rvMissing);
   }, [rvMissing, onRvMissingChange]);
 
-  // Track active pen — fallback to last pen if current id disappeared
+  // Track active pen — fallback to last pen if current id disappeared.
+  // Only applied locally; controlled mode is owned by the parent.
   useEffect(() => {
-    if (pens.length === 0) { setActivePenId(null); return; }
-    if (!activePenId || !pens.find((p: any) => p.id === activePenId)) {
-      setActivePenId(pens[pens.length - 1].id);
+    if (isControlled) return;
+    if (pens.length === 0) { setUncontrolledPenId(null); return; }
+    if (!uncontrolledPenId || !pens.find((p: any) => p.id === uncontrolledPenId)) {
+      setUncontrolledPenId(pens[pens.length - 1].id);
     }
-  }, [pens, activePenId]);
+  }, [pens, uncontrolledPenId, isControlled]);
 
   const activePen = pens.find((p: any) => p.id === activePenId) || pens[0];
+
 
   // Sync RV input with electrode value
   useEffect(() => {
