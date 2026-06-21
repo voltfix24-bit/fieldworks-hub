@@ -93,8 +93,8 @@ export default function ProjectDetail() {
   // (primaryFix / fixTarget verwijderd — werden alleen door de dode blokkade-sheet gebruikt)
 
 
-  const metingGestart = hasSession && hasElectrodes;
   const metingKlaar = isReportReady;
+
 
   const handleStatusChange = async (newStatus: 'planned' | 'completed') => {
     try {
