@@ -472,13 +472,18 @@ Deno.serve(async (req) => {
       .filter(Boolean)
       .join(", ");
 
-    const meetdatum = session?.measurement_date
-      ? new Date(session.measurement_date).toLocaleDateString("nl-NL", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
-      : new Date().toLocaleDateString("nl-NL");
+    // Use the session measurement_date verbatim (YYYY-MM-DD from a Postgres `date` column)
+    // and format dd-MM-yyyy without going through Date() to avoid any timezone drift.
+    const formatDateNL = (iso: string | null | undefined): string => {
+      if (!iso) return "";
+      const m = String(iso).slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return "";
+      return `${m[3]}-${m[2]}-${m[1]}`;
+    };
+    const meetdatum =
+      formatDateNL(session?.measurement_date) ||
+      formatDateNL(project.completed_date as string | null) ||
+      formatDateNL(new Date().toISOString().split("T")[0]);
 
     // Build elektrodes — pass photo URLs instead of base64 to avoid memory limits
     const elektrodes = electrodes.map((el, idx) => {
