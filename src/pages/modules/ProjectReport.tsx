@@ -400,56 +400,72 @@ export default function ProjectReport() {
       <div className="report-preview-wrap">
         <div className="report-document">
 
-          {/* 1. Header */}
+          {/* 1. Header / cover */}
           <ReportHeader
             projectName={project.project_name}
             projectNumber={project.project_number}
             measurementDate={session?.measurement_date}
             location={location}
+            technicianName={tech?.full_name}
           />
 
-          <ReportSummaryStats
-            stats={stats}
-            electrodes={electrodes}
-            hasSketches={hasSketches}
-            calibrationLabel={formatNlDate(equip?.next_calibration_date)}
-            calibrationExpired={!!equipExpired}
-          />
+          {/* 2. Goedkeuringsbanner — alleen als meetwaarden + toetswaarde + alles voldoet */}
+          {(() => {
+            const judgable = electrodes.filter((el: any) => {
+              const target = el.target_value != null ? Number(el.target_value) : null;
+              const hasRv = el.rv_value != null && Number(el.rv_value) > 0;
+              const result = hasRv ? Number(el.rv_value) : el.ra_value != null ? Number(el.ra_value) : null;
+              return target != null && target > 0 && result != null && result > 0;
+            });
+            const hasJudgable = judgable.length > 0 && judgable.length === electrodes.length;
+            const allPass = hasJudgable && judgable.every((el: any) => {
+              const target = Number(el.target_value);
+              const hasRv = el.rv_value != null && Number(el.rv_value) > 0;
+              const result = hasRv ? Number(el.rv_value) : Number(el.ra_value);
+              return result <= target;
+            });
+            if (!allPass) return null;
+            return (
+              <div className="report-approval">
+                <span className="badge">Goedgekeurd</span>
+                <span className="txt">Alle gemeten waarden voldoen aan de ingevulde toetswaarde.</span>
+              </div>
+            );
+          })()}
 
-          {/* 2. Projectgegevens + Opdrachtgever */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 page-break-inside-avoid">
-            {sec('projectgegevens') && (
+          {/* 3. Projectgegevens + Opdrachtgever */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            {sec('projectgegevens') && projectRows.length > 0 && (
               <ReportInfoSection title="Projectgegevens" rows={projectRows} />
             )}
-            {sec('opdrachtgever') && client && (
+            {sec('opdrachtgever') && client && clientRows.length > 0 && (
               <ReportInfoSection title="Opdrachtgever" rows={clientRows} />
             )}
           </div>
 
-          {/* 3. Monteur + Meetapparatuur */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 page-break-inside-avoid">
-            {sec('monteur') && tech && (
+          {/* 4. Monteur + Meetapparatuur */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {sec('monteur') && tech && techRows.length > 0 && (
               <ReportInfoSection title="Monteur" rows={techRows} />
             )}
-            {sec('meetapparatuur') && equip && (
+            {sec('meetapparatuur') && equip && equipRows.length > 0 && (
               <ReportInfoSection title="Meetapparatuur" rows={equipRows} />
             )}
           </div>
 
-          {/* 4. Meetnotities */}
+          {/* 5. Meetnotities */}
           {sec('notities') && session?.measurement_notes && (
-            <div className="mb-6 page-break-inside-avoid">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-2 pb-1.5 border-b border-foreground/12">Opmerkingen</h2>
-              <p className="text-[11px] text-foreground whitespace-pre-wrap leading-relaxed">{session.measurement_notes}</p>
-            </div>
+            <section className="report-panel mb-4">
+              <h2 className="report-panel-title">Opmerkingen</h2>
+              <p style={{ fontSize: '10pt', color: 'var(--ink)', whiteSpace: 'pre-wrap', margin: 0 }}>
+                {session.measurement_notes}
+              </p>
+            </section>
           )}
 
-          {/* 5. Meetresultaten */}
+          {/* 6. Meetresultaten */}
           {sec('meetresultaten') && electrodes.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-5 pb-2 border-b-2 border-foreground/20">
-                Meetresultaten
-              </h2>
+            <div className="mt-2">
               {electrodes.map((electrode, i) => (
                 <ReportElectrodeSection
                   key={electrode.id}
@@ -462,6 +478,7 @@ export default function ProjectReport() {
               ))}
             </div>
           )}
+
 
           {/* 6. Situatieschets */}
           {sec('schets') && sketchAttachments.length > 0 && (
