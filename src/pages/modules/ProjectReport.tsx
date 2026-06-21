@@ -38,6 +38,24 @@ export default function ProjectReport() {
   // Auto-laadt opgeslagen handtekening; nieuwe tekening overschrijft direct.
   const [actieveHandtekening, setActieveHandtekening] = useState<string | null>(opgeslagenHandtekening);
 
+  // Sync wanneer opgeslagenHandtekening uit localStorage geladen wordt (na mount).
+  useEffect(() => {
+    if (opgeslagenHandtekening && !actieveHandtekening) {
+      setActieveHandtekening(opgeslagenHandtekening);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opgeslagenHandtekening]);
+
+  const handleHandtekeningChange = (b64: string | null) => {
+    setActieveHandtekening(b64);
+    if (b64) {
+      slaHandtekeningOp(b64).catch(() => {
+        // Stille fallback — werkt nog voor huidige sessie
+      });
+    }
+  };
+
+
 
   // Email state — must be before early returns
   const [emailOpen, setEmailOpen] = useState(false);
