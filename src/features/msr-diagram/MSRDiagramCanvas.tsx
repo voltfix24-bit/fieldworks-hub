@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, ImageIcon, Loader2, Pencil, Plus, Upload, X } from 'lucide-react';
+import { ArrowLeft, ImageIcon, Loader2, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
