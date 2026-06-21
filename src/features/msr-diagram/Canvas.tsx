@@ -159,18 +159,21 @@ export function DiagramCanvas({
           <g
             onPointerDown={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               (e.target as Element).setPointerCapture?.(e.pointerId);
               const p = toDiagram(e.clientX, e.clientY);
               setDrag({ kind: 'cabinet', offX: p.x - c.x, offY: p.y - c.y });
+              onSelectCabinet?.();
             }}
             style={{ cursor: 'move', touchAction: 'none' }}
           >
-            <rect x={c.x} y={c.y} width={c.w} height={c.h} fill="#f1f5f9" stroke="#0f172a" strokeWidth={2} />
+            <rect x={c.x} y={c.y} width={c.w} height={c.h} fill="#f1f5f9" stroke={cabinetSelected ? '#E8541A' : '#0f172a'} strokeWidth={cabinetSelected ? 3 : 2} />
             <line x1={door.x1} y1={door.y1} x2={door.x2} y2={door.y2} stroke="#E8541A" strokeWidth={5} strokeLinecap="round" />
             <text x={c.x + c.w / 2} y={c.y + c.h / 2 + 5} textAnchor="middle" fontSize="14" fontWeight="700" fill="#0f172a">
               {c.housingNumber || 'MSR'}
             </text>
           </g>
+
 
           {/* Electrodes */}
           {diagram.electrodes.map((e) => {
