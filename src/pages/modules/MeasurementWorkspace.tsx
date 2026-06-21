@@ -136,7 +136,7 @@ export default function MeasurementWorkspace() {
   const [autoInitDone, setAutoInitDone] = useState(false);
   const [autoInitError, setAutoInitError] = useState(false);
   const [progressionWarningDismissed, setProgressionWarningDismissed] = useState(false);
-  const [handtekeningB64, setHandtekeningB64] = useState<string | null>(null);
+  // Handtekening is centraal afgehandeld op de rapportpagina — geen state hier.
   const [elektrodesAanmaken, setElektrodesAanmaken] = useState(false);
   const [elektrodeTeVerwijderen, setElektrodeTeVerwijderen] = useState<any>(null);
   const depthsInitRef = useRef<Set<string>>(new Set());
