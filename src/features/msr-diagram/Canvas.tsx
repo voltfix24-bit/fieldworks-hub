@@ -109,7 +109,7 @@ export function DiagramCanvas({
             const selected = selectedElectrodeId === e.id;
 
             // Stacked dimension axes so multiple electrodes don't collide
-            const hDimY = 28 + i * 26;        // horizontal dim line near the top
+            const hDimY = 110 + i * 26;       // horizontal dim line below floating header
             const vDimX = 28 + i * 26;        // vertical dim line near the left
             const hLeft = Math.min(anchor.x, e.x);
             const hRight = Math.max(anchor.x, e.x);
