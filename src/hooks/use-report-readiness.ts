@@ -11,9 +11,9 @@ export interface ReadinessIssue {
 }
 
 export interface ReportReadiness {
-  blockers: ReadinessIssue[];
+  blockers: ReadinessIssue[]; // altijd leeg — niets blokkeert rapportgeneratie
   warnings: ReadinessIssue[];
-  isReady: boolean; // geen blockers
+  isReady: boolean;
   hasWarnings: boolean;
   isLoading: boolean;
 }
@@ -26,6 +26,11 @@ function toDate(value?: string | null): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+/**
+ * Rapportage is altijd mogelijk. Niets blokkeert.
+ * Alle ontbrekende velden worden als warnings getoond, zodat de monteur
+ * weet wat nog ingevuld kan worden — maar het rapport opent altijd.
+ */
 export function useReportReadiness(projectId?: string): ReportReadiness {
   const { data: project, isLoading: projectLoading } = useProject(projectId);
   const { data: reportData, isLoading: reportLoading } = useReportData(projectId);
@@ -48,37 +53,36 @@ export function useReportReadiness(projectId?: string): ReportReadiness {
 
     const measurementDate = toDate(session?.measurement_date);
 
-    // ── Blocking: hoofdgegevens ──
+    // Hoofdgegevens (warnings, niet blokkerend)
     if (!measurementDate) {
-      blockers.push({ code: 'no_measurement_date', label: 'Meetdatum ontbreekt', fix: 'measurements' });
+      warnings.push({ code: 'no_measurement_date', label: 'Meetdatum ontbreekt', fix: 'measurements' });
     }
     if (!client) {
-      blockers.push({ code: 'no_client', label: 'Klant ontbreekt', fix: 'project' });
+      warnings.push({ code: 'no_client', label: 'Klant ontbreekt', fix: 'project' });
     }
     if (!tech) {
-      blockers.push({ code: 'no_technician', label: 'Monteur ontbreekt', fix: 'project' });
+      warnings.push({ code: 'no_technician', label: 'Monteur ontbreekt', fix: 'project' });
     }
     if (!equip) {
-      blockers.push({ code: 'no_equipment', label: 'Meetapparatuur ontbreekt', fix: 'project' });
+      warnings.push({ code: 'no_equipment', label: 'Meetapparatuur ontbreekt', fix: 'project' });
     }
 
-    // ── Blocking: apparatuur details ──
+    // Apparatuur details (warnings)
     if (equip) {
       if (!equip.serial_number || String(equip.serial_number).trim() === '') {
-        blockers.push({ code: 'no_serial', label: 'Serienummer apparatuur ontbreekt', fix: 'equipment' });
+        warnings.push({ code: 'no_serial', label: 'Serienummer apparatuur ontbreekt', fix: 'equipment' });
       }
       const calDate = toDate(equip.calibration_date);
       const nextCal = toDate(equip.next_calibration_date);
       if (!calDate || !nextCal) {
-        blockers.push({ code: 'no_calibration', label: 'Kalibratiedatum apparatuur ontbreekt', fix: 'equipment' });
+        warnings.push({ code: 'no_calibration', label: 'Kalibratiedatum apparatuur ontbreekt', fix: 'equipment' });
       } else if (measurementDate && nextCal.getTime() < measurementDate.getTime()) {
-        blockers.push({
+        warnings.push({
           code: 'calibration_expired',
           label: 'Kalibratie verlopen op meetdatum',
           fix: 'equipment',
         });
       } else if (nextCal) {
-        // Warning: verloopt binnen 30 dagen t.o.v. meetdatum (of vandaag)
         const ref = measurementDate ?? new Date();
         const dagen = Math.floor((nextCal.getTime() - ref.getTime()) / DAY_MS);
         if (dagen >= 0 && dagen <= 30) {
@@ -91,14 +95,14 @@ export function useReportReadiness(projectId?: string): ReportReadiness {
       }
     }
 
-    // ── Blocking: meetstructuur ──
+    // Meetstructuur (warnings)
     if (electrodes.length === 0) {
-      blockers.push({ code: 'no_electrode', label: 'Geen elektrode', fix: 'measurements' });
+      warnings.push({ code: 'no_electrode', label: 'Geen elektrode toegevoegd', fix: 'measurements' });
     } else {
       electrodes.forEach((el: any) => {
         const pens = el.pens || [];
         if (pens.length === 0) {
-          blockers.push({
+          warnings.push({
             code: `electrode_no_pen_${el.id}`,
             label: `${el.electrode_code}: geen pen`,
             fix: 'measurements',
@@ -110,35 +114,17 @@ export function useReportReadiness(projectId?: string): ReportReadiness {
             (m: any) => typeof m.resistance_value === 'number' && m.resistance_value > 0,
           );
           if (validMeasurements.length === 0) {
-            blockers.push({
+            warnings.push({
               code: `pen_no_measurement_${pen.id}`,
               label: `${el.electrode_code} / ${pen.pen_code}: geen meetwaarde`,
               fix: 'measurements',
             });
           }
         });
-
-        // Foto-eis bij behaalde doelwaarde
-        const eindwaarde = el.is_coupled ? el.rv_value : el.ra_value;
-        const target = el.target_value;
-        const targetMet =
-          typeof eindwaarde === 'number' &&
-          typeof target === 'number' &&
-          eindwaarde <= target;
-        if (targetMet) {
-          const eerstePen = pens[0];
-          if (eerstePen && (!eerstePen.display_photo_url || !eerstePen.overview_photo_url)) {
-            blockers.push({
-              code: `electrode_missing_photo_${el.id}`,
-              label: `${el.electrode_code} mist foto's (doelwaarde behaald)`,
-              fix: 'measurements',
-            });
-          }
-        }
       });
     }
 
-    // ── Warnings: optioneel ──
+    // Optionele aanvullingen
     const heeftSchets = attachments.some(
       (a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file',
     );
@@ -153,9 +139,9 @@ export function useReportReadiness(projectId?: string): ReportReadiness {
     }
 
     return {
-      blockers,
+      blockers, // altijd leeg
       warnings,
-      isReady: blockers.length === 0,
+      isReady: true, // rapport mag altijd
       hasWarnings: warnings.length > 0,
       isLoading: false,
     };
