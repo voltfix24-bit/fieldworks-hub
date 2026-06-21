@@ -64,7 +64,7 @@ export default function ProjectReport() {
   const fields: Record<string, boolean> = rs.report_fields || {};
   const sec = (key: string) => sections[key] !== false;
   const fld = (key: string) => fields[key] !== false;
-  const emptyCellChar = rs.report_empty_cell || '—';
+  
 
   const hasSession = !!session;
   const hasClient = !!client;
@@ -396,6 +396,9 @@ export default function ProjectReport() {
           </div>
         </div>
 
+      {/* Print-only brandbar — herhaalt op elke geprinte pagina via position:fixed */}
+      <div className="report-print-brandbar" aria-hidden />
+
       {/* ─── REPORT DOCUMENT — altijd zichtbaar ─── */}
       <div className="report-preview-wrap">
         <div className="report-document">
@@ -473,7 +476,6 @@ export default function ProjectReport() {
                   index={i}
                   totalElectrodes={electrodes.length}
                   showPhotos={sec('fotos')}
-                  emptyCellChar={emptyCellChar}
                 />
               ))}
             </div>
@@ -507,39 +509,29 @@ export default function ProjectReport() {
             </div>
           )}
 
-          {/* 8. Signing block */}
-          {showSignBlock && (
+          {/* 8. Signing block — alleen renderen als er een handtekening is,
+              of als de instelling expliciet een controleurveld vereist. */}
+          {showSignBlock && (actieveHandtekening || rs.report_sign_reviewer === true) && (
             <div className="mb-6 page-break-inside-avoid">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground mb-4 pb-1.5 border-b border-foreground/12">Ondertekening</h2>
+              <h2 className="report-panel-title" style={{ marginBottom: '10px' }}>Ondertekening</h2>
               <div className="grid grid-cols-2 gap-8">
-                {rs.report_sign_executor !== false && (
+                {rs.report_sign_executor !== false && actieveHandtekening && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-2">Uitvoerder</p>
-                    {actieveHandtekening ? (
-                      <img
-                        src={`data:image/png;base64,${actieveHandtekening}`}
-                        alt="Handtekening"
-                        className="w-40 h-16 object-contain"
-                      />
-                    ) : (
-                      <>
-                        <div className="border-b border-foreground/20 mb-1 mt-8" />
-                        <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
-                      </>
-                    )}
+                    <p style={{ fontSize: '8.5pt', color: 'var(--muted)', marginBottom: '6px' }}>Uitvoerder</p>
+                    <img
+                      src={`data:image/png;base64,${actieveHandtekening}`}
+                      alt="Handtekening"
+                      className="w-40 h-16 object-contain"
+                    />
                   </div>
                 )}
                 {rs.report_sign_reviewer === true && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-8">Controleur</p>
-                    <div className="border-b border-foreground/20 mb-1" />
-                    <p className="text-[10px] text-muted-foreground">Naam en handtekening</p>
+                    <p style={{ fontSize: '8.5pt', color: 'var(--muted)', marginBottom: '32px' }}>Controleur</p>
+                    <div style={{ borderBottom: '1px solid var(--line)' }} />
                   </div>
                 )}
               </div>
-              {rs.report_sign_date !== false && (
-                <p className="text-[10px] text-muted-foreground mt-4">Datum: ____________________</p>
-              )}
             </div>
           )}
 
