@@ -65,77 +65,15 @@ export default function ProjectsPage() {
 
   /* ── Mobile ── */
   if (isMobile) {
-    return (
-      <div className="animate-fade-in w-full max-w-full min-w-0">
-
-        <PageHeader
-          title="Projecten"
-          action={<Button size="sm" onClick={() => navigate('/projects/new')} className="rounded-xl"><Plus className="mr-1.5 h-4 w-4" /> Nieuw</Button>}
-        />
-        {isLoading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
-        ) : projects?.length === 0 ? (
-          <EmptyState icon={FolderKanban} title="Nog geen projecten" description="Maak uw eerste project aan."
-            action={<Button variant="outline" onClick={() => navigate('/projects/new')} className="rounded-xl"><Plus className="mr-2 h-4 w-4" /> Project aanmaken</Button>}
-          />
-        ) : (
-          <>
-            <ListToolbar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Zoek op naam, nummer, adres of klant…">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-9 text-xs rounded-lg min-w-0"><SelectValue placeholder="Status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle</SelectItem>
-                  <SelectItem value="planned">Gepland</SelectItem>
-                  <SelectItem value="completed">Afgerond</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="h-9 text-xs rounded-lg min-w-0"><SelectValue placeholder="Datum" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle data</SelectItem>
-                  <SelectItem value="today">Vandaag</SelectItem>
-                  <SelectItem value="week">Deze week</SelectItem>
-                  <SelectItem value="month">Deze maand</SelectItem>
-                  <SelectItem value="overdue">Achterstallig</SelectItem>
-                </SelectContent>
-              </Select>
-
-            </ListToolbar>
-            <div className="flex items-center justify-between mb-3 px-0.5">
-              <span className="text-[11px] text-muted-foreground/40">{filtered.length} van {projects?.length} projecten</span>
-              {hasActiveFilters && (
-                <button onClick={clearFilters} className="text-[11px] font-medium text-[hsl(var(--tenant-primary))] flex items-center gap-1 hover:opacity-80 transition-opacity">
-                  <X className="h-3 w-3" /> Filters wissen
-                </button>
-              )}
-            </div>
-            <div className="ios-group overflow-hidden divide-y divide-border/20">
-              {filtered.map(p => (
-                <button key={p.id} onClick={() => navigate(`/projects/${p.id}`)}
-                  className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left active:bg-foreground/[0.02]">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-foreground truncate leading-snug">{p.project_name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px] text-muted-foreground/35 font-mono">{p.project_number}</span>
-                      {p.city && <span className="text-[11px] text-muted-foreground/35 flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{p.city}</span>}
-                      {p.planned_date && <span className="text-[11px] text-muted-foreground/35 flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{formatNlDateCompact(p.planned_date)}</span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2.5 shrink-0">
-                    <StatusDot status={p.status} />
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/12" />
-                  </div>
-                </button>
-              ))}
-            </div>
-            {filtered.length === 0 && hasActiveFilters && (
-              <p className="text-sm text-muted-foreground/40 text-center py-8">Geen projecten gevonden</p>
-            )}
-          </>
-        )}
-      </div>
-    );
+    return <MobileProjectsView
+      projects={projects ?? []}
+      isLoading={isLoading}
+      search={search}
+      onSearchChange={setSearch}
+      onNavigate={navigate}
+    />;
   }
+
 
   /* ═══════════════════════════════════════════════════════ */
   /* DESKTOP                                                 */
