@@ -381,8 +381,18 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
         )}
 
 
-        {/* Resistance — the main input, accepts comma */}
-        <div className="relative">
+        {/* Resistance — main input. In compact mode rendered as a soft rounded pill. */}
+        <div className={cn(
+          'relative',
+          compact && cn(
+            'rounded-2xl bg-muted/40 transition-colors',
+            isLowest && 'bg-[hsl(var(--measure-lowest)/0.10)]',
+            (hasProgressionWarning || hasHighResistanceWarning) && 'bg-amber-500/[0.08]',
+            isNextEmpty && !hasValue && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.08)]',
+            isFocused && 'bg-[hsl(var(--tenant-primary,var(--primary))/0.10)] ring-2 ring-[hsl(var(--tenant-primary,var(--primary))/0.25)]',
+            saved && 'bg-[hsl(var(--status-completed)/0.15)]',
+          ),
+        )}>
           <input
             ref={resistanceRef}
             data-depth-measurement-id={row.id}
@@ -419,43 +429,46 @@ function DepthRowComponent({ row, onUpdate, onDelete, isLowest, disabled, isEven
             placeholder="—"
             className={cn(
               'w-full bg-transparent outline-none border-0 depth-measurement-input',
-              compact ? 'h-12 text-[16px] pr-4 px-3' : 'h-12 text-[16px] pr-5 px-3.5',
+              compact ? 'h-14 text-[17px] pr-8 pl-5 rounded-2xl' : 'h-12 text-[16px] pr-5 px-3.5',
               isLowest && 'font-bold text-[hsl(var(--measure-lowest))]',
               (hasProgressionWarning || hasHighResistanceWarning) && !isLowest && 'text-amber-700 dark:text-amber-400',
               isNextEmpty && !hasValue && 'font-bold text-[hsl(var(--tenant-primary,var(--primary)))]',
-              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/30',
-              'placeholder:text-muted-foreground/25'
+              hasValue ? 'text-foreground font-semibold' : 'text-muted-foreground/40',
+              'placeholder:text-muted-foreground/30'
             )}
             disabled={disabled}
           />
           <span className={cn(
-            'absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none font-semibold',
-            compact ? 'text-[9px]' : 'text-[9px]'
+            'absolute top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none font-semibold',
+            compact ? 'right-4 text-[14px]' : 'right-1 text-[9px]'
           )}>Ω</span>
         </div>
 
-        {/* Delete / warning icon */}
-        <div className="flex justify-center">
-          {hasProgressionWarning || hasHighResistanceWarning ? (
-            <div className="min-h-[44px] min-w-[44px] flex items-center justify-center">
-              <AlertTriangle className={cn('text-amber-500', compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
-            </div>
-          ) : !isPreset ? (
-            <button
-              onClick={() => row.id && onDelete(row.id)}
-              disabled={disabled}
-              className={cn(
-                'text-muted-foreground/15 hover:text-destructive transition-colors rounded',
-                'min-h-[44px] min-w-[44px] flex items-center justify-center p-2'
-              )}
-            >
-              <Trash2 className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
-            </button>
-          ) : (
-            <span className="min-w-[44px]" />
-          )}
-        </div>
+        {/* Desktop-only: delete / warning icon column */}
+        {!compact && (
+          <div className="flex justify-center">
+            {hasProgressionWarning || hasHighResistanceWarning ? (
+              <div className="min-h-[44px] min-w-[44px] flex items-center justify-center">
+                <AlertTriangle className="text-amber-500 h-3.5 w-3.5" />
+              </div>
+            ) : !isPreset ? (
+              <button
+                onClick={() => row.id && onDelete(row.id)}
+                disabled={disabled}
+                className={cn(
+                  'text-muted-foreground/15 hover:text-destructive transition-colors rounded',
+                  'min-h-[44px] min-w-[44px] flex items-center justify-center p-2'
+                )}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <span className="min-w-[44px]" />
+            )}
+          </div>
+        )}
       </div>
+
 
       {/* Inline warning text */}
       {hasProgressionWarning && (
