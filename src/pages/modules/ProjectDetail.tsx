@@ -282,11 +282,11 @@ export default function ProjectDetail() {
                   <span className="text-[10px] font-semibold text-foreground/70">Werktekening</span>
                 </button>
                 <button
-                  onClick={() => navigate(isFieldOnly ? `/projects/${id}/measurements?step=afronden` : `/projects/${id}/edit`)}
+                  onClick={() => navigate(`/projects/${id}/edit`)}
                   className="flex flex-col items-center gap-1 py-3 active:bg-foreground/[0.04] transition-colors"
                 >
                   <Pencil className="h-[18px] w-[18px] text-[hsl(var(--tenant-primary))]" />
-                  <span className="text-[10px] font-semibold text-foreground/70">{isFieldOnly ? 'Afronden' : 'Bewerken'}</span>
+                  <span className="text-[10px] font-semibold text-foreground/70">Bewerken</span>
                 </button>
               </div>
             </div>
