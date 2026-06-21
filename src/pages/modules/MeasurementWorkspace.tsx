@@ -32,17 +32,17 @@ const WIZARD_STEPS = [
   { label: 'Volgende', key: 'next' },
 ];
 
-const workspaceStorageKey = (projectId?: string) =>
+export const workspaceStorageKey = (projectId?: string) =>
   projectId ? `measurement-workspace:${projectId}` : null;
 
-type StoredWorkspaceState = {
+export type StoredWorkspaceState = {
   step?: number;
   activeElectrodeId?: string | null;
   activePenId?: string | null;
   updatedAt?: string;
 };
 
-const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | null => {
+export const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | null => {
   const key = workspaceStorageKey(projectId);
   if (!key || typeof window === 'undefined') return null;
   try {
@@ -59,6 +59,29 @@ const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | nu
     return null;
   }
 };
+
+export const writeStoredWorkspaceState = (
+  projectId: string | undefined,
+  state: StoredWorkspaceState,
+  prev?: StoredWorkspaceState | null,
+) => {
+  const key = workspaceStorageKey(projectId);
+  if (!key || typeof window === 'undefined') return;
+  // Guard: never overwrite a useful stored electrode/pen with a null one —
+  // this happens on first mount before electrodes have loaded.
+  const merged: StoredWorkspaceState = {
+    step: state.step,
+    activeElectrodeId: state.activeElectrodeId ?? prev?.activeElectrodeId ?? null,
+    activePenId: state.activePenId ?? prev?.activePenId ?? null,
+    updatedAt: new Date().toISOString(),
+  };
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(merged));
+  } catch {
+    /* sessionStorage unavailable — ignore */
+  }
+};
+
 
 export default function MeasurementWorkspace() {
   const { id } = useParams();
@@ -134,24 +157,17 @@ export default function MeasurementWorkspace() {
   const [uploadingPerElektrode, setUploadingPerElektrode] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
 
-  // Persist workspace position per project (sessionStorage)
+  // Persist workspace position per project (sessionStorage).
+  // Uses writeStoredWorkspaceState which guards against wiping a valid stored
+  // electrode/pen with null while the data is still loading.
   useEffect(() => {
-    const key = workspaceStorageKey(id);
-    if (!key || typeof window === 'undefined') return;
-    try {
-      window.sessionStorage.setItem(
-        key,
-        JSON.stringify({
-          step,
-          activeElectrodeId,
-          activePenId,
-          updatedAt: new Date().toISOString(),
-        }),
-      );
-    } catch {
-      /* sessionStorage unavailable — ignore */
-    }
+    writeStoredWorkspaceState(
+      id,
+      { step, activeElectrodeId, activePenId },
+      storedStateRef.current,
+    );
   }, [id, step, activeElectrodeId, activePenId]);
+
 
 
   // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
@@ -224,10 +240,12 @@ export default function MeasurementWorkspace() {
   // Exit confirmation
   const [toonAfsluitBevestiging, setToonAfsluitBevestiging] = useState(false);
 
-  // Track active electrode — fallback to FIRST available when stored/current id is gone
+  // Track active electrode — fallback to FIRST available when stored/current id is gone.
+  // Also clear the stale activePenId so it doesn't briefly survive the switch.
   useEffect(() => {
     if (electrodes.length > 0 && !electrodes.find((e: any) => e.id === activeElectrodeId)) {
       setActiveElectrodeId(electrodes[0].id);
+      setActivePenId(null);
     }
   }, [electrodes]);
 
@@ -237,6 +255,7 @@ export default function MeasurementWorkspace() {
       setActivePenId(pens[0].id);
     }
   }, [pens]);
+
 
   // Auto-initialize: create session + electrode 1 + pen 1 + depths if nothing exists
   useEffect(() => {
