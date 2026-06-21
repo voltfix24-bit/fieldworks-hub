@@ -538,7 +538,6 @@ export default function MeasurementWorkspace() {
   const goToNextEmpty = useCallback(() => {
     const target = findNextEmpty();
     if (!target) return;
-    setShowSketch(false);
     if (step !== 0) handleStapWissel(0);
     if (target.electrodeId !== activeElectrodeId) setActiveElectrodeId(target.electrodeId);
     if (target.penId !== activePenId) setActivePenId(target.penId);
@@ -1055,7 +1054,7 @@ export default function MeasurementWorkspace() {
         <WizardStepIndicator
           steps={WIZARD_STEPS}
           currentStep={step}
-          onStepClick={(i) => { setShowSketch(false); handleStapWissel(i); }}
+          onStepClick={(i) => handleStapWissel(i)}
         />
       </div>
 
