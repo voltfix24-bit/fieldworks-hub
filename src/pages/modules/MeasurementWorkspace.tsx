@@ -916,7 +916,7 @@ export default function MeasurementWorkspace() {
         </div>
 
         {/* ─── iOS bottom bar ─── */}
-        {step < 2 && (
+        {step < LAST_STEP && (
           <div className="shrink-0">
             {warningCount > 0 && step === 0 && !progressionWarningDismissed && (
               <div className="ios-wizard-warning">
