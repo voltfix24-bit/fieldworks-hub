@@ -64,7 +64,7 @@ export default function ProjectReport() {
   const fields: Record<string, boolean> = rs.report_fields || {};
   const sec = (key: string) => sections[key] !== false;
   const fld = (key: string) => fields[key] !== false;
-  const emptyCellChar = rs.report_empty_cell || '—';
+  
 
   const hasSession = !!session;
   const hasClient = !!client;
@@ -473,7 +473,6 @@ export default function ProjectReport() {
                   index={i}
                   totalElectrodes={electrodes.length}
                   showPhotos={sec('fotos')}
-                  emptyCellChar={emptyCellChar}
                 />
               ))}
             </div>
