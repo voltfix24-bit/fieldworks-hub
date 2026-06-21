@@ -8,7 +8,9 @@ interface Props {
   onMoveCabinet: (x: number, y: number) => void;
   onEditDistance?: (id: string, axis: 'x' | 'y', currentValue: number) => void;
   selectedElectrodeId?: string | null;
+  cabinetSelected?: boolean;
   onSelectElectrode?: (id: string | null) => void;
+  onSelectCabinet?: () => void;
 }
 
 type Drag =
