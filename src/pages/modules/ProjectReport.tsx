@@ -42,7 +42,7 @@ export default function ProjectReport() {
   const [emailNaam, setEmailNaam] = useState('');
   const [emailSending, setEmailSending] = useState(false);
   const [whatsAppLoading, setWhatsAppLoading] = useState(false);
-  const [adminPreview, setAdminPreview] = useState(false);
+  
 
   // Centrale readiness (zelfde hook als ProjectDetail)
   const readiness = useReportReadiness(id);
@@ -74,9 +74,7 @@ export default function ProjectReport() {
   const hasMeasurements = stats.measurementCount > 0;
   const hasSketches = attachments.some((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
 
-  const isReady = readiness.isReady;
   const isAdmin = ['admin', 'tenant_admin', 'office_user'].includes((profile as any)?.role || '');
-  const showDocument = isReady || adminPreview;
 
   const location = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
   const sketchAttachments = attachments.filter((a: any) => a.attachment_type === 'sketch_photo' || a.attachment_type === 'sketch_file');
@@ -139,36 +137,15 @@ export default function ProjectReport() {
     return 'Rapport kon niet worden gemaakt. Probeer het opnieuw.';
   };
 
-  // ── Pre-flight: ontbrekende verplichte data ──────────────
-  const preflight = (): string | null => {
-    if (!session?.measurement_date) return 'Meetdatum ontbreekt. Vul de meetdatum in voordat je het rapport maakt.';
-    if (!equip) return 'Apparaat ontbreekt. Koppel meetapparatuur aan dit project.';
-    if (!electrodes.length || stats.measurementCount === 0) return 'Er zijn nog geen metingen ingevuld.';
-    return null;
-  };
-
+  // Geen pre-flight blokkade meer — rapport is altijd beschikbaar.
   const equipExpired = equip?.next_calibration_date && new Date(equip.next_calibration_date) < new Date();
 
-  const confirmExpired = (): boolean => {
-    if (!equipExpired) return true;
-    return window.confirm(
-      'Het meetapparaat is verlopen volgens de kalibratiedatum. Toch doorgaan met rapport maken?'
-    );
-  };
-
   const handlePrint = () => {
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
-    // Native browser print — gratis, geen Railway/edge-call
     window.print();
   };
 
   // Legacy server-side PDF (Railway / generate-rapport). Alleen admin/kantoor.
   const handleLegacyPdf = async () => {
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
     try {
       await genereerViaEdge(id!, actieveHandtekening ?? undefined);
       toast({ title: 'Rapport klaar', description: 'PDF is gedownload (legacy).' });
@@ -179,9 +156,6 @@ export default function ProjectReport() {
 
   const handleSendEmail = async () => {
     if (!emailTo) return;
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
     setEmailSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-rapport', {
@@ -203,9 +177,6 @@ export default function ProjectReport() {
   };
 
   const handleWhatsApp = async () => {
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
     setWhatsAppLoading(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('generate-rapport', {
@@ -264,69 +235,14 @@ export default function ProjectReport() {
           <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
             <FileText className="mr-2 h-4 w-4" /> Metingen
           </Button>
-          {isReady && (
-            <Button size="sm" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" /> Print / PDF
-            </Button>
-          )}
+          <Button size="sm" onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" /> Print / PDF
+          </Button>
         </div>
       </div>
 
-      {/* Readiness gate — blokkeer rapport bij blocking errors */}
-      {!readiness.isLoading && !isReady && (
-        <div className="print:hidden max-w-lg mx-auto mb-8">
-          <div className="flex items-start gap-3 mb-4 p-4 rounded-2xl border border-destructive/20 bg-destructive/[0.04]">
-            <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Rapport nog niet beschikbaar</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Vul eerst onderstaande verplichte gegevens aan.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-card border border-border/40 divide-y divide-border/30">
-            {readiness.blockers.map(b => (
-              <div key={b.code} className="flex items-center gap-2.5 px-4 py-3">
-                <X className="h-4 w-4 text-destructive shrink-0" />
-                <span className="text-[13px] text-foreground/85 flex-1">{b.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {readiness.warnings.length > 0 && (
-            <div className="mt-3 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 divide-y divide-border/30">
-              {readiness.warnings.map(w => (
-                <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
-                  <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-                  <span className="text-[13px] text-foreground/85 flex-1">{w.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => navigate(`/projects/${id}/measurements`)}>
-              Naar metingen
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/projects/${id}/edit`)}>
-              Project bewerken
-            </Button>
-            {isAdmin && !adminPreview && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground/60"
-                onClick={() => setAdminPreview(true)}
-              >
-                Toch bekijken (preview)
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {isReady && readiness.warnings.length > 0 && (
+      {/* Soft warnings — rapport blokkeert nooit meer */}
+      {!readiness.isLoading && readiness.warnings.length > 0 && (
         <div className="print:hidden max-w-lg mx-auto mb-6 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 divide-y divide-border/30">
           {readiness.warnings.map(w => (
             <div key={w.code} className="flex items-center gap-2.5 px-4 py-3">
@@ -339,8 +255,7 @@ export default function ProjectReport() {
 
 
       {/* ─── DOWNLOAD SECTIE ─── */}
-      {isReady && (
-        <div className="print:hidden max-w-lg mx-auto mb-8">
+      <div className="print:hidden max-w-lg mx-auto mb-8">
           <div className="rounded-2xl bg-card border border-border/40 p-5 sm:p-6">
             <div className="flex items-center gap-2.5 mb-1">
               <Printer className="h-4 w-4 text-muted-foreground/50" />
@@ -480,18 +395,10 @@ export default function ProjectReport() {
             )}
           </div>
         </div>
-      )}
 
-      {/* ─── REPORT DOCUMENT ─── */}
-      {showDocument && (
-      <div className={`${!isReady ? 'print:hidden opacity-60' : ''}`}>
-        {!isReady && (
-          <div className="print:hidden max-w-[210mm] mx-auto mb-3 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[12px] text-amber-700 font-semibold">
-            Adminpreview — geen definitief rapport
-          </div>
-        )}
-        <div className="report-document max-w-[210mm] mx-auto bg-white px-10 py-10 sm:px-14 sm:py-12 shadow-sm border border-border/60 print:shadow-none print:border-0 print:p-0 print:max-w-none"
-             style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+      {/* ─── REPORT DOCUMENT — altijd zichtbaar ─── */}
+      <div className="report-preview-wrap">
+        <div className="report-document">
 
           {/* 1. Header */}
           <ReportHeader
@@ -630,7 +537,6 @@ export default function ProjectReport() {
           <ReportFooter />
         </div>
       </div>
-      )}
     </div>
   );
 }
