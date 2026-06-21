@@ -231,21 +231,22 @@ export default function ProjectDetail() {
 
     return (
       <>
-        <div className="ios-detail-page animate-fade-in">
+        <div className="ios-detail-page animate-fade-in w-full max-w-full min-w-0">
           {/* Back row */}
           <button onClick={() => navigate('/projects')} className="ios-detail-back">
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <span>Projecten</span>
           </button>
 
-          <div className="ios-detail-scroll">
+          <div className="ios-detail-scroll w-full max-w-full min-w-0">
             {/* 1. Project hub card */}
-            <div className="rounded-3xl bg-card border border-border/40 shadow-sm overflow-hidden mb-4">
+            <div className="rounded-3xl bg-card border border-border/40 shadow-sm overflow-hidden mb-4 max-w-full">
               <div className="px-5 pt-5 pb-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h1 className="text-[22px] font-display font-extrabold tracking-tight leading-tight text-foreground flex-1">
+                  <h1 className="text-[22px] font-display font-extrabold tracking-tight leading-tight text-foreground flex-1 min-w-0 break-words">
                     {project.project_name}
                   </h1>
+
                   <span className={cn(
                     'shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide',
                     statusTone === 'completed' && 'bg-[hsl(var(--status-completed))]/12 text-[hsl(var(--status-completed))]',
