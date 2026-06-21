@@ -544,3 +544,103 @@ function ElectrodeNoteSection({ notes, onSave, compact }: {
     </div>
   );
 }
+
+/* ── Inline mobile photo tiles (Display + Overzicht) ── */
+function InlinePhotosSection({
+  displayPhotoUrl, overviewPhotoUrl, uploading, onUpload, onRemove, compact,
+}: PhotoControl & { compact?: boolean }) {
+  return (
+    <div className={cn('rounded-2xl border border-border/30 bg-card overflow-hidden', compact ? 'p-3' : 'p-4')}>
+      <div className="flex items-baseline justify-between mb-2.5">
+        <h3 className="text-[13px] font-bold text-foreground tracking-tight">Foto's</h3>
+        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/40">Optioneel</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <InlinePhotoTile
+          label="Displayfoto"
+          url={displayPhotoUrl}
+          uploading={!!uploading}
+          onPick={(f) => onUpload('display_photo_url', f)}
+          onRemove={() => onRemove('display_photo_url')}
+        />
+        <InlinePhotoTile
+          label="Overzichtsfoto"
+          url={overviewPhotoUrl}
+          uploading={!!uploading}
+          onPick={(f) => onUpload('overview_photo_url', f)}
+          onRemove={() => onRemove('overview_photo_url')}
+        />
+      </div>
+    </div>
+  );
+}
+
+function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
+  label: string;
+  url: string | null;
+  uploading: boolean;
+  onPick: (file: File) => void;
+  onRemove: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (f) onPick(f);
+  };
+
+  if (url) {
+    return (
+      <div className="relative">
+        <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
+        <div className="relative rounded-xl overflow-hidden">
+          <MeasurementPhoto src={url} alt={label} className="w-full aspect-[4/3] object-cover" />
+          <button
+            type="button"
+            onClick={onRemove}
+            disabled={uploading}
+            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center active:scale-90 transition-transform"
+            aria-label={`${label} verwijderen`}
+          >
+            <XIcon className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className={cn(
+          'w-full aspect-[4/3] rounded-xl border border-dashed border-border/40 bg-muted/10',
+          'flex flex-col items-center justify-center gap-1.5 text-muted-foreground/55',
+          'active:scale-[0.98] transition-all',
+          uploading && 'opacity-60'
+        )}
+      >
+        {uploading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <>
+            <Camera className="h-4 w-4 text-[hsl(var(--tenant-primary,var(--primary)))]" />
+            <span className="text-[11px] font-semibold">Toevoegen</span>
+          </>
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleChange}
+        className="hidden"
+      />
+    </div>
+  );
+}
+
