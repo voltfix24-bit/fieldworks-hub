@@ -36,7 +36,7 @@ export default function ProjectDetail() {
   const { data: attachments = [] } = useAttachments(id);
   const { data: reportData } = useReportData(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showRapportBlock, setShowRapportBlock] = useState(false);
+  // (showRapportBlock verwijderd — rapport opent altijd, geen blokkade-sheet meer)
   const [hasDiagram, setHasDiagram] = useState(false);
 
   useEffect(() => {
