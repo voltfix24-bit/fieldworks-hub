@@ -2,8 +2,6 @@ import { ReportElectrode } from '@/hooks/use-report-data';
 import { ReportImageBlock } from './ReportImageBlock';
 import { formatNlNumber } from '@/lib/nl-number';
 
-const DEFAULT_TARGET_VALUE = 2;
-
 interface ReportElectrodeSectionProps {
   electrode: ReportElectrode;
   index: number;
@@ -20,7 +18,7 @@ function cleanCode(code: string, prefix: string): string {
   return code.trim();
 }
 
-export function ReportElectrodeSection({ electrode, index, showPhotos = true, emptyCellChar = '—' }: ReportElectrodeSectionProps) {
+export function ReportElectrodeSection({ electrode, index, showPhotos = true }: ReportElectrodeSectionProps) {
   const activePens = electrode.pens.filter(
     pen => pen.measurements.some(m => m.resistance_value > 0)
   );
@@ -30,11 +28,11 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
   const hasRv = electrode.rv_value != null && electrode.rv_value > 0;
   const resultType = hasRv ? 'RV' : 'RA';
   const resultValue = hasRv ? Number(electrode.rv_value) : electrode.ra_value != null ? Number(electrode.ra_value) : null;
-  const targetValue = electrode.target_value != null ? Number(electrode.target_value) : DEFAULT_TARGET_VALUE;
-  const isOk = resultValue != null
-    ? resultValue <= targetValue
-    : electrode.target_met === true;
+  const targetValue = electrode.target_value != null ? Number(electrode.target_value) : null;
+  const hasTarget = targetValue != null && targetValue > 0;
   const hasResult = resultValue != null && resultValue > 0;
+  const canJudge = hasTarget && hasResult;
+  const isOk = canJudge ? (resultValue as number) <= (targetValue as number) : null;
 
   const electrodeDisplay = electrode.electrode_code
     ? cleanCode(electrode.electrode_code, 'Elektrode')
@@ -66,6 +64,10 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
     if (pen.overview_photo_url) photos.push({ url: pen.overview_photo_url, label: 'Overzichtsfoto' });
   });
 
+  const resultTone = isOk === true ? 'emerald' : isOk === false ? 'red' : 'slate';
+  const resultBg = resultTone === 'emerald' ? 'bg-emerald-50' : resultTone === 'red' ? 'bg-red-50' : 'bg-slate-50';
+  const resultText = resultTone === 'emerald' ? 'text-emerald-700' : resultTone === 'red' ? 'text-red-700' : 'text-slate-900';
+
   return (
     <section className="report-electrode mb-10 page-break-inside-avoid rounded-[18px] border border-slate-200 bg-white p-5 shadow-sm print:shadow-none print:p-4">
       <div className="mb-5 flex items-center justify-between gap-4">
@@ -82,33 +84,41 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
             )}
           </div>
         </div>
-        <div className={isOk ? 'rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700' : 'rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-red-700'}>
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.08em]">
-            {isOk ? 'Voldoet' : 'Voldoet niet'}
-          </span>
-        </div>
+        {canJudge && (
+          <div className={isOk ? 'rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700' : 'rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-red-700'}>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.08em]">
+              {isOk ? 'Voldoet' : 'Voldoet niet'}
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className="mb-5 grid overflow-hidden rounded-2xl border border-slate-200 sm:grid-cols-2 print:grid-cols-2">
-        <div className={isOk ? 'bg-emerald-50 px-5 py-4' : 'bg-red-50 px-5 py-4'}>
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
-            {resultType === 'RV' ? 'Aardverspreidingsweerstand (RV)' : 'Aardingsweerstand (RA)'}
-          </p>
-          <p className={isOk ? 'mt-2 text-[32px] font-extrabold leading-none tracking-tight text-emerald-700 tabular-nums' : 'mt-2 text-[32px] font-extrabold leading-none tracking-tight text-red-700 tabular-nums'}>
-            {hasResult ? formatNlNumber(resultValue) : emptyCellChar}
-            <span className="ml-1 text-[16px] font-bold">Ω</span>
-          </p>
+      {hasResult && (
+        <div className={`mb-5 grid overflow-hidden rounded-2xl border border-slate-200 ${hasTarget ? 'sm:grid-cols-2 print:grid-cols-2' : 'grid-cols-1'}`}>
+          <div className={`${resultBg} px-5 py-4`}>
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">
+              {resultType === 'RV' ? 'Aardverspreidingsweerstand (RV)' : 'Aardingsweerstand (RA)'}
+            </p>
+            <p className={`mt-2 text-[32px] font-extrabold leading-none tracking-tight tabular-nums ${resultText}`}>
+              {formatNlNumber(resultValue as number)}
+              <span className="ml-1 text-[16px] font-bold">Ω</span>
+            </p>
+          </div>
+          {hasTarget && (
+            <div className="flex flex-col justify-center bg-slate-50 px-5 py-4">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">Toetswaarde</p>
+              <p className="mt-2 text-[22px] font-extrabold text-slate-900 tabular-nums">
+                ≤ {formatNlNumber(targetValue as number)} Ω
+              </p>
+              {canJudge && (
+                <p className={isOk ? 'mt-1 text-[11px] font-semibold text-emerald-700' : 'mt-1 text-[11px] font-semibold text-red-700'}>
+                  {isOk ? 'Binnen grenswaarde' : 'Buiten grenswaarde'}
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex flex-col justify-center bg-slate-50 px-5 py-4">
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-slate-400">Toetswaarde</p>
-          <p className="mt-2 text-[22px] font-extrabold text-slate-900 tabular-nums">
-            ≤ {formatNlNumber(targetValue)} Ω
-          </p>
-          <p className={isOk ? 'mt-1 text-[11px] font-semibold text-emerald-700' : 'mt-1 text-[11px] font-semibold text-red-700'}>
-            {isOk ? 'Binnen grenswaarde' : 'Buiten grenswaarde of niet compleet'}
-          </p>
-        </div>
-      </div>
+      )}
 
       {electrode.notes && (
         <p className="mb-4 rounded-xl border-l-4 border-[hsl(var(--tenant-primary)/0.45)] bg-[hsl(var(--tenant-primary)/0.06)] px-4 py-3 text-[11px] italic leading-relaxed text-slate-600">
@@ -143,10 +153,13 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
                     <td className="border-t border-slate-200 px-3 py-2 font-semibold tabular-nums text-slate-700">{formatNlNumber(depth, 1)}</td>
                     {activePens.map(pen => {
                       const val = valueLookup.get(pen.id)?.get(depth);
-                      const valueOk = val != null && val <= targetValue;
+                      const valueOk = hasTarget && val != null && val <= (targetValue as number);
+                      if (val == null) {
+                        return <td key={pen.id} className="border-t border-slate-200 px-3 py-2 text-right tabular-nums text-slate-300" />;
+                      }
                       return (
                         <td key={pen.id} className={valueOk ? 'border-t border-slate-200 px-3 py-2 text-right font-extrabold tabular-nums text-emerald-700 bg-emerald-50/60' : 'border-t border-slate-200 px-3 py-2 text-right font-semibold tabular-nums text-slate-800'}>
-                          {val != null ? formatNlNumber(val) : emptyCellChar}
+                          {formatNlNumber(val)}
                         </td>
                       );
                     })}
@@ -156,7 +169,7 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true, em
             </table>
           </div>
           <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[9.5px] leading-relaxed text-slate-400">
-            Meetmethode: 3-punts aardingsweerstandsmeting. Maatgevende waarde: {resultType}. Toetswaarde: ≤ {formatNlNumber(targetValue)} Ω.
+            Meetmethode: 3-punts aardingsweerstandsmeting. Maatgevende waarde: {resultType}.{hasTarget ? ` Toetswaarde: ≤ ${formatNlNumber(targetValue as number)} Ω.` : ''}
           </p>
         </div>
       )}

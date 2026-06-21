@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -258,6 +259,51 @@
   display: none;
 }
 
+/* Report document — A4 styled with IBM Plex */
+.report-document {
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  color: #0f172a;
+  padding: 16mm 14mm;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.report-document .tabular-nums,
+.report-document table td,
+.report-document table th {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.report-document h1, .report-document h2, .report-document h3, .report-document h4,
+.report-document p, .report-document dt, .report-document dd, .report-document span:not(.tabular-nums) {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+.report-brand-bar {
+  height: 6px;
+  width: 100%;
+  background: linear-gradient(90deg, hsl(var(--tenant-primary)) 0%, hsl(var(--tenant-primary)) 55%, #4b3fa3 100%);
+  border-radius: 3px;
+}
+
+/* Mobile preview — fit A4 inside small viewports without app horizontal scroll */
+.report-preview-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+@media (max-width: 768px) {
+  .report-preview-wrap .report-document {
+    transform: scale(calc(100vw / 230mm));
+    transform-origin: top left;
+    margin: 0;
+  }
+  .report-preview-wrap {
+    height: calc((100vw / 230mm) * 297mm);
+    overflow: hidden;
+  }
+}
+
 /* Print stylesheet */
 @media print {
   html, body {
@@ -288,18 +334,27 @@
 
   @page {
     size: A4 portrait;
-    margin: 14mm 16mm 16mm 16mm;
+    margin: 0;
+  }
+
+  .report-preview-wrap {
+    overflow: visible !important;
+    height: auto !important;
+    max-width: none !important;
+  }
+  .report-preview-wrap .report-document {
+    transform: none !important;
   }
 
   .report-document {
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    padding: 0 !important;
+    padding: 14mm !important;
     margin: 0 !important;
     max-width: none !important;
-    background: white !important;
     width: 100% !important;
+    background: white !important;
     overflow: visible !important;
   }
 
