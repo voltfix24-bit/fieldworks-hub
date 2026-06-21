@@ -904,15 +904,6 @@ export default function MeasurementWorkspace() {
 
 
             {step === 1 && (
-              <PhotoStep
-                elektrodes={elektrodesMetFotos}
-                onUpload={handlePhotoUploadVoorElektrode}
-                onRemove={handlePhotoRemoveVoorElektrode}
-                compact
-              />
-            )}
-
-            {step === 2 && (
               <NextActionStep
                 projectId={id!}
                 onSave={() => navigate(`/projects/${id}`)}
