@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Camera, Image as ImageIcon, X, Loader2, AlertTriangle } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
+import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
 
 export interface ElektrodeMetFotos {
   id: string;
