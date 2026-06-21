@@ -881,3 +881,69 @@ function DInfoRow({ label, value, highlight = false }: { label: string; value?: 
     </div>
   );
 }
+
+/* ── Mobile helpers ── */
+
+function MobileProjectMeta({ icon: Icon, value }: { icon: React.ComponentType<{ className?: string }>; value: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <Icon className="h-4 w-4 text-muted-foreground/45 shrink-0" />
+      <span className="text-[13px] text-foreground/80 truncate">{value}</span>
+    </div>
+  );
+}
+
+function MobileTaskCard({
+  icon: Icon,
+  title,
+  sub,
+  done,
+  disabled = false,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  sub: string;
+  done: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 border transition-all text-left',
+        disabled
+          ? 'bg-muted/20 border-border/30 opacity-60'
+          : 'bg-card border-border/40 active:scale-[0.98] active:bg-foreground/[0.02]',
+      )}
+    >
+      <div className={cn(
+        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+        done
+          ? 'bg-[hsl(var(--status-completed))]/12'
+          : disabled
+            ? 'bg-muted/40'
+            : 'bg-[hsl(var(--tenant-primary)/0.10)]',
+      )}>
+        <Icon className={cn(
+          'h-[18px] w-[18px]',
+          done
+            ? 'text-[hsl(var(--status-completed))]'
+            : disabled
+              ? 'text-muted-foreground/40'
+              : 'text-[hsl(var(--tenant-primary))]',
+        )} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-bold text-foreground leading-tight">{title}</p>
+        <p className="text-[11px] text-muted-foreground/55 mt-0.5 truncate">{sub}</p>
+      </div>
+      {done ? (
+        <CheckCircle2 className="h-5 w-5 text-[hsl(var(--status-completed))] shrink-0" />
+      ) : (
+        <ChevronRight className={cn('h-4 w-4 shrink-0', disabled ? 'text-muted-foreground/25' : 'text-muted-foreground/40')} />
+      )}
+    </button>
+  );
+}
