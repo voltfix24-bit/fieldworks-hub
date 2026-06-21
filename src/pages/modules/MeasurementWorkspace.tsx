@@ -19,7 +19,6 @@ import { cn } from '@/lib/utils';
 import { WizardStepIndicator } from '@/components/measurement/wizard/WizardStepIndicator';
 import { StickyActionBar } from '@/components/measurement/wizard/StickyActionBar';
 import { MeasurementStep } from '@/components/measurement/wizard/steps/MeasurementStep';
-import { PhotoStep } from '@/components/measurement/wizard/steps/PhotoStep';
 import { NextActionStep } from '@/components/measurement/wizard/steps/NextActionStep';
 
 import { RapportgegevensCard } from '@/components/measurement/RapportgegevensCard';
@@ -28,9 +27,9 @@ const PREDEFINED_DEPTHS = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
 
 const WIZARD_STEPS = [
   { label: 'Metingen', key: 'measurements' },
-  { label: "Foto's", key: 'photos' },
-  { label: 'Volgende', key: 'next' },
+  { label: 'Afronden', key: 'next' },
 ];
+const LAST_STEP = WIZARD_STEPS.length - 1;
 
 export const workspaceStorageKey = (projectId?: string) =>
   projectId ? `measurement-workspace:${projectId}` : null;
@@ -615,7 +614,7 @@ export default function MeasurementWorkspace() {
     if (dy > 40) return;
     if (Math.abs(dx) < SWIPE_DREMPEL) return;
     if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
-    if (dx > 0 && step < 2) {
+    if (dx > 0 && step < LAST_STEP) {
       if (step === 0 && warningCount > 0 && !progressionWarningDismissed) return;
       handleStapWissel(step + 1);
       if (navigator.vibrate) navigator.vibrate(6);
@@ -905,15 +904,6 @@ export default function MeasurementWorkspace() {
 
 
             {step === 1 && (
-              <PhotoStep
-                elektrodes={elektrodesMetFotos}
-                onUpload={handlePhotoUploadVoorElektrode}
-                onRemove={handlePhotoRemoveVoorElektrode}
-                compact
-              />
-            )}
-
-            {step === 2 && (
               <NextActionStep
                 projectId={id!}
                 onSave={() => navigate(`/projects/${id}`)}
@@ -926,7 +916,7 @@ export default function MeasurementWorkspace() {
         </div>
 
         {/* ─── iOS bottom bar ─── */}
-        {step < 2 && (
+        {step < LAST_STEP && (
           <div className="shrink-0">
             {warningCount > 0 && step === 0 && !progressionWarningDismissed && (
               <div className="ios-wizard-warning">
@@ -1176,14 +1166,6 @@ export default function MeasurementWorkspace() {
         )}
 
         {step === 1 && (
-          <PhotoStep
-            elektrodes={elektrodesMetFotos}
-            onUpload={handlePhotoUploadVoorElektrode}
-            onRemove={handlePhotoRemoveVoorElektrode}
-          />
-        )}
-
-        {step === 2 && (
           <NextActionStep
             projectId={id!}
             onSave={() => navigate(`/projects/${id}`)}
@@ -1193,7 +1175,7 @@ export default function MeasurementWorkspace() {
         )}
       </div>
 
-      {step < 2 && (
+      {step < LAST_STEP && (
         <StickyActionBar
           showPrev={step > 0}
           onPrev={() => handleStapWissel(step - 1)}
