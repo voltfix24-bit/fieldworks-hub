@@ -127,10 +127,15 @@
   * {
     @apply border-border;
   }
+  html, body, #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-background text-foreground;
   }
 }
+
 
 @layer utilities {
   .tenant-primary-bg {

@@ -197,35 +197,38 @@ export function MSRDiagramCanvas({
       </div>
 
       {/* Floating top bar */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(10px,env(safe-area-inset-top))]">
-        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl bg-white/95 backdrop-blur px-2 py-2 shadow-lg ring-1 ring-border/50">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-2 pt-[max(10px,env(safe-area-inset-top))]">
+        <div className="pointer-events-auto flex items-center gap-1.5 rounded-2xl bg-white/95 backdrop-blur px-2 py-2 shadow-lg ring-1 ring-border/50 min-w-0 max-w-full">
           <button
             onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground active:scale-95"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground active:scale-95"
             aria-label="Terug"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-[15px] font-extrabold tracking-tight text-foreground truncate">Schets</h1>
-          <div className="ml-auto flex items-center gap-2">
+          <h1 className="text-[15px] font-extrabold tracking-tight text-foreground truncate min-w-0 flex-1">Schets</h1>
+          <div className="ml-auto flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setChoosingAnchor(true)}
-              className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-[13px] font-bold text-white shadow-sm active:scale-[0.98]"
+              aria-label="Elektrode toevoegen"
+              className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2.5 sm:px-3 text-[13px] font-bold text-white shadow-sm active:scale-[0.98]"
             >
               <Plus className="h-4 w-4" />
-              Toevoegen
+              <span className="hidden xs:inline sm:inline">Toevoegen</span>
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-[13px] font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
+              aria-label="Schets opslaan"
+              className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2.5 sm:px-3 text-[13px] font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              Opslaan
+              <span className="hidden xs:inline sm:inline">Opslaan</span>
             </button>
           </div>
         </div>
       </div>
+
 
       {/* Zoom controls */}
       <div className="absolute bottom-[max(20px,env(safe-area-inset-bottom))] right-4 z-20">
