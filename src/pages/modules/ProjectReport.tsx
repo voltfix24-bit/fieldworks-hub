@@ -19,6 +19,7 @@ import { ReportFooter } from '@/components/report/ReportFooter';
 import { useReportReadiness } from '@/hooks/use-report-readiness';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
 import { useHandtekening } from '@/hooks/useHandtekening';
+import HandtekeningPad from '@/components/measurement/HandtekeningPad';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -30,11 +31,13 @@ export default function ProjectReport() {
   const { data: reportData, isLoading: reportLoading } = useReportData(id);
   const { branding } = useTenant();
   const { genereerViaEdge, isLoading: rapportLoading } = useRapportGenerator();
-  const { opgeslagenHandtekening } = useHandtekening(user?.id);
+  const { opgeslagenHandtekening, slaHandtekeningOp } = useHandtekening(user?.id);
   const { toast } = useToast();
 
-  // Handtekening uit wizard wordt automatisch gebruikt
-  const actieveHandtekening = opgeslagenHandtekening;
+  // Eén plek voor de handtekening: hier op de rapportpagina.
+  // Auto-laadt opgeslagen handtekening; nieuwe tekening overschrijft direct.
+  const [actieveHandtekening, setActieveHandtekening] = useState<string | null>(opgeslagenHandtekening);
+
 
   // Email state — must be before early returns
   const [emailOpen, setEmailOpen] = useState(false);
