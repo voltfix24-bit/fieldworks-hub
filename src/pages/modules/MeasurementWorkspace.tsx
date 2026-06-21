@@ -37,7 +37,6 @@ const workspaceStorageKey = (projectId?: string) =>
 
 type StoredWorkspaceState = {
   step?: number;
-  showSketch?: boolean;
   activeElectrodeId?: string | null;
   activePenId?: string | null;
   updatedAt?: string;
@@ -109,7 +108,7 @@ export default function MeasurementWorkspace() {
     }
     return 0;
   });
-  const [showSketch, setShowSketch] = useState<boolean>(stored?.showSketch === true);
+  
 
 
   const [autoInitDone, setAutoInitDone] = useState(false);
@@ -144,7 +143,6 @@ export default function MeasurementWorkspace() {
         key,
         JSON.stringify({
           step,
-          showSketch,
           activeElectrodeId,
           activePenId,
           updatedAt: new Date().toISOString(),
@@ -153,7 +151,7 @@ export default function MeasurementWorkspace() {
     } catch {
       /* sessionStorage unavailable — ignore */
     }
-  }, [id, step, showSketch, activeElectrodeId, activePenId]);
+  }, [id, step, activeElectrodeId, activePenId]);
 
 
   // DEEL 1 — Data loss prevention: blur active input on visibility change / beforeunload
@@ -664,7 +662,7 @@ export default function MeasurementWorkspace() {
     }
   };
 
-  const displayStep = showSketch ? -1 : step;
+  const displayStep = step;
 
   // ═══════════════════════════════════════════════
   // Electrode switcher bar (shared between mobile and desktop)
@@ -776,7 +774,7 @@ export default function MeasurementWorkspace() {
                   <path d="M12 2V4M12 20V22M2 12H4M20 12H22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
               </button>
-              {activeElectrode && !showSketch && (
+              {activeElectrode && (
                 <span className="ios-wizard-nav-badge max-w-[160px] truncate bg-[hsl(var(--tenant-primary)/0.12)] text-[hsl(var(--tenant-primary))] font-bold px-2.5 py-1 rounded-lg text-[11px]">
                   {activeElectrode.electrode_code}
                   {activePen && step === 0 ? ` · ${activePen.pen_code}` : ''}
@@ -786,34 +784,32 @@ export default function MeasurementWorkspace() {
           </div>
 
           {/* Step tabs */}
-          {!showSketch && (
-            <div className="ios-wizard-step-tabs">
-              {WIZARD_STEPS.map((s, i) => (
-                <button
-                  key={s.key}
-                  className={cn(
-                    'ios-wizard-step-tab',
-                    i === step && 'active',
-                    i < step && 'done',
-                  )}
-                  onClick={() => {
-                    if (i <= step) { setShowSketch(false); handleStapWissel(i); setProgressionWarningDismissed(false); }
-                  }}
-                >
-                  {i < step && (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2.5 6L5 8.5L9.5 3.5" stroke="hsl(var(--status-completed))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="ios-wizard-step-tabs">
+            {WIZARD_STEPS.map((s, i) => (
+              <button
+                key={s.key}
+                className={cn(
+                  'ios-wizard-step-tab',
+                  i === step && 'active',
+                  i < step && 'done',
+                )}
+                onClick={() => {
+                  if (i <= step) { handleStapWissel(i); setProgressionWarningDismissed(false); }
+                }}
+              >
+                {i < step && (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="hsl(var(--status-completed))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Electrode switcher */}
-        {!showSketch && electrodes.length > 0 && renderElectrodeSwitcher()}
+        {electrodes.length > 0 && renderElectrodeSwitcher()}
 
         {/* DEEL 1 — Battery warning banner */}
         {batterijLaag && (
@@ -841,13 +837,13 @@ export default function MeasurementWorkspace() {
         <div
           className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2 overflow-x-hidden measurement-scroll-container"
           style={{ maxWidth: '100vw' }}
-          key={showSketch ? 'sketch' : step}
+          key={step}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           <div className="wizard-step-enter">
 
-            {step === 0 && !showSketch && activeElectrode && (
+            {step === 0 && activeElectrode && (
               <>
                 <MeasurementStep
                   electrode={activeElectrode}
@@ -874,7 +870,7 @@ export default function MeasurementWorkspace() {
               </>
             )}
 
-            {step === 1 && !showSketch && (
+            {step === 1 && (
               <PhotoStep
                 elektrodes={elektrodesMetFotos}
                 onUpload={handlePhotoUploadVoorElektrode}
@@ -883,24 +879,20 @@ export default function MeasurementWorkspace() {
               />
             )}
 
-            {step === 2 && !showSketch && (
+            {step === 2 && (
               <NextActionStep
-                onGoToSketch={() => setShowSketch(true)}
+                projectId={id!}
                 onSave={() => navigate(`/projects/${id}`)}
                 onHandtekeningChange={setHandtekeningB64}
                 elektrodes={elektrodesVoorSamenvatting}
                 compact
               />
             )}
-
-            {showSketch && (
-              <SketchStep projectId={id!} tenantId={tenantId} sessionId={session?.id} />
-            )}
           </div>
         </div>
 
         {/* ─── iOS bottom bar ─── */}
-        {step < 2 && !showSketch && (
+        {step < 2 && (
           <div className="shrink-0">
             {warningCount > 0 && step === 0 && !progressionWarningDismissed && (
               <div className="ios-wizard-warning">
@@ -955,20 +947,6 @@ export default function MeasurementWorkspace() {
           </div>
         )}
 
-        {showSketch && (
-          <div className="shrink-0">
-            <div className="ios-wizard-bottom-bar">
-              <button className="ios-wizard-btn-back" onClick={() => setShowSketch(false)}>
-                <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Vorige
-              </button>
-              <button className="ios-wizard-btn-next" onClick={() => { setShowSketch(false); navigate(`/projects/${id}`); }}>
-                Opslaan
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Electrode delete confirmation dialog */}
         {elektrodeTeVerwijderen && (
@@ -1082,7 +1060,7 @@ export default function MeasurementWorkspace() {
       </div>
 
       {/* Electrode switcher (desktop) */}
-      {!showSketch && electrodes.length > 0 && (
+      {electrodes.length > 0 && (
         <div className="flex items-center gap-1.5 mb-4 overflow-x-auto">
           {electrodes.map((e: any) => {
             const klaar = e.ra_value != null || e.rv_value != null;
@@ -1135,8 +1113,8 @@ export default function MeasurementWorkspace() {
         </div>
       )}
 
-      <div className="min-h-[50vh] wizard-step-enter" key={showSketch ? 'sketch' : step}>
-        {step === 0 && !showSketch && activeElectrode && (
+      <div className="min-h-[50vh] wizard-step-enter" key={step}>
+        {step === 0 && activeElectrode && (
           <>
             <MeasurementStep
               electrode={activeElectrode}
@@ -1160,7 +1138,7 @@ export default function MeasurementWorkspace() {
           </>
         )}
 
-        {step === 1 && !showSketch && (
+        {step === 1 && (
           <PhotoStep
             elektrodes={elektrodesMetFotos}
             onUpload={handlePhotoUploadVoorElektrode}
@@ -1168,36 +1146,23 @@ export default function MeasurementWorkspace() {
           />
         )}
 
-        {step === 2 && !showSketch && (
+        {step === 2 && (
           <NextActionStep
-            onGoToSketch={() => setShowSketch(true)}
+            projectId={id!}
             onSave={() => navigate(`/projects/${id}`)}
             onHandtekeningChange={setHandtekeningB64}
             elektrodes={elektrodesVoorSamenvatting}
           />
         )}
-
-        {showSketch && (
-          <SketchStep projectId={id!} tenantId={tenantId} sessionId={session?.id} />
-        )}
       </div>
 
-      {step < 2 && !showSketch && (
+      {step < 2 && (
         <StickyActionBar
           showPrev={step > 0}
           onPrev={() => handleStapWissel(step - 1)}
           onNext={() => handleStapWissel(step + 1)}
           nextLabel="Volgende"
           nextDisabled={false}
-        />
-      )}
-
-      {showSketch && (
-        <StickyActionBar
-          showPrev
-          onPrev={() => setShowSketch(false)}
-          onNext={() => { setShowSketch(false); navigate(`/projects/${id}`); }}
-          nextLabel="Opslaan"
         />
       )}
 
