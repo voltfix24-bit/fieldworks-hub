@@ -38,10 +38,12 @@ export function ElectrodeTabSwitcher({ electrodes, activeId, onSelect, onAdd, ad
                 : 'bg-card text-foreground border border-border/50',
             )}
           >
-            <span>Elektrode {indexLabel(electrodes, e.id, e.electrode_code)}</span>
+            <span>{e.electrode_code}</span>
+            {e.label && <span className="ml-1.5 text-[12px] font-medium opacity-70">· {e.label}</span>}
           </button>
         );
       })}
+
       <button
         type="button"
         onMouseDown={(ev) => {
