@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Save, Loader2, X } from 'lucide-react';
+import { ArrowLeft, ImageIcon, Loader2, Pencil, Plus, Save, Upload, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -46,7 +46,7 @@ export function MSRDiagramCanvas({
   }));
   const [existing, setExisting] = useState<ExistingRow | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.7);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [choosingAnchor, setChoosingAnchor] = useState(false);
@@ -89,7 +89,7 @@ export function MSRDiagramCanvas({
     const offsetY = anchor === 'tl' || anchor === 'tr' ? -150 : 150;
     const x = Math.max(20, Math.min(diagram.canvasSize.w - 20, anchorPoint.x + offsetX));
     const y = Math.max(20, Math.min(diagram.canvasSize.h - 20, anchorPoint.y + offsetY));
-    update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `E${n}`, x, y, anchor }] }));
+    update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `Elektrode ${n}`, x, y, anchor }] }));
     setSelectedId(id);
     setChoosingAnchor(false);
   };
@@ -178,29 +178,50 @@ export function MSRDiagramCanvas({
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-background flex flex-col">
-      {/* Top bar */}
-      <div className="shrink-0 flex items-center justify-between px-3 py-2.5 border-b border-border/60 bg-card">
-        <button
-          onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
-          className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-muted/30 active:scale-95"
-          aria-label="Terug"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <h1 className="text-[14px] font-semibold">Situatieschets</h1>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="h-9 px-3 rounded-lg bg-[hsl(var(--tenant-primary,var(--primary)))] text-white text-[12px] font-semibold flex items-center gap-1.5 active:scale-[0.97] disabled:opacity-50"
-        >
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-          Opslaan
-        </button>
+    <div className="fixed inset-0 z-[1000] flex flex-col bg-[#f4f8f7]">
+      <div className="shrink-0 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]">
+        <div className="mb-5 flex items-center gap-4">
+          <button
+            onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground active:scale-95"
+            aria-label="Terug"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-[25px] font-extrabold tracking-tight text-foreground">Situatieschets</h1>
+        </div>
+
+        <div className="mb-2 grid grid-cols-2 gap-2 rounded-2xl bg-white/70 p-1 shadow-sm ring-1 ring-border/50">
+          <button className="flex h-12 items-center justify-center gap-2 rounded-xl bg-white text-[15px] font-bold text-foreground shadow-sm">
+            <Pencil className="h-4 w-4" />
+            Tekenen
+          </button>
+          <button className="flex h-12 items-center justify-center gap-2 rounded-xl text-[15px] font-semibold text-muted-foreground/70">
+            <Upload className="h-4 w-4" />
+            Uploaden
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 rounded-t-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-border/50">
+          <button
+            onClick={() => setChoosingAnchor(true)}
+            className="flex h-14 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-[17px] font-extrabold text-white shadow-sm active:scale-[0.98]"
+          >
+            <Plus className="h-5 w-5" />
+            Toevoegen
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex h-14 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-[17px] font-extrabold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
+          >
+            {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <ImageIcon className="h-5 w-5" />}
+            Opslaan
+          </button>
+        </div>
       </div>
 
-      {/* Canvas with zoom overlay */}
-      <div className="relative flex-1 min-h-0">
+      <div className="relative mx-5 mb-5 min-h-0 flex-1 overflow-hidden rounded-b-2xl rounded-t-none border border-border/50 bg-white shadow-sm">
         <DiagramCanvas
           diagram={diagram}
           zoom={zoom}
@@ -210,12 +231,42 @@ export function MSRDiagramCanvas({
           selectedElectrodeId={selectedId}
           onSelectElectrode={setSelectedId}
         />
-        <div className="absolute top-3 right-3">
+        <div className="absolute bottom-6 right-5">
           <ZoomControls zoom={zoom} onZoom={setZoom} />
         </div>
+
+        {choosingAnchor && (
+          <div className="absolute left-1/2 top-5 z-10 w-[min(300px,calc(100%-32px))] -translate-x-1/2">
+            <div className="rounded-2xl bg-emerald-600 p-3 text-white shadow-xl">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-[16px] font-extrabold leading-tight">Selecteer een referentiepunt</p>
+                <button
+                  type="button"
+                  onClick={() => setChoosingAnchor(false)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-foreground"
+                  aria-label="Sluiten"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {anchorOptions.map((anchor) => (
+                  <button
+                    key={anchor.value}
+                    type="button"
+                    onClick={() => addElectrode(anchor.value)}
+                    className="rounded-xl bg-white/15 px-3 py-3 text-left active:scale-[0.98]"
+                  >
+                    <span className="block text-[11px] font-extrabold uppercase tracking-[0.14em] text-white/70">{anchor.hint}</span>
+                    <span className="mt-0.5 block text-[13px] font-bold text-white">{anchor.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Toolbar */}
       <DiagramToolbar
         diagram={diagram}
         selectedElectrodeId={selectedId}
@@ -233,40 +284,6 @@ export function MSRDiagramCanvas({
           if (selectedId === id) setSelectedId(null);
         }}
       />
-
-      {choosingAnchor && (
-        <div className="absolute inset-0 z-10 flex items-end bg-black/25 p-3">
-          <div className="w-full rounded-2xl border border-border/60 bg-card p-4 shadow-xl">
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[14px] font-bold text-foreground">Vanaf welke hoek meten?</p>
-                <p className="mt-0.5 text-[12px] text-muted-foreground">Kies de referentiehoek van het object.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setChoosingAnchor(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/40"
-                aria-label="Sluiten"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {anchorOptions.map((anchor) => (
-                <button
-                  key={anchor.value}
-                  type="button"
-                  onClick={() => addElectrode(anchor.value)}
-                  className="rounded-xl border border-border/60 bg-background px-3 py-4 text-left active:scale-[0.98]"
-                >
-                  <span className="block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[hsl(var(--tenant-primary,var(--primary)))]">{anchor.hint}</span>
-                  <span className="mt-1 block text-[14px] font-semibold text-foreground">{anchor.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
