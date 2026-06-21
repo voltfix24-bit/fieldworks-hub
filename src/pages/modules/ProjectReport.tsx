@@ -295,44 +295,30 @@ export default function ProjectReport() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleLegacyPdf}
-                    disabled={!actieveHandtekening || rapportLoading}
+                    disabled={rapportLoading}
                     title="Legacy PDF via server (Railway)"
-                    className={cn(
-                      'flex-1 flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 transition-all',
-                      actieveHandtekening
-                        ? 'bg-muted/40 text-foreground hover:bg-muted/60'
-                        : 'bg-muted/20 text-muted-foreground/40 cursor-not-allowed'
-                    )}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 transition-all bg-muted/40 text-foreground hover:bg-muted/60 disabled:opacity-50"
                   >
                     {rapportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                     Legacy PDF
                   </button>
                   <button
                     onClick={handleWhatsApp}
-                    disabled={!actieveHandtekening || whatsAppLoading}
+                    disabled={whatsAppLoading}
                     title="Legacy WhatsApp delen (server PDF)"
-                    className={cn(
-                      'flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 px-3 transition-all',
-                      actieveHandtekening
-                        ? 'bg-[#25D366]/10 text-[#25D366]'
-                        : 'bg-muted/20 text-muted-foreground/40 cursor-not-allowed'
-                    )}
+                    className="flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 px-3 transition-all bg-[#25D366]/10 text-[#25D366] disabled:opacity-50"
                   >
                     {whatsAppLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
                   </button>
                   <button
                     onClick={() => setEmailOpen(true)}
-                    disabled={!actieveHandtekening || rapportLoading}
+                    disabled={rapportLoading}
                     title="Legacy e-mail versturen (server PDF)"
-                    className={cn(
-                      'flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 px-3 transition-all',
-                      actieveHandtekening
-                        ? 'bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))]'
-                        : 'bg-muted/20 text-muted-foreground/40 cursor-not-allowed'
-                    )}
+                    className="flex items-center justify-center gap-2 rounded-xl font-medium text-[12px] py-2.5 px-3 transition-all bg-[hsl(var(--tenant-primary)/0.1)] text-[hsl(var(--tenant-primary))] disabled:opacity-50"
                   >
                     <Mail className="h-3.5 w-3.5" />
                   </button>
+
                 </div>
               </div>
             )}
