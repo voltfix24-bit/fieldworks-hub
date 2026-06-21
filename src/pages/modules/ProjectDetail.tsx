@@ -17,7 +17,8 @@ import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw,
-  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download, Camera, XCircle
+  FileText, Play, Printer, AlertCircle, ChevronRight, Calendar, Download, Camera, XCircle,
+  MapPin, User, Wrench, Activity, PenTool, Map as MapIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -140,243 +141,281 @@ export default function ProjectDetail() {
 
   // ── Mobile ──
   if (isMobile) {
+    const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
+    const werktekening = projectBestanden[0];
+    const mobileDate = session?.measurement_date || project.planned_date;
+
+    // Taak-completeness
+    const equipmentComplete = !!equip && !!equip.serial_number && !!equip.calibration_date && !!equip.next_calibration_date;
+    const measurementsComplete = !!session && hasElectrodes && hasMeasurements;
+    const diagramComplete = hasDiagram || hasSketches;
+    const reportComplete = readiness.isReady && diagramComplete;
+    const mobileReportReady = reportComplete;
+
+    const tasksDone = [equipmentComplete, measurementsComplete, diagramComplete, reportComplete].filter(Boolean).length;
+    const progressPct = Math.round((tasksDone / 4) * 100);
+
+    // Statusbadge
+    const statusLabel =
+      project.status === 'completed' ? 'Afgerond'
+      : (hasSession && (hasMeasurements || hasElectrodes)) ? 'In uitvoering'
+      : 'Nog te starten';
+    const statusTone =
+      project.status === 'completed' ? 'completed'
+      : statusLabel === 'In uitvoering' ? 'inprogress'
+      : 'planned';
+
+    // Volgende stap
+    let nextStep: { label: string; sub: string; href: string; icon: typeof Wrench };
+    if (!equipmentComplete) {
+      nextStep = {
+        label: 'Meetapparatuur aanvullen',
+        sub: !equip ? 'Wijs een apparaat toe' : 'Serienummer of kalibratiedatum ontbreekt',
+        href: equip?.id ? `/equipment/${equip.id}` : '/equipment',
+        icon: Wrench,
+      };
+    } else if (!measurementsComplete) {
+      nextStep = {
+        label: hasSession ? 'Ga verder met Metingen' : 'Start de Metingen',
+        sub: hasSession ? `${electrodes.length} elektrodes · ${reportData?.stats.measurementCount || 0} metingen` : 'Nog niets gemeten',
+        href: `/projects/${id}/measurements`,
+        icon: Activity,
+      };
+    } else if (!diagramComplete) {
+      nextStep = {
+        label: 'Maak de Situatieschets',
+        sub: 'Schets ontbreekt nog',
+        href: `/projects/${id}/diagram`,
+        icon: PenTool,
+      };
+    } else if (!readiness.isReady) {
+      nextStep = {
+        label: 'Projectgegevens aanvullen',
+        sub: `${readiness.blockers.length} ${readiness.blockers.length === 1 ? 'blokkade' : 'blokkades'}`,
+        href: `/projects/${id}/edit`,
+        icon: Pencil,
+      };
+    } else {
+      nextStep = {
+        label: 'Rapport openen',
+        sub: 'Alle stappen compleet',
+        href: `/projects/${id}/report`,
+        icon: FileText,
+      };
+    }
+
+    const handleMaps = () => {
+      const q = [project.address_line_1, project.postal_code, project.city].filter(Boolean).join(', ');
+      if (!q) { toast({ title: 'Geen adres bekend' }); return; }
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
+    };
+
+    const handleWerktekening = async () => {
+      if (!werktekening) { toast({ title: 'Geen werktekening' }); return; }
+      const { data } = await supabase.storage.from('project-files').createSignedUrl(werktekening.file_url, 3600);
+      if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+      else toast({ title: 'Kon werktekening niet openen', variant: 'destructive' });
+    };
+
+    const openReport = () => {
+      if (!mobileReportReady) { setShowRapportBlock(true); return; }
+      if (hasReportWarnings) { setShowRapportBlock(true); return; }
+      navigate(`/projects/${id}/report`);
+    };
+
+    // Primaire fix voor de blokkade-sheet: schets eerst, anders bestaande readiness
+    const sheetPrimary: { label: string; href: string } =
+      !diagramComplete
+        ? { label: 'Maak de Situatieschets', href: `/projects/${id}/diagram` }
+        : fixTarget(primaryFix);
+
     return (
       <>
         <div className="ios-detail-page animate-fade-in">
           {/* Back row */}
-          <button
-            onClick={() => navigate('/projects')}
-            className="ios-detail-back"
-          >
+          <button onClick={() => navigate('/projects')} className="ios-detail-back">
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="hsl(var(--tenant-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <span>Projecten</span>
           </button>
 
-          {/* Title */}
-          <h1 className="ios-detail-title">{project.project_name}</h1>
-          <div className="ios-detail-meta">
-            <span className="ios-detail-code">{project.project_number}</span>
-            <span className={cn('ios-detail-status-pill', project.status === 'completed' ? 'completed' : 'planned')}>
-              <span className="ios-detail-status-dot" />
-              {project.status === 'completed' ? 'Afgerond' : 'Gepland'}
-            </span>
-          </div>
-          {session?.measurement_date && (
-            <div className="flex items-center gap-1.5 mt-1 px-4">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground/30" />
-              <span className="text-[12px] text-muted-foreground/40">
-                Gemeten op {formatNlDate(session.measurement_date)}
-              </span>
-            </div>
-          )}
-
           <div className="ios-detail-scroll">
-            {/* Continue measuring CTA */}
-            {metingGestart && !metingKlaar && (
-              <button
-                onClick={() => navigate(`/projects/${id}/measurements`)}
-                className="w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 mb-4 bg-[hsl(var(--tenant-primary)/0.08)] border border-[hsl(var(--tenant-primary)/0.2)] active:scale-[0.98] transition-all"
-              >
-                <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary))] flex items-center justify-center shrink-0">
-                  <Play className="h-4 w-4 text-white ml-0.5" />
+            {/* 1. Project hub card */}
+            <div className="rounded-3xl bg-card border border-border/40 shadow-sm overflow-hidden mb-4">
+              <div className="px-5 pt-5 pb-4">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <h1 className="text-[22px] font-display font-extrabold tracking-tight leading-tight text-foreground flex-1">
+                    {project.project_name}
+                  </h1>
+                  <span className={cn(
+                    'shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide',
+                    statusTone === 'completed' && 'bg-[hsl(var(--status-completed))]/12 text-[hsl(var(--status-completed))]',
+                    statusTone === 'inprogress' && 'bg-amber-500/12 text-amber-600',
+                    statusTone === 'planned' && 'bg-muted/40 text-muted-foreground/60',
+                  )}>
+                    <span className={cn(
+                      'w-1.5 h-1.5 rounded-full',
+                      statusTone === 'completed' && 'bg-[hsl(var(--status-completed))]',
+                      statusTone === 'inprogress' && 'bg-amber-500',
+                      statusTone === 'planned' && 'bg-muted-foreground/40',
+                    )} />
+                    {statusLabel}
+                  </span>
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-[14px] font-bold text-[hsl(var(--tenant-primary))]">
-                    Doorgaan met meten
-                  </p>
-                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">
-                    Meting is nog niet afgerond
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-[hsl(var(--tenant-primary)/0.4)]" />
-              </button>
-            )}
+                <p className="text-[12px] font-mono tabular-nums text-muted-foreground/40 mb-3">{project.project_number}</p>
 
-            {/* Metingen hero card */}
+                <div className="space-y-1.5">
+                  <MobileProjectMeta icon={MapPin} value={[project.address_line_1, project.city].filter(Boolean).join(', ') || 'Geen adres'} />
+                  <MobileProjectMeta icon={Calendar} value={mobileDate ? formatNlDate(mobileDate) : 'Geen datum gepland'} />
+                  <MobileProjectMeta icon={User} value={tech?.full_name || 'Geen monteur toegewezen'} />
+                </div>
+              </div>
+
+              {/* Actions row */}
+              <div className="grid grid-cols-3 border-t border-border/30">
+                <button
+                  onClick={handleMaps}
+                  className="flex flex-col items-center gap-1 py-3 active:bg-foreground/[0.04] transition-colors"
+                >
+                  <MapIcon className="h-[18px] w-[18px] text-[hsl(var(--tenant-primary))]" />
+                  <span className="text-[10px] font-semibold text-foreground/70">Kaart</span>
+                </button>
+                <button
+                  onClick={handleWerktekening}
+                  className="flex flex-col items-center gap-1 py-3 border-x border-border/30 active:bg-foreground/[0.04] transition-colors"
+                >
+                  <FileText className={cn('h-[18px] w-[18px]', werktekening ? 'text-[hsl(var(--tenant-primary))]' : 'text-muted-foreground/40')} />
+                  <span className="text-[10px] font-semibold text-foreground/70">Werktekening</span>
+                </button>
+                <button
+                  onClick={() => navigate(isFieldOnly ? `/projects/${id}/measurements?step=afronden` : `/projects/${id}/edit`)}
+                  className="flex flex-col items-center gap-1 py-3 active:bg-foreground/[0.04] transition-colors"
+                >
+                  <Pencil className="h-[18px] w-[18px] text-[hsl(var(--tenant-primary))]" />
+                  <span className="text-[10px] font-semibold text-foreground/70">{isFieldOnly ? 'Afronden' : 'Bewerken'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Volgende stap */}
             <button
-              className="ios-detail-hero"
-              onClick={() => navigate(`/projects/${id}/measurements`)}
+              onClick={() => {
+                if (nextStep.label === 'Rapport openen') openReport();
+                else navigate(nextStep.href);
+              }}
+              className="w-full flex items-center gap-3 rounded-2xl px-4 py-4 mb-4 bg-[hsl(var(--tenant-primary))] active:scale-[0.98] transition-all shadow-sm"
             >
-              <div className="ios-detail-hero-icon">
-                <GroundingIcon size={22} />
+              <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <nextStep.icon className="h-5 w-5 text-white" />
               </div>
-              <div className="ios-detail-hero-text">
-                <span className="ios-detail-hero-title">{hasSession ? 'Metingen' : 'Meten starten'}</span>
-                {hasSession && hasMeasurements && (
-                  <span className="ios-detail-hero-sub">{electrodes.length} elektrodes · {reportData?.stats.measurementCount} metingen</span>
-                )}
+              <div className="flex-1 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-0.5">Volgende stap</p>
+                <p className="text-[15px] font-bold text-white leading-tight">{nextStep.label}</p>
+                <p className="text-[11px] text-white/75 mt-0.5">{nextStep.sub}</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-white/40" />
+              <ChevronRight className="h-5 w-5 text-white/70 shrink-0" />
             </button>
 
-            {/* Action buttons */}
-            <div className="ios-detail-actions grid grid-cols-3 gap-2">
-              <button
-                className="ios-detail-action-btn relative"
-                onClick={() => {
-                  if (!isReportReady) { setShowRapportBlock(true); return; }
-                  if (hasReportWarnings) { setShowRapportBlock(true); return; }
-                  navigate(`/projects/${id}/report`);
-                }}
-              >
-                <FileText className={cn(
-                  'h-[18px] w-[18px]',
-                  !isReportReady
-                    ? 'text-muted-foreground/50'
-                    : hasReportWarnings
-                      ? 'text-amber-500'
-                      : 'text-[hsl(var(--status-completed))]',
-                )} />
-                Rapport
-                {(!isReportReady || hasReportWarnings) && (
-                  <span className={cn(
-                    'absolute top-1.5 right-1.5 w-2 h-2 rounded-full',
-                    !isReportReady ? 'bg-destructive' : 'bg-amber-500',
-                  )} />
+            {/* Voortgangsbalk */}
+            <div className="px-1 mb-2 flex items-center justify-between">
+              <span className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/45">Voortgang</span>
+              <span className="text-[11px] font-bold tabular-nums text-foreground/70">{tasksDone}/4 · {progressPct}%</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-muted/40 overflow-hidden mb-4">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all duration-500',
+                  progressPct === 100 ? 'bg-[hsl(var(--status-completed))]' : 'bg-[hsl(var(--tenant-primary))]',
                 )}
-              </button>
-              <button className="ios-detail-action-btn" onClick={() => navigate(`/projects/${id}/measurements?tab=fotos`)}>
-                <Camera className="h-[18px] w-[18px] text-muted-foreground" />
-                Foto's
-              </button>
-              <button
-                className="ios-detail-action-btn"
-                onClick={() => navigate(isFieldOnly ? `/projects/${id}/measurements?step=afronden` : `/projects/${id}/edit`)}
-              >
-                <Pencil className="h-[18px] w-[18px] text-muted-foreground" />
-                {isFieldOnly ? 'Afronden' : 'Bewerken'}
-              </button>
+                style={{ width: `${progressPct}%` }}
+              />
             </div>
 
-            {/* Projectgegevens */}
-            <p className="ios-detail-section-label">Projectgegevens</p>
-            <div className="ios-detail-card">
-              {[
-                { label: 'Locatie', value: [project.address_line_1, project.city].filter(Boolean).join(', ') },
-                { label: 'Klant', value: client?.company_name },
-                { label: 'Monteur', value: tech?.full_name },
-                { label: 'Apparaat', value: equip?.device_name },
-                ...(equip?.next_calibration_date
-                  ? [{ label: 'Kalibratie geldig t/m', value: formatNlDate(equip.next_calibration_date) }]
-                  : []),
-                { label: 'Geplande datum', value: formatNlDate(project.planned_date) },
-                ...(session?.measurement_date
-                  ? [{ label: 'Meetdatum (rapport)', value: formatNlDate(session.measurement_date) }]
-                  : []),
-              ].map((row, i, arr) => (
-                <div key={row.label}>
-                  <div className="ios-detail-info-row">
-                    <span className="ios-detail-info-label">{row.label}</span>
-                    <span className={cn('ios-detail-info-value', row.value && 'has-value')}>{row.value || '—'}</span>
-                  </div>
-                  {i < arr.length - 1 && <div className="ios-detail-divider" />}
-                </div>
-              ))}
-            </div>
-
-            {/* Voortgang */}
-            {hasSession && (
-              <>
-                <p className="ios-detail-section-label">Voortgang</p>
-                <div className="ios-detail-stats">
-                  <div className="ios-detail-stat">
-                    <span className="ios-detail-stat-dot" style={{ background: 'hsl(var(--tenant-primary))' }} />
-                    <span className="ios-detail-stat-value">{electrodes.length}</span>
-                    <span className="ios-detail-stat-label">Elektrodes</span>
-                  </div>
-                  <div className="ios-detail-stat">
-                    <span className="ios-detail-stat-dot" style={{ background: 'hsl(210, 100%, 50%)' }} />
-                    <span className="ios-detail-stat-value">{reportData?.stats.measurementCount || 0}</span>
-                    <span className="ios-detail-stat-label">Metingen</span>
-                  </div>
-                  <div className="ios-detail-stat">
-                    <span className="ios-detail-stat-dot" style={{ background: 'hsl(var(--muted-foreground))' }} />
-                    <span className="ios-detail-stat-value">{reportData?.stats.photosCount || 0}</span>
-                    <span className="ios-detail-stat-label">Foto's</span>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Gereedheid */}
-            <div className="ios-detail-card">
-              <div className="ios-detail-gereedheid-header">
-                <span className="ios-detail-section-label" style={{ padding: 0, margin: 0 }}>Gereedheid</span>
-                <span className={cn('ios-detail-gereedheid-badge', allRequiredMet ? 'ready' : 'pending')}>
-                  {allRequiredMet ? '✓ Gereed' : `${metReadyCount}/${metRequiredTotal}`}
-                </span>
-              </div>
-              <div className="ios-detail-divider" />
-              {readinessItems.map((item, i) => (
-                <div key={item.label}>
-                  <div className="ios-detail-check-row">
-                    {item.met ? (
-                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                        <circle cx="11" cy="11" r="11" fill="hsl(152, 60%, 42%)" fillOpacity="0.14"/>
-                        <path d="M7 11.2L9.8 14L15 8.5" stroke="hsl(152, 60%, 42%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    ) : (
-                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                        <circle cx="11" cy="11" r="10.5" stroke="hsl(var(--border))" strokeOpacity="0.6"/>
-                      </svg>
-                    )}
-                    <span className={cn('ios-detail-check-label', item.optional && !item.met && 'optional')}>
-                      {item.label}
-                    </span>
-                    {item.optional && <span className="ios-detail-optional-badge">optioneel</span>}
-                  </div>
-                  {i < readinessItems.length - 1 && <div className="ios-detail-divider" />}
-                </div>
-              ))}
+            {/* 3. Taakblokken */}
+            <div className="space-y-2.5 mb-4">
+              <MobileTaskCard
+                icon={Wrench}
+                title="Meetapparatuur"
+                sub={equip ? equip.device_name : 'Nog geen apparaat toegewezen'}
+                done={equipmentComplete}
+                onClick={() => navigate(equip?.id ? `/equipment/${equip.id}` : '/equipment')}
+              />
+              <MobileTaskCard
+                icon={Activity}
+                title="Metingen"
+                sub={
+                  measurementsComplete
+                    ? `${electrodes.length} elektrodes · ${reportData?.stats.measurementCount || 0} metingen`
+                    : hasSession ? 'Meting nog niet afgerond' : 'Nog niet gestart'
+                }
+                done={measurementsComplete}
+                onClick={() => navigate(`/projects/${id}/measurements`)}
+              />
+              <MobileTaskCard
+                icon={PenTool}
+                title="Situatieschets"
+                sub={diagramComplete ? 'Schets aanwezig' : 'Schets ontbreekt nog'}
+                done={diagramComplete}
+                onClick={() => navigate(`/projects/${id}/diagram`)}
+              />
+              <MobileTaskCard
+                icon={FileText}
+                title="Rapportage"
+                sub={
+                  reportComplete
+                    ? (hasReportWarnings ? 'Klaar – met waarschuwingen' : 'Klaar om te openen')
+                    : !diagramComplete ? 'Wacht op situatieschets'
+                    : !readiness.isReady ? `${readiness.blockers.length} blokkade(s)`
+                    : 'Bijna klaar'
+                }
+                done={reportComplete}
+                disabled={!reportComplete}
+                onClick={openReport}
+              />
             </div>
 
             {/* Projectbestanden */}
-            {(() => {
-              const projectBestanden = attachments.filter((a: any) => a.attachment_type === 'project_bestand');
-              if (projectBestanden.length === 0) return null;
-              return (
-                <div className="mt-4">
-                  <p className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/40 mb-2 px-1">Projectbestanden</p>
-                  <div className="ios-dash-card">
-                    {projectBestanden.map((bestand: any, i: number) => (
-                      <div key={bestand.id}>
-                        <button
-                          onClick={async () => {
-                            const { data } = await supabase.storage.from('project-files').createSignedUrl(bestand.file_url, 3600);
-                            if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[56px] active:bg-foreground/[0.03] transition-colors text-left"
-                        >
-                          <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center shrink-0">
-                            <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-semibold text-foreground truncate">{bestand.caption || 'Bestand'}</p>
-                            <p className="text-[11px] text-muted-foreground/40 mt-0.5">Tik om te openen of downloaden</p>
-                          </div>
-                          <Download className="h-4 w-4 text-muted-foreground/20 shrink-0" />
-                        </button>
-                        {i < projectBestanden.length - 1 && <div className="ios-dash-row-divider" />}
-                      </div>
-                    ))}
-                  </div>
+            {projectBestanden.length > 0 && (
+              <div className="mt-4">
+                <p className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground/40 mb-2 px-1">Projectbestanden</p>
+                <div className="ios-dash-card">
+                  {projectBestanden.map((bestand: any, i: number) => (
+                    <div key={bestand.id}>
+                      <button
+                        onClick={async () => {
+                          const { data } = await supabase.storage.from('project-files').createSignedUrl(bestand.file_url, 3600);
+                          if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[56px] active:bg-foreground/[0.03] transition-colors text-left"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.08)] flex items-center justify-center shrink-0">
+                          <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-semibold text-foreground truncate">{bestand.caption || 'Bestand'}</p>
+                          <p className="text-[11px] text-muted-foreground/40 mt-0.5">Tik om te openen</p>
+                        </div>
+                        <Download className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                      </button>
+                      {i < projectBestanden.length - 1 && <div className="ios-dash-row-divider" />}
+                    </div>
+                  ))}
                 </div>
-              );
-            })()}
+              </div>
+            )}
 
             {/* Project afronden CTA */}
             {project.status === 'planned' ? (
               <button
-                className="ios-detail-cta-complete"
+                className="ios-detail-cta-complete mt-4"
                 onClick={() => handleStatusChange('completed')}
-                disabled={updateMut.isPending || !isReportReady}
+                disabled={updateMut.isPending || !mobileReportReady}
               >
                 <CheckCircle2 className="h-5 w-5" />
                 Project afronden
               </button>
             ) : (
               <button
-                className="ios-detail-cta-reopen"
+                className="ios-detail-cta-reopen mt-4"
                 onClick={() => handleStatusChange('planned')}
                 disabled={updateMut.isPending}
               >
@@ -386,7 +425,7 @@ export default function ProjectDetail() {
             )}
 
             {/* Danger zone */}
-            <div className="ios-detail-card">
+            <div className="ios-detail-card mt-4">
               <button className="ios-detail-danger-row" onClick={() => setShowDeleteConfirm(true)}>
                 <Trash2 className="h-4 w-4" />
                 Project verwijderen
@@ -403,16 +442,10 @@ export default function ProjectDetail() {
               <h3 className="ios-detail-confirm-title">Project verwijderen?</h3>
               <p className="ios-detail-confirm-sub">Dit kan niet ongedaan worden gemaakt.</p>
               <div className="ios-detail-confirm-actions">
-                <button
-                  className="ios-detail-confirm-delete"
-                  onClick={() => { setShowDeleteConfirm(false); handleDelete(); }}
-                >
+                <button className="ios-detail-confirm-delete" onClick={() => { setShowDeleteConfirm(false); handleDelete(); }}>
                   Verwijderen
                 </button>
-                <button
-                  className="ios-detail-confirm-cancel"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
+                <button className="ios-detail-confirm-cancel" onClick={() => setShowDeleteConfirm(false)}>
                   Annuleren
                 </button>
               </div>
@@ -426,16 +459,23 @@ export default function ProjectDetail() {
             <div className="ios-detail-confirm-sheet" onClick={e => e.stopPropagation()}>
               <div className="ios-detail-confirm-handle" />
               <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className={cn('h-5 w-5', isReportReady ? 'text-amber-500' : 'text-destructive')} />
+                <AlertCircle className={cn('h-5 w-5', mobileReportReady ? 'text-amber-500' : 'text-destructive')} />
                 <h3 className="ios-detail-confirm-title" style={{ margin: 0 }}>
-                  {isReportReady ? 'Rapport heeft waarschuwingen' : 'Rapport nog niet compleet'}
+                  {mobileReportReady ? 'Rapport heeft waarschuwingen' : 'Rapport nog niet compleet'}
                 </h3>
               </div>
               <p className="ios-detail-confirm-sub">
-                {isReportReady
+                {mobileReportReady
                   ? 'Je kunt het rapport openen, maar controleer onderstaande punten.'
-                  : 'Vul eerst onderstaande gegevens aan voordat je het rapport opent.'}
+                  : 'Vul eerst onderstaande punten aan voordat je het rapport opent.'}
               </p>
+
+              {!diagramComplete && (
+                <div className="mt-3 rounded-2xl bg-destructive/[0.04] border border-destructive/15 px-4 py-3 flex items-center gap-2.5">
+                  <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                  <span className="text-[13px] text-foreground/85">Situatieschets ontbreekt</span>
+                </div>
+              )}
 
               {readiness.blockers.length > 0 && (
                 <div className="mt-3 rounded-2xl bg-destructive/[0.04] divide-y divide-border/30 border border-destructive/15">
@@ -460,19 +500,14 @@ export default function ProjectDetail() {
               )}
 
               <div className="ios-detail-confirm-actions mt-4">
-                {!isReportReady ? (
-                  (() => {
-                    const target = fixTarget(primaryFix);
-                    return (
-                      <button
-                        className="ios-detail-confirm-delete"
-                        style={{ background: 'hsl(var(--tenant-primary))' }}
-                        onClick={() => { setShowRapportBlock(false); navigate(target.href); }}
-                      >
-                        {target.label}
-                      </button>
-                    );
-                  })()
+                {!mobileReportReady ? (
+                  <button
+                    className="ios-detail-confirm-delete"
+                    style={{ background: 'hsl(var(--tenant-primary))' }}
+                    onClick={() => { setShowRapportBlock(false); navigate(sheetPrimary.href); }}
+                  >
+                    {sheetPrimary.label}
+                  </button>
                 ) : (
                   <button
                     className="ios-detail-confirm-delete"
@@ -482,10 +517,7 @@ export default function ProjectDetail() {
                     Toch openen
                   </button>
                 )}
-                <button
-                  className="ios-detail-confirm-cancel"
-                  onClick={() => setShowRapportBlock(false)}
-                >
+                <button className="ios-detail-confirm-cancel" onClick={() => setShowRapportBlock(false)}>
                   Sluiten
                 </button>
               </div>
@@ -495,6 +527,7 @@ export default function ProjectDetail() {
       </>
     );
   }
+
 
 
   // ═══════════════════════════════════════════════════════
@@ -846,5 +879,71 @@ function DInfoRow({ label, value, highlight = false }: { label: string; value?: 
         value ? (highlight ? 'text-foreground font-semibold' : 'text-foreground/75') : 'text-muted-foreground/15',
       )}>{value || '—'}</span>
     </div>
+  );
+}
+
+/* ── Mobile helpers ── */
+
+function MobileProjectMeta({ icon: Icon, value }: { icon: React.ComponentType<{ className?: string }>; value: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <Icon className="h-4 w-4 text-muted-foreground/45 shrink-0" />
+      <span className="text-[13px] text-foreground/80 truncate">{value}</span>
+    </div>
+  );
+}
+
+function MobileTaskCard({
+  icon: Icon,
+  title,
+  sub,
+  done,
+  disabled = false,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  sub: string;
+  done: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 border transition-all text-left',
+        disabled
+          ? 'bg-muted/20 border-border/30 opacity-60'
+          : 'bg-card border-border/40 active:scale-[0.98] active:bg-foreground/[0.02]',
+      )}
+    >
+      <div className={cn(
+        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+        done
+          ? 'bg-[hsl(var(--status-completed))]/12'
+          : disabled
+            ? 'bg-muted/40'
+            : 'bg-[hsl(var(--tenant-primary)/0.10)]',
+      )}>
+        <Icon className={cn(
+          'h-[18px] w-[18px]',
+          done
+            ? 'text-[hsl(var(--status-completed))]'
+            : disabled
+              ? 'text-muted-foreground/40'
+              : 'text-[hsl(var(--tenant-primary))]',
+        )} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-bold text-foreground leading-tight">{title}</p>
+        <p className="text-[11px] text-muted-foreground/55 mt-0.5 truncate">{sub}</p>
+      </div>
+      {done ? (
+        <CheckCircle2 className="h-5 w-5 text-[hsl(var(--status-completed))] shrink-0" />
+      ) : (
+        <ChevronRight className={cn('h-4 w-4 shrink-0', disabled ? 'text-muted-foreground/25' : 'text-muted-foreground/40')} />
+      )}
+    </button>
   );
 }
