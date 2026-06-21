@@ -803,6 +803,96 @@
   color: hsl(var(--muted-foreground) / 0.35);
 }
 
+/* Hero card */
+.ios-dash-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: hsl(var(--card));
+  border-radius: 20px;
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+  transition: background 0.1s;
+}
+.ios-dash-hero:active { background: hsl(var(--foreground) / 0.03); }
+.ios-dash-hero-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--tenant-primary));
+}
+.ios-dash-hero-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1.2;
+  word-break: break-word;
+}
+.ios-dash-hero-meta {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.ios-dash-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--tenant-primary));
+}
+
+/* Compact overdue line */
+.ios-dash-overdue-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: hsl(var(--destructive) / 0.05);
+  border: 0.5px solid hsl(var(--destructive) / 0.12);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--destructive));
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.ios-dash-overdue-line:active { background: hsl(var(--destructive) / 0.1); }
+
+/* Quick actions */
+.ios-dash-quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.ios-dash-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: hsl(var(--card));
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04);
+  transition: background 0.1s;
+}
+.ios-dash-quick-btn:active { background: hsl(var(--foreground) / 0.03); }
+
 /* ══════════════════════════════════════════
    iOS-native Planning / Calendar
    ══════════════════════════════════════════ */
