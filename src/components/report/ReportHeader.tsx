@@ -2,73 +2,77 @@ import { useTenant } from '@/contexts/TenantContext';
 import { formatNlDate } from '@/lib/nl-date';
 
 interface ReportHeaderProps {
-  projectName: string;
-  projectNumber: string;
+  projectName?: string | null;
+  projectNumber?: string | null;
   measurementDate?: string | null;
-  location?: string;
+  location?: string | null;
+  technicianName?: string | null;
 }
 
-export function ReportHeader({ projectName, projectNumber, measurementDate, location }: ReportHeaderProps) {
+export function ReportHeader({ projectName, projectNumber, measurementDate, location, technicianName }: ReportHeaderProps) {
   const { tenant, branding } = useTenant();
   const rs = branding as any;
-  const reportTitle = rs?.report_title || 'Aardingsmeting Rapport';
   const showLogo = rs?.report_show_logo !== false;
   const logoSize = rs?.report_logo_size || 'medium';
-  const logoClass = logoSize === 'small' ? 'h-8' : logoSize === 'large' ? 'h-16' : 'h-12';
+  const logoHeight = logoSize === 'small' ? '8mm' : logoSize === 'large' ? '16mm' : '12mm';
+
+  const meta = [
+    projectNumber ? { lbl: 'Projectnummer', val: projectNumber, mono: true } : null,
+    measurementDate ? { lbl: 'Meetdatum', val: formatNlDate(measurementDate, 'long') || '', mono: true } : null,
+    technicianName ? { lbl: 'Monteur', val: technicianName, mono: false } : null,
+  ].filter(Boolean) as { lbl: string; val: string; mono: boolean }[];
+
+  const hasHeaderRow = !!(showLogo && branding?.logo_url) || !!tenant?.company_name || !!projectNumber;
 
   return (
-    <section className="report-cover relative mb-10 overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm print:rounded-none print:border-0 print:shadow-none print:mb-8">
+    <header className="report-cover">
       <div className="report-brand-bar" />
 
-      <div className="px-7 py-7 sm:px-9 sm:py-8 print:px-0 print:pt-7 print:pb-6">
-        <div className="flex items-start justify-between gap-5 mb-10 print:mb-8">
+      {hasHeaderRow && (
+        <div className="flex items-start justify-between gap-6 mb-8">
           <div className="min-w-0">
             {showLogo && branding?.logo_url ? (
-              <img src={branding.logo_url} alt="" className={`${logoClass} w-auto max-w-[220px] object-contain print:max-h-12`} />
+              <img
+                src={branding.logo_url}
+                alt={tenant?.company_name || ''}
+                style={{ height: logoHeight }}
+                className="w-auto max-w-[60mm] object-contain"
+              />
             ) : tenant?.company_name ? (
-              <p className="text-[14px] font-bold text-slate-900 tracking-tight">{tenant.company_name}</p>
+              <p style={{ fontSize: '12pt', fontWeight: 700, color: 'var(--ink)' }}>
+                {tenant.company_name}
+              </p>
             ) : null}
           </div>
           {projectNumber && (
-            <div className="text-right min-w-[120px]">
-              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400">Document</p>
-              <p className="mt-1 text-[12px] font-semibold text-slate-700 tabular-nums">{projectNumber}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="max-w-[620px]">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[hsl(var(--tenant-primary))] mb-3">
-            Technisch Rapport
-          </p>
-          <h1 className="text-[34px] sm:text-[42px] print:text-[34px] font-extrabold leading-[1.04] tracking-tight text-slate-950">
-            Aardingsrapport
-          </h1>
-          {rs?.report_subtitle && (
-            <p className="mt-3 text-[12px] text-slate-500 leading-relaxed">{rs.report_subtitle}</p>
-          )}
-          <div className="mt-6 h-1 w-16 rounded-full bg-[hsl(var(--tenant-primary))]" />
-        </div>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-[1.4fr_1fr] print:grid-cols-[1.4fr_1fr]">
-          {projectName && (
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-2">Project</p>
-              <p className="text-[22px] print:text-[19px] font-extrabold leading-tight text-[hsl(var(--tenant-primary))]">{projectName}</p>
-              {location && <p className="mt-1.5 text-[12px] text-slate-500 leading-relaxed">{location}</p>}
-            </div>
-          )}
-          {measurementDate && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 print:bg-slate-50">
-              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">Meetdatum</p>
-              <p className="mt-1 text-[15px] font-bold text-slate-900">
-                {formatNlDate(measurementDate, 'long')}
+            <div className="text-right">
+              <p style={{ fontSize: '8pt', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 600 }}>
+                Document
               </p>
-              {tenant?.company_name && <p className="mt-2 text-[11px] text-slate-500">{tenant.company_name}</p>}
+              <p className="tabular-nums" style={{ fontSize: '11pt', color: 'var(--ink)', fontWeight: 600, marginTop: 2 }}>
+                {projectNumber}
+              </p>
             </div>
           )}
         </div>
-      </div>
-    </section>
+      )}
+
+      <p className="report-cover-eyebrow">Aardingsmeting</p>
+      <h1 className="report-cover-title">Aardingsrapport</h1>
+
+      {projectName && <p className="report-cover-project">{projectName}</p>}
+      {location && <p className="report-cover-location">{location}</p>}
+
+      {meta.length > 0 && (
+        <div className="report-meta-strip">
+          {meta.map(m => (
+            <div key={m.lbl}>
+              <div className="lbl">{m.lbl}</div>
+              <div className={`val ${m.mono ? 'tabular-nums' : ''}`}>{m.val}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </header>
   );
 }

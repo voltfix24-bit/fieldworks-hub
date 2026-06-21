@@ -259,35 +259,211 @@
   display: none;
 }
 
-/* Report document — A4 styled with IBM Plex */
+/* ════════════════════════════════════════════════════════════
+   Report document — A4 print/PDF stijl (IBM Plex + design tokens)
+   ════════════════════════════════════════════════════════════ */
 .report-document {
+  --ink: #1b1714;
+  --muted: #8a837d;
+  --line: #e6e1dc;
+  --panel: #f4f2f0;
+  --brand: #9a2515;
+  --brand2: #4b3fa3;
+  --pass: #1f7a4d;
+  --pass-bg: #e9f3ec;
+
   font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   width: 210mm;
   min-height: 297mm;
-  background: white;
-  color: #0f172a;
-  padding: 16mm 14mm;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 20mm;
   margin: 0 auto;
   box-sizing: border-box;
+  line-height: 1.45;
 }
+
+/* Use tenant brand override when provided; else fallback to --brand token */
+.report-document {
+  --brand: hsl(var(--tenant-primary));
+}
+
+.report-document .num,
 .report-document .tabular-nums,
 .report-document table td,
-.report-document table th {
+.report-document table th,
+.report-document time {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
+
 .report-document h1, .report-document h2, .report-document h3, .report-document h4,
-.report-document p, .report-document dt, .report-document dd, .report-document span:not(.tabular-nums) {
+.report-document p, .report-document dt, .report-document dd,
+.report-document label, .report-document li {
   font-family: 'IBM Plex Sans', system-ui, sans-serif;
 }
+
 .report-brand-bar {
   height: 6px;
   width: 100%;
-  background: linear-gradient(90deg, hsl(var(--tenant-primary)) 0%, hsl(var(--tenant-primary)) 55%, #4b3fa3 100%);
+  background: linear-gradient(90deg, var(--brand) 0%, var(--brand) 55%, var(--brand2) 100%);
   border-radius: 3px;
+  margin-bottom: 14mm;
 }
 
-/* Mobile preview — fit A4 inside small viewports without app horizontal scroll */
+/* Cover */
+.report-cover-eyebrow {
+  font-size: 9.5pt;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.report-cover-title {
+  font-size: 30pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.05;
+  margin: 6px 0 4px;
+}
+.report-cover-project {
+  font-size: 22pt;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin-top: 18px;
+}
+.report-cover-location {
+  font-size: 10.5pt;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Meta strip */
+.report-meta-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.report-meta-strip > div {
+  padding: 10px 14px;
+  border-right: 1px solid var(--line);
+}
+.report-meta-strip > div:last-child { border-right: 0; }
+.report-meta-strip .lbl {
+  font-size: 7.5pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.report-meta-strip .val {
+  font-size: 11pt;
+  color: var(--ink);
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+/* Info panels */
+.report-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  break-inside: avoid;
+}
+.report-panel-title {
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.report-panel dl { margin: 0; }
+.report-panel .row {
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+.report-panel .row:first-of-type { border-top: 0; padding-top: 0; }
+.report-panel dt {
+  font-size: 8.5pt;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.report-panel dd {
+  font-size: 10pt;
+  color: var(--ink);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Approval banner */
+.report-approval {
+  background: var(--pass-bg);
+  border: 1px solid #c9e3d3;
+  color: var(--pass);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 0;
+  break-inside: avoid;
+}
+.report-approval .badge {
+  font-size: 9pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  background: var(--pass);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.report-approval .txt {
+  font-size: 11pt;
+  color: var(--pass);
+  font-weight: 600;
+}
+
+/* Section heading */
+.report-h {
+  font-size: 9pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+  margin: 24px 0 12px;
+}
+
+/* Footer */
+.report-doc-footer {
+  margin-top: 26px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 8.5pt;
+  color: var(--muted);
+}
+
+/* Mobile preview — scale A4 to viewport */
 .report-preview-wrap {
   max-width: 100%;
   overflow-x: auto;
@@ -332,10 +508,7 @@
     overflow: visible !important;
   }
 
-  @page {
-    size: A4 portrait;
-    margin: 0;
-  }
+  @page { size: A4 portrait; margin: 0; }
 
   .report-preview-wrap {
     overflow: visible !important;
@@ -350,7 +523,7 @@
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    padding: 14mm !important;
+    padding: 20mm !important;
     margin: 0 !important;
     max-width: none !important;
     width: 100% !important;
@@ -358,12 +531,10 @@
     overflow: visible !important;
   }
 
-  .report-info-section, .report-summary { page-break-inside: avoid; break-inside: avoid; }
-  .report-electrode { page-break-inside: auto; break-inside: auto; }
-  table { page-break-inside: avoid; break-inside: avoid; }
-  h2, h3 { page-break-after: avoid; break-after: avoid; }
-  img { max-width: 100% !important; page-break-inside: avoid; break-inside: avoid; }
-  .report-footer { margin-top: 20pt; }
+  .report-panel, .report-approval, .report-electrode, .report-summary { break-inside: avoid; }
+  table { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  img { max-width: 100% !important; break-inside: avoid; }
 }
 
 /* Safe area */
