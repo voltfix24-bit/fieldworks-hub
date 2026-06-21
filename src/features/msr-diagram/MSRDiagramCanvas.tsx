@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, ImageIcon, Loader2, Pencil, Plus, Upload, X } from 'lucide-react';
+import { ArrowLeft, ImageIcon, Loader2, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +45,9 @@ export function MSRDiagramCanvas({
     electrodes: [],
   }));
   const [existing, setExisting] = useState<ExistingRow | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<import('./Toolbar').Selection>(null);
+  const selectedId = selection?.kind === 'electrode' ? selection.id : null;
+  const cabinetSelected = selection?.kind === 'cabinet';
   const [zoom, setZoom] = useState(0.7);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,7 +92,7 @@ export function MSRDiagramCanvas({
     const x = Math.max(20, Math.min(diagram.canvasSize.w - 20, anchorPoint.x + offsetX));
     const y = Math.max(20, Math.min(diagram.canvasSize.h - 20, anchorPoint.y + offsetY));
     update((d) => ({ ...d, electrodes: [...d.electrodes, { id, label: `Elektrode ${n}`, x, y, anchor }] }));
-    setSelectedId(id);
+    setSelection({ kind: 'electrode', id });
     setChoosingAnchor(false);
   };
 
@@ -178,17 +180,33 @@ export function MSRDiagramCanvas({
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] flex flex-col bg-[#f4f8f7]">
-      <div className="shrink-0 px-4 pb-2 pt-[max(10px,env(safe-area-inset-top))]">
-        <div className="mb-2 flex items-center gap-3">
+    <div className="fixed inset-0 z-[1000] bg-white">
+      {/* Full-screen canvas */}
+      <div className="absolute inset-0">
+        <DiagramCanvas
+          diagram={diagram}
+          zoom={zoom}
+          onMoveCabinet={(x, y) => update((d) => ({ ...d, cabinet: { ...d.cabinet, x, y } }))}
+          onMoveElectrode={(id, x, y) => updateElectrode(id, { x, y })}
+          onEditDistance={editDistance}
+          selectedElectrodeId={selectedId}
+          cabinetSelected={cabinetSelected}
+          onSelectElectrode={(id) => setSelection(id ? { kind: 'electrode', id } : null)}
+          onSelectCabinet={() => setSelection({ kind: 'cabinet' })}
+        />
+      </div>
+
+      {/* Floating top bar */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(10px,env(safe-area-inset-top))]">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl bg-white/95 backdrop-blur px-2 py-2 shadow-lg ring-1 ring-border/50">
           <button
             onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-foreground active:scale-95"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground active:scale-95"
             aria-label="Terug"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-[19px] font-extrabold tracking-tight text-foreground">Situatieschets</h1>
+          <h1 className="text-[15px] font-extrabold tracking-tight text-foreground truncate">Schets</h1>
           <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => setChoosingAnchor(true)}
@@ -209,68 +227,59 @@ export function MSRDiagramCanvas({
         </div>
       </div>
 
-      <div className="relative mx-3 mb-2 min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/50 bg-white shadow-sm">
-
-        <DiagramCanvas
-          diagram={diagram}
-          zoom={zoom}
-          onMoveCabinet={(x, y) => update((d) => ({ ...d, cabinet: { ...d.cabinet, x, y } }))}
-          onMoveElectrode={(id, x, y) => updateElectrode(id, { x, y })}
-          onEditDistance={editDistance}
-          selectedElectrodeId={selectedId}
-          onSelectElectrode={setSelectedId}
-        />
-        <div className="absolute bottom-6 right-5">
-          <ZoomControls zoom={zoom} onZoom={setZoom} />
-        </div>
-
-        {choosingAnchor && (
-          <div className="absolute left-1/2 top-5 z-10 w-[min(300px,calc(100%-32px))] -translate-x-1/2">
-            <div className="rounded-2xl bg-emerald-600 p-3 text-white shadow-xl">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-[16px] font-extrabold leading-tight">Selecteer een referentiepunt</p>
-                <button
-                  type="button"
-                  onClick={() => setChoosingAnchor(false)}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-foreground"
-                  aria-label="Sluiten"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {anchorOptions.map((anchor) => (
-                  <button
-                    key={anchor.value}
-                    type="button"
-                    onClick={() => addElectrode(anchor.value)}
-                    className="rounded-xl bg-white/15 px-3 py-3 text-left active:scale-[0.98]"
-                  >
-                    <span className="block text-[11px] font-extrabold uppercase tracking-[0.14em] text-white/70">{anchor.hint}</span>
-                    <span className="mt-0.5 block text-[13px] font-bold text-white">{anchor.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Zoom controls */}
+      <div className="absolute bottom-[max(20px,env(safe-area-inset-bottom))] right-4 z-20">
+        <ZoomControls zoom={zoom} onZoom={setZoom} />
       </div>
 
+      {/* Anchor picker overlay */}
+      {choosingAnchor && (
+        <div className="absolute left-1/2 top-[max(80px,calc(env(safe-area-inset-top)+72px))] z-30 w-[min(320px,calc(100%-24px))] -translate-x-1/2">
+          <div className="rounded-2xl bg-emerald-600 p-3 text-white shadow-xl">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[16px] font-extrabold leading-tight">Selecteer een referentiepunt</p>
+              <button
+                type="button"
+                onClick={() => setChoosingAnchor(false)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-foreground"
+                aria-label="Sluiten"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {anchorOptions.map((anchor) => (
+                <button
+                  key={anchor.value}
+                  type="button"
+                  onClick={() => addElectrode(anchor.value)}
+                  className="rounded-xl bg-white/15 px-3 py-3 text-left active:scale-[0.98]"
+                >
+                  <span className="block text-[11px] font-extrabold uppercase tracking-[0.14em] text-white/70">{anchor.hint}</span>
+                  <span className="mt-0.5 block text-[13px] font-bold text-white">{anchor.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating detail panel — only when something is selected */}
       <DiagramToolbar
         diagram={diagram}
-        selectedElectrodeId={selectedId}
+        selection={selection}
+        onClose={() => setSelection(null)}
         onHousingNumberChange={(v) =>
           update((d) => ({ ...d, cabinet: { ...d.cabinet, housingNumber: v } }))
         }
         onDoorSideChange={(v: DoorSide) =>
           update((d) => ({ ...d, cabinet: { ...d.cabinet, doorSide: v } }))
         }
-        onAddElectrode={() => setChoosingAnchor(true)}
         onRenameElectrode={(id, label) => updateElectrode(id, { label })}
         onUpdateElectrode={updateElectrode}
         onRemoveElectrode={(id) => {
           update((d) => ({ ...d, electrodes: d.electrodes.filter((e) => e.id !== id) }));
-          if (selectedId === id) setSelectedId(null);
+          if (selectedId === id) setSelection(null);
         }}
       />
     </div>
