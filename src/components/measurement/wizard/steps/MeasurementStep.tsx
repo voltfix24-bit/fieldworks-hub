@@ -338,6 +338,13 @@ export function MeasurementStep({
         </div>
       )}
 
+      {/* ─── Foto's optioneel (inline mobiele meetkaart) ─── */}
+      {photoControl && (
+        <InlinePhotosSection compact={compact} {...photoControl} />
+      )}
+
+
+
       {/* DEEL 6 — Notitie per elektrode */}
       <ElectrodeNoteSection
         notes={electrode.notes}
