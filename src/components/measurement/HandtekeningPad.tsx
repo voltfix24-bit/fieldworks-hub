@@ -19,6 +19,8 @@ interface Props {
   hoogte?: number;
   /** Monteur ID voor opslag per gebruiker */
   monteurId?: string;
+  /** Initiële handtekening (base64 PNG zonder data: prefix) die direct getekend wordt */
+  initieleHandtekening?: string | null;
   className?: string;
 }
 
@@ -27,8 +29,10 @@ export default function HandtekeningPad({
   breedte = 500,
   hoogte = 180,
   monteurId,
+  initieleHandtekening,
   className = "",
 }: Props) {
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tekenenRef = useRef(false);
   const heeftInhoudRef = useRef(false);
