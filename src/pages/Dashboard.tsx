@@ -114,6 +114,21 @@ export default function Dashboard() {
   }
 
   if (isMobile) {
+    const heroProject = todayProjects[0]
+      ?? overdueProjects[0]
+      ?? planned[0]
+      ?? projects?.[projects.length - 1];
+
+    const heroLabel = todayProjects[0]
+      ? 'Vandaag'
+      : overdueProjects[0]
+        ? 'Aandacht nodig'
+        : planned[0]
+          ? 'Volgende klus'
+          : 'Laatste project';
+
+    const remainingToday = todayProjects.slice(1);
+
     return (
       <div className="ios-dash animate-fade-in">
         <div className="ios-dash-greeting">
@@ -121,113 +136,103 @@ export default function Dashboard() {
             {greeting}{firstName ? `, ${firstName}` : ''}
           </h1>
           <p className="ios-dash-greeting-sub">
-            {todayProjects.length > 0
-              ? `${todayProjects.length} ${todayProjects.length === 1 ? 'project' : 'projecten'} vandaag`
-              : 'Geen projecten vandaag gepland'}
+            {heroProject ? 'Dit is je volgende klus' : 'Nog geen projecten'}
           </p>
         </div>
 
-        <div className="ios-dash-stats">
-          <div className="ios-dash-stat-card">
-            <span className="ios-dash-stat-dot ios-dot-orange" />
-            <span className="ios-dash-stat-value">{planned.length}</span>
-            <span className="ios-dash-stat-label">Gepland</span>
-          </div>
-          <div className="ios-dash-stat-card">
-            <span className="ios-dash-stat-dot ios-dot-green" />
-            <span className="ios-dash-stat-value ios-val-green">{completed.length}</span>
-            <span className="ios-dash-stat-label">Afgerond</span>
-          </div>
-          {overdueProjects.length > 0 && (
-            <div className="ios-dash-stat-card">
-              <span className="ios-dash-stat-dot ios-dot-red" />
-              <span className="ios-dash-stat-value ios-val-red">{overdueProjects.length}</span>
-              <span className="ios-dash-stat-label">Achterstallig</span>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 px-4 mt-1">
+        {/* Hero card */}
+        {heroProject && (
           <button
-            onClick={() => navigate('/projects/new')}
-            className="flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3.5 active:scale-[0.97] transition-all shadow-[0_1px_0_hsl(var(--foreground)/0.04)]"
+            onClick={() => navigate(`/projects/${heroProject.id}`)}
+            className="ios-dash-hero"
           >
-            <div className="w-8 h-8 rounded-xl bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center shrink-0">
-              <Plus className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+            <span className="ios-dash-hero-label">{heroLabel}</span>
+            <p className="ios-dash-hero-title">{heroProject.project_name}</p>
+            <div className="ios-dash-hero-meta">
+              <span>{heroProject.project_number}</span>
+              {heroProject.planned_date && (
+                <>
+                  <span>·</span>
+                  <span>{formatNlDateCompact(heroProject.planned_date)}</span>
+                </>
+              )}
+              {heroProject.city && (
+                <>
+                  <span>·</span>
+                  <MapPin className="h-3 w-3" />
+                  <span>{heroProject.city}</span>
+                </>
+              )}
             </div>
-            <div className="text-left">
-              <p className="text-[13px] font-semibold text-foreground">Nieuw project</p>
-              <p className="text-[10px] text-muted-foreground/40">Aanmaken</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate('/reports')}
-            className="flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3.5 active:scale-[0.97] transition-all shadow-[0_1px_0_hsl(var(--foreground)/0.04)]"
-          >
-            <div className="w-8 h-8 rounded-xl bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center shrink-0">
-              <FileText className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
-            </div>
-            <div className="text-left">
-              <p className="text-[13px] font-semibold text-foreground">Rapporten</p>
-              <p className="text-[10px] text-muted-foreground/40">Bekijken</p>
-            </div>
-          </button>
-        </div>
-
-        {overdueProjects.length > 0 && (
-          <button onClick={() => navigate('/planning?view=kalender')} className="ios-dash-alert">
-            <div className="ios-dash-alert-left">
-              <div className="ios-dash-alert-icon">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-              </div>
-              <div>
-                <p className="ios-dash-alert-text">
-                  {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
-                </p>
-                <p className="ios-dash-alert-sub">Actie vereist</p>
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-destructive/30" />
+            <span className="ios-dash-hero-cta">
+              Open project <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </button>
         )}
 
-        {todayProjects.length > 0 ? (
+        {/* Compact overdue warning */}
+        {overdueProjects.length > 0 && (
+          <button
+            onClick={() => navigate('/planning?view=kalender')}
+            className="ios-dash-overdue-line"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+            <span className="truncate">
+              {overdueProjects.length} {overdueProjects.length === 1 ? 'project' : 'projecten'} achterstallig
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 ml-auto" />
+          </button>
+        )}
+
+        {/* Quick actions */}
+        <div className="ios-dash-quick-actions">
+          <button onClick={() => navigate('/projects/new')} className="ios-dash-quick-btn">
+            <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center shrink-0">
+              <Plus className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+            </div>
+            <span>Nieuw project</span>
+          </button>
+          <button onClick={() => navigate('/projects')} className="ios-dash-quick-btn">
+            <div className="w-9 h-9 rounded-xl bg-[hsl(var(--tenant-primary)/0.1)] flex items-center justify-center shrink-0">
+              <FolderKanban className="h-4 w-4 text-[hsl(var(--tenant-primary))]" />
+            </div>
+            <span>Alle projecten</span>
+          </button>
+        </div>
+
+        {/* Remaining today */}
+        {remainingToday.length > 0 && (
           <section>
             <IosSectionHeader title="Vandaag" />
             <div className="ios-dash-card">
-              {todayProjects.map((p, i) => (
+              {remainingToday.map((p, i) => (
                 <div key={p.id}>
                   <DashProjectRow project={p} onClick={() => navigate(`/projects/${p.id}`)} />
-                  {i < todayProjects.length - 1 && <div className="ios-dash-row-divider" />}
+                  {i < remainingToday.length - 1 && <div className="ios-dash-row-divider" />}
                 </div>
               ))}
             </div>
           </section>
-        ) : (
-          <section>
-            <IosSectionHeader title="Vandaag" />
-            <div className="ios-dash-card px-4 py-4">
-              <p className="text-[14px] text-muted-foreground/40 text-center">
-                Geen projecten gepland vandaag
-              </p>
-            </div>
-          </section>
         )}
 
+        {/* Further projects */}
         <section>
           <IosSectionHeader
-            title="Recente projecten"
-            action={projects && projects.length > 6 ? () => navigate('/projects') : undefined}
+            title={remainingToday.length > 0 ? 'Verder' : 'Projecten'}
+            action={projects && projects.length > 5 ? () => navigate('/projects') : undefined}
             actionLabel="Alles →"
           />
           {projects && projects.length > 0 ? (
             <div className="ios-dash-card">
-              {projects.slice(0, 6).map((p, i) => (
-                <div key={p.id}>
-                  <DashProjectRow project={p} onClick={() => navigate(`/projects/${p.id}`)} showDate />
-                  {i < Math.min(projects.length, 6) - 1 && <div className="ios-dash-row-divider" />}
-                </div>
-              ))}
+              {projects
+                .filter(p => p.id !== heroProject?.id)
+                .slice(0, 5)
+                .map((p, i, arr) => (
+                  <div key={p.id}>
+                    <DashProjectRow project={p} onClick={() => navigate(`/projects/${p.id}`)} showDate />
+                    {i < arr.length - 1 && <div className="ios-dash-row-divider" />}
+                  </div>
+                ))}
             </div>
           ) : (
             <div className="text-center py-14">
