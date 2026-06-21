@@ -158,9 +158,6 @@ export default function ProjectReport() {
 
   const handleSendEmail = async () => {
     if (!emailTo) return;
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
     setEmailSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-rapport', {
@@ -182,9 +179,6 @@ export default function ProjectReport() {
   };
 
   const handleWhatsApp = async () => {
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
     setWhatsAppLoading(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('generate-rapport', {
