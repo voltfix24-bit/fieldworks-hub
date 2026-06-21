@@ -907,7 +907,6 @@ export default function MeasurementWorkspace() {
               <NextActionStep
                 projectId={id!}
                 onSave={() => navigate(`/projects/${id}`)}
-                onHandtekeningChange={setHandtekeningB64}
                 elektrodes={elektrodesVoorSamenvatting}
                 compact
               />
@@ -1169,7 +1168,6 @@ export default function MeasurementWorkspace() {
           <NextActionStep
             projectId={id!}
             onSave={() => navigate(`/projects/${id}`)}
-            onHandtekeningChange={setHandtekeningB64}
             elektrodes={elektrodesVoorSamenvatting}
           />
         )}
