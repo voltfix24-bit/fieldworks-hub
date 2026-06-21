@@ -38,7 +38,7 @@ export function StickyActionBar({
           </div>
         )}
         <div className={cn(
-          'flex items-center gap-2 px-4 py-2.5',
+          'flex items-center gap-2 px-3 py-2.5 max-w-full min-w-0',
           'glass-surface border-t-0 border-x-0 rounded-none',
           showPrev ? 'justify-between' : 'justify-end',
         )}>
@@ -49,10 +49,10 @@ export function StickyActionBar({
                 (document.activeElement as HTMLElement)?.blur();
                 setTimeout(() => onPrev(), 50);
               }}
-              className="h-10 flex items-center gap-0.5 px-2 text-[13px] font-medium text-muted-foreground active:opacity-60 transition-opacity rounded-lg"
+              className="h-10 flex shrink-0 items-center gap-0.5 px-2 text-[13px] font-medium text-muted-foreground active:opacity-60 transition-opacity rounded-lg"
             >
               <ChevronLeft className="h-4 w-4" />
-              {prevLabel}
+              <span className="truncate max-w-[80px]">{prevLabel}</span>
             </button>
           )}
           {onNext && (
@@ -66,17 +66,19 @@ export function StickyActionBar({
               }}
               disabled={nextDisabled || nextLoading}
               className={cn(
-                'h-10 px-6 rounded-xl text-[13px] font-semibold min-w-[100px]',
+                'h-10 px-4 xs:px-6 rounded-xl text-[13px] font-semibold min-w-0 max-w-full',
+                'inline-flex items-center justify-center gap-1',
                 'bg-[hsl(var(--tenant-primary))] text-white',
                 'active:scale-[0.96] transition-all disabled:opacity-40',
               )}
             >
-              {nextLoading && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin inline" />}
-              {nextLoading ? 'Bezig…' : nextLabel}
-              {!nextLoading && <ChevronRight className="h-3.5 w-3.5 ml-0.5 inline" />}
+              {nextLoading && <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />}
+              <span className="truncate">{nextLoading ? 'Bezig…' : nextLabel}</span>
+              {!nextLoading && <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
             </button>
           )}
         </div>
+
       </div>
     );
   }
