@@ -139,36 +139,15 @@ export default function ProjectReport() {
     return 'Rapport kon niet worden gemaakt. Probeer het opnieuw.';
   };
 
-  // ── Pre-flight: ontbrekende verplichte data ──────────────
-  const preflight = (): string | null => {
-    if (!session?.measurement_date) return 'Meetdatum ontbreekt. Vul de meetdatum in voordat je het rapport maakt.';
-    if (!equip) return 'Apparaat ontbreekt. Koppel meetapparatuur aan dit project.';
-    if (!electrodes.length || stats.measurementCount === 0) return 'Er zijn nog geen metingen ingevuld.';
-    return null;
-  };
-
+  // Geen pre-flight blokkade meer — rapport is altijd beschikbaar.
   const equipExpired = equip?.next_calibration_date && new Date(equip.next_calibration_date) < new Date();
 
-  const confirmExpired = (): boolean => {
-    if (!equipExpired) return true;
-    return window.confirm(
-      'Het meetapparaat is verlopen volgens de kalibratiedatum. Toch doorgaan met rapport maken?'
-    );
-  };
-
   const handlePrint = () => {
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
-    // Native browser print — gratis, geen Railway/edge-call
     window.print();
   };
 
   // Legacy server-side PDF (Railway / generate-rapport). Alleen admin/kantoor.
   const handleLegacyPdf = async () => {
-    const err = preflight();
-    if (err) { toast({ title: 'Rapport niet mogelijk', description: err, variant: 'destructive' }); return; }
-    if (!confirmExpired()) return;
     try {
       await genereerViaEdge(id!, actieveHandtekening ?? undefined);
       toast({ title: 'Rapport klaar', description: 'PDF is gedownload (legacy).' });
