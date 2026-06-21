@@ -170,10 +170,10 @@ export function NextActionStep({ projectId, onSave, compact, onHandtekeningChang
 
       <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
         <ActionCard
-          icon={<Paperclip className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
-          label="Schets en bijlagen"
-          description="Schetsen, foto's en bestanden"
-          onClick={onGoToSketch}
+          icon={<Map className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} />}
+          label="Situatieschets"
+          description="MSR-kast en elektrodes plaatsen"
+          onClick={() => navigate(`/projects/${projectId}/diagram`)}
           compact={compact}
         />
 
