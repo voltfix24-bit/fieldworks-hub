@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getDepthProgressionWarnings } from '../../DepthMeasurementTable';
 import { DepthMeasurementTable } from '../../DepthMeasurementTable';
 import { GroundingIcon } from '../../GroundingIcon';
-import { Plus, ChevronDown, Trash2, Check, Camera, X as XIcon, Loader2 } from 'lucide-react';
+import { Plus, ChevronDown, Trash2, Check, Camera, X as XIcon, Loader2, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
 import { useDepthMeasurements, useCreateDepthMeasurement, useUpdateDepthMeasurement, useDeleteDepthMeasurement } from '@/hooks/use-depth-measurements';
@@ -248,11 +248,13 @@ export function MeasurementStep({
         </div>
       )}
 
-      {/* ─── Actieve pen: 'Diepte metingen' kaart ─── */}
+      {/* ─── Actieve pen: 'Diepte metingen' kaart (Zite-stijl) ─── */}
       {activePen && (
-        <div className="rounded-2xl border border-border/30 bg-card overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/20">
-            <h3 className="text-[13px] font-bold text-foreground tracking-tight">Diepte metingen</h3>
+        <div className="rounded-3xl bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)] overflow-hidden">
+          <div className="flex items-start justify-between px-5 pt-5 pb-3">
+            <h3 className="text-[24px] font-extrabold text-foreground tracking-tight leading-tight">
+              Diepte metingen
+            </h3>
             {pens.length > 1 && onDeletePen && (
               <button
                 onMouseDown={(e) => {
@@ -262,14 +264,15 @@ export function MeasurementStep({
                     onDeletePen(activePen.id);
                   }
                 }}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-destructive/60 hover:bg-destructive/8 active:scale-95 transition-all"
+                className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-destructive/60 hover:bg-destructive/8 active:scale-95 transition-all"
+                aria-label={`${activePen.pen_code} verwijderen`}
               >
                 <Trash2 className="h-3 w-3" />
                 Verwijderen
               </button>
             )}
           </div>
-          <div className="px-2 py-2">
+          <div className="px-3 pb-3">
             <PenMeasurementSection
               key={activePen.id}
               pen={activePen}
@@ -282,7 +285,16 @@ export function MeasurementStep({
               compact={compact}
             />
           </div>
-          <div className="border-t border-border/20 px-3 py-2.5 flex items-center justify-end">
+
+          {/* Foto's — inline in dezelfde kaart */}
+          {photoControl && (
+            <div className="px-5 pt-3 pb-4 border-t border-border/15">
+              <InlinePhotosSection compact={compact} {...photoControl} />
+            </div>
+          )}
+
+          {/* Sticky primary CTA — pill style */}
+          <div className="px-5 pb-5 pt-1">
             <button
               onMouseDown={(e) => {
                 e.preventDefault();
@@ -295,14 +307,21 @@ export function MeasurementStep({
                   if (navigator.vibrate) navigator.vibrate(8);
                 }, 60);
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-bold text-white bg-[hsl(var(--tenant-primary,var(--primary)))] active:scale-[0.97] transition-transform"
+              className={cn(
+                'w-full inline-flex items-center justify-center gap-2',
+                'h-14 rounded-full text-[16px] font-bold text-white',
+                'bg-[hsl(var(--tenant-primary,var(--primary)))]',
+                'shadow-[0_4px_14px_-4px_hsl(var(--tenant-primary,var(--primary))/0.55)]',
+                'active:scale-[0.98] transition-transform'
+              )}
             >
-              <Check className="h-3.5 w-3.5" />
+              <Save className="h-4 w-4" />
               Pen opslaan
             </button>
           </div>
         </div>
       )}
+
 
       {/* ─── RV-waarde (alleen bij meerdere pennen) ─── */}
       {showRv && (
@@ -338,10 +357,8 @@ export function MeasurementStep({
         </div>
       )}
 
-      {/* ─── Foto's optioneel (inline mobiele meetkaart) ─── */}
-      {photoControl && (
-        <InlinePhotosSection compact={compact} {...photoControl} />
-      )}
+      {/* Foto's worden in de meet-kaart hierboven gerenderd — geen losse sectie. */}
+
 
 
 
@@ -545,17 +562,16 @@ function ElectrodeNoteSection({ notes, onSave, compact }: {
   );
 }
 
-/* ── Inline mobile photo tiles (Display + Overzicht) ── */
+/* ── Inline mobile photo tiles (Display + Overzicht) — Zite-style ── */
 function InlinePhotosSection({
   displayPhotoUrl, overviewPhotoUrl, uploading, onUpload, onRemove, compact,
 }: PhotoControl & { compact?: boolean }) {
   return (
-    <div className={cn('rounded-2xl border border-border/30 bg-card overflow-hidden', compact ? 'p-3' : 'p-4')}>
-      <div className="flex items-baseline justify-between mb-2.5">
-        <h3 className="text-[13px] font-bold text-foreground tracking-tight">Foto's</h3>
-        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/40">Optioneel</span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
+    <div>
+      <h3 className="text-[20px] font-extrabold text-foreground tracking-tight mb-4">
+        Foto's
+      </h3>
+      <div className="grid grid-cols-2 gap-3">
         <InlinePhotoTile
           label="Displayfoto"
           url={displayPhotoUrl}
@@ -571,9 +587,13 @@ function InlinePhotosSection({
           onRemove={() => onRemove('overview_photo_url')}
         />
       </div>
+      <p className="mt-3 text-[12px] text-muted-foreground/55 italic">
+        Foto's zijn optioneel — aanbevolen bij lage waarden of meerdere pennen.
+      </p>
     </div>
   );
 }
+
 
 function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
   label: string;
@@ -592,17 +612,17 @@ function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
   if (url) {
     return (
       <div className="relative">
-        <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
-        <div className="relative rounded-xl overflow-hidden">
-          <MeasurementPhoto src={url} alt={label} className="w-full aspect-[4/3] object-cover" />
+        <p className="text-[13px] font-semibold text-foreground/85 mb-2">{label}</p>
+        <div className="relative rounded-2xl overflow-hidden aspect-square">
+          <MeasurementPhoto src={url} alt={label} className="w-full h-full object-cover" />
           <button
             type="button"
             onClick={onRemove}
             disabled={uploading}
-            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center active:scale-90 transition-transform"
+            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center active:scale-90 transition-transform"
             aria-label={`${label} verwijderen`}
           >
-            <XIcon className="h-3 w-3" />
+            <XIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
@@ -611,24 +631,24 @@ function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
 
   return (
     <div>
-      <p className="text-[10px] font-medium text-muted-foreground/50 mb-1.5">{label}</p>
+      <p className="text-[13px] font-semibold text-foreground/85 mb-2">{label}</p>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         className={cn(
-          'w-full aspect-[4/3] rounded-xl border border-dashed border-border/40 bg-muted/10',
-          'flex flex-col items-center justify-center gap-1.5 text-muted-foreground/55',
+          'w-full aspect-square rounded-2xl border-2 border-dashed border-border/45 bg-muted/[0.04]',
+          'flex flex-col items-center justify-center gap-2.5 text-foreground/70',
           'active:scale-[0.98] transition-all',
           uploading && 'opacity-60'
         )}
       >
         {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-6 w-6 animate-spin" />
         ) : (
           <>
-            <Camera className="h-4 w-4 text-[hsl(var(--tenant-primary,var(--primary)))]" />
-            <span className="text-[11px] font-semibold">Toevoegen</span>
+            <Camera className="h-7 w-7" strokeWidth={1.5} />
+            <span className="text-[14px] font-medium">Toevoegen</span>
           </>
         )}
       </button>
@@ -641,6 +661,7 @@ function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
         className="hidden"
       />
     </div>
+
   );
 }
 
