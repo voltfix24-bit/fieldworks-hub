@@ -77,7 +77,7 @@ export function ReportElectrodeSection({ electrode, index, showPhotos = true }: 
           </div>
           <div className="min-w-0">
             <h3 className="text-[16px] font-extrabold tracking-tight text-slate-950 leading-tight">
-              Elektrode {electrodeDisplay}
+              Meetresultaten — Elektrode {electrodeDisplay}
             </h3>
             {electrode.label && (
               <p className="mt-0.5 text-[11px] text-slate-500 truncate">{electrode.label}</p>
