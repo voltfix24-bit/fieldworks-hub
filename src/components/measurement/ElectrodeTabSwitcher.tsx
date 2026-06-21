@@ -67,12 +67,3 @@ export function ElectrodeTabSwitcher({ electrodes, activeId, onSelect, onAdd, ad
   );
 }
 
-/**
- * Toon "Elektrode 1", "Elektrode 2", ... op basis van positie.
- * Valt terug op de echte code als die niet numeriek te mappen is.
- */
-function indexLabel(electrodes: any[], id: string, fallback: string) {
-  const idx = electrodes.findIndex((x) => x.id === id);
-  if (idx >= 0) return String(idx + 1);
-  return fallback;
-}
