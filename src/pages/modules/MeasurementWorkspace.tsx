@@ -32,17 +32,17 @@ const WIZARD_STEPS = [
   { label: 'Volgende', key: 'next' },
 ];
 
-const workspaceStorageKey = (projectId?: string) =>
+export const workspaceStorageKey = (projectId?: string) =>
   projectId ? `measurement-workspace:${projectId}` : null;
 
-type StoredWorkspaceState = {
+export type StoredWorkspaceState = {
   step?: number;
   activeElectrodeId?: string | null;
   activePenId?: string | null;
   updatedAt?: string;
 };
 
-const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | null => {
+export const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | null => {
   const key = workspaceStorageKey(projectId);
   if (!key || typeof window === 'undefined') return null;
   try {
@@ -59,6 +59,29 @@ const readStoredWorkspaceState = (projectId?: string): StoredWorkspaceState | nu
     return null;
   }
 };
+
+export const writeStoredWorkspaceState = (
+  projectId: string | undefined,
+  state: StoredWorkspaceState,
+  prev?: StoredWorkspaceState | null,
+) => {
+  const key = workspaceStorageKey(projectId);
+  if (!key || typeof window === 'undefined') return;
+  // Guard: never overwrite a useful stored electrode/pen with a null one —
+  // this happens on first mount before electrodes have loaded.
+  const merged: StoredWorkspaceState = {
+    step: state.step,
+    activeElectrodeId: state.activeElectrodeId ?? prev?.activeElectrodeId ?? null,
+    activePenId: state.activePenId ?? prev?.activePenId ?? null,
+    updatedAt: new Date().toISOString(),
+  };
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(merged));
+  } catch {
+    /* sessionStorage unavailable — ignore */
+  }
+};
+
 
 export default function MeasurementWorkspace() {
   const { id } = useParams();
