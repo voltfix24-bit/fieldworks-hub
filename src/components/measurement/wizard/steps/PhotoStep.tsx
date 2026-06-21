@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Camera, Image as ImageIcon, X, Loader2, AlertTriangle } from 'lucide-react';
 import { GroundingIcon } from '../../GroundingIcon';
 import { cn } from '@/lib/utils';
+import { MeasurementPhoto } from '@/components/ui/MeasurementPhoto';
 
 export interface ElektrodeMetFotos {
   id: string;
@@ -147,12 +148,14 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
   const galleryRef = useRef<HTMLInputElement>(null);
   const [localUploading, setLocalUploading] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [kwaliteitsWaarschuwing, setKwaliteitsWaarschuwing] = useState<string | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setLocalUploading(true);
+    setLocalPreview(URL.createObjectURL(file));
 
     // DEEL 7 — Photo quality check
     const kwaliteit = await controleerFotoKwaliteit(file);
@@ -169,13 +172,15 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
       // error handled by parent
     } finally {
       setLocalUploading(false);
+      setLocalPreview(null);
       e.target.value = '';
     }
   };
 
   const isLoading = localUploading || uploading;
+  const displayUrl = localPreview || currentUrl;
 
-  if (currentUrl) {
+  if (displayUrl) {
     return (
       <div>
         <p className={cn(
@@ -186,20 +191,34 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
           <button
             type="button"
             onClick={() => setFullscreen(true)}
-            className="rounded-xl overflow-hidden active:scale-[0.97] transition-transform w-full"
+            className="rounded-xl overflow-hidden active:scale-[0.97] transition-transform w-full block"
           >
-            <img
-              src={currentUrl}
-              alt={label}
-              className="w-full h-36 rounded-xl object-cover"
-            />
+            {localPreview ? (
+              <img
+                src={localPreview}
+                alt={label}
+                className="w-full h-36 rounded-xl object-cover"
+              />
+            ) : (
+              <MeasurementPhoto
+                src={currentUrl}
+                alt={label}
+                className="w-full h-36 rounded-xl object-cover"
+                fallback={
+                  <div className="w-full h-36 rounded-xl bg-muted/30 flex items-center justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/40" />
+                  </div>
+                }
+              />
+            )}
           </button>
           <button
-            onClick={onRemove}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onRemove(); }}
             disabled={isLoading}
-            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform z-10"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -225,12 +244,21 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
             className="fixed inset-0 z-[500] bg-black/90 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-200"
             onClick={() => setFullscreen(false)}
           >
-            <img
-              src={currentUrl}
-              alt={label}
-              className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {localPreview ? (
+              <img
+                src={localPreview}
+                alt={label}
+                className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <MeasurementPhoto
+                src={currentUrl}
+                alt={label}
+                className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             <button
               onClick={() => setFullscreen(false)}
               className="absolute top-[max(16px,env(safe-area-inset-top))] right-4 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-transform"
