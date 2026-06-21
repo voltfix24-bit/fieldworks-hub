@@ -562,17 +562,16 @@ function ElectrodeNoteSection({ notes, onSave, compact }: {
   );
 }
 
-/* ── Inline mobile photo tiles (Display + Overzicht) ── */
+/* ── Inline mobile photo tiles (Display + Overzicht) — Zite-style ── */
 function InlinePhotosSection({
   displayPhotoUrl, overviewPhotoUrl, uploading, onUpload, onRemove, compact,
 }: PhotoControl & { compact?: boolean }) {
   return (
-    <div className={cn('rounded-2xl border border-border/30 bg-card overflow-hidden', compact ? 'p-3' : 'p-4')}>
-      <div className="flex items-baseline justify-between mb-2.5">
-        <h3 className="text-[13px] font-bold text-foreground tracking-tight">Foto's</h3>
-        <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/40">Optioneel</span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
+    <div>
+      <h3 className="text-[20px] font-extrabold text-foreground tracking-tight mb-4">
+        Foto's
+      </h3>
+      <div className="grid grid-cols-2 gap-3">
         <InlinePhotoTile
           label="Displayfoto"
           url={displayPhotoUrl}
@@ -588,9 +587,13 @@ function InlinePhotosSection({
           onRemove={() => onRemove('overview_photo_url')}
         />
       </div>
+      <p className="mt-3 text-[12px] text-muted-foreground/55 italic">
+        Foto's zijn optioneel — aanbevolen bij lage waarden of meerdere pennen.
+      </p>
     </div>
   );
 }
+
 
 function InlinePhotoTile({ label, url, uploading, onPick, onRemove }: {
   label: string;
