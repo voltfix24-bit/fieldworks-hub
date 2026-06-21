@@ -357,10 +357,8 @@ export function MeasurementStep({
         </div>
       )}
 
-      {/* ─── Foto's optioneel (inline mobiele meetkaart) ─── */}
-      {photoControl && (
-        <InlinePhotosSection compact={compact} {...photoControl} />
-      )}
+      {/* Foto's worden in de meet-kaart hierboven gerenderd — geen losse sectie. */}
+
 
 
 
