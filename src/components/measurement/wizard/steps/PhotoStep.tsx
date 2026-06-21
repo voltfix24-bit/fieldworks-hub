@@ -155,6 +155,7 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
     const file = e.target.files?.[0];
     if (!file) return;
     setLocalUploading(true);
+    setLocalPreview(URL.createObjectURL(file));
 
     // DEEL 7 — Photo quality check
     const kwaliteit = await controleerFotoKwaliteit(file);
@@ -171,11 +172,13 @@ function PhotoSlot({ label, description, currentUrl, onUpload, onRemove, uploadi
       // error handled by parent
     } finally {
       setLocalUploading(false);
+      setLocalPreview(null);
       e.target.value = '';
     }
   };
 
   const isLoading = localUploading || uploading;
+  const displayUrl = localPreview || currentUrl;
 
   if (currentUrl) {
     return (
