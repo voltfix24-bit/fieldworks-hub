@@ -218,8 +218,7 @@ export default function ProjectDetail() {
     };
 
     const openReport = () => {
-      if (!mobileReportReady) { setShowRapportBlock(true); return; }
-      if (hasReportWarnings) { setShowRapportBlock(true); return; }
+      // Rapport mag altijd geopend worden — ontbrekende data wordt in het rapport weggelaten.
       navigate(`/projects/${id}/report`);
     };
 
@@ -365,14 +364,14 @@ export default function ProjectDetail() {
                 sub={
                   reportComplete
                     ? (hasReportWarnings ? 'Klaar – met waarschuwingen' : 'Klaar om te openen')
-                    : !diagramComplete ? 'Wacht op situatieschets'
-                    : !readiness.isReady ? `${readiness.blockers.length} blokkade(s)`
-                    : 'Bijna klaar'
+                    : !diagramComplete ? 'Open – schets ontbreekt nog'
+                    : !readiness.isReady ? `Open – ${readiness.blockers.length} aandachtspunt(en)`
+                    : 'Open rapport'
                 }
                 done={reportComplete}
-                disabled={!reportComplete}
                 onClick={openReport}
               />
+
             </div>
 
             {/* Projectbestanden */}
