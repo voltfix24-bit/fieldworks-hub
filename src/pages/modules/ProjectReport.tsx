@@ -539,7 +539,6 @@ export default function ProjectReport() {
           <ReportFooter />
         </div>
       </div>
-      )}
     </div>
   );
 }
